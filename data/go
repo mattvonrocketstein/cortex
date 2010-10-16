@@ -7,8 +7,7 @@ else
   _my_path=`pwd`/`echo $0 | sed -e s/$_my_name//`
 fi
 
-# Set up variables
-
+# Set up basic context
 export SCRIPT=$_my_path$_my_name
 export PROJECT_NAME="cortex-testing node"
 export DOT_FILE=${_my_path}.project
@@ -17,6 +16,9 @@ export VENV_PY=$BINDIR/python
 export GO_NAME="go".py
 export GO_PY=${_my_path}$GO_NAME
 export PYTHONPATH=$PYTHONPATH:${_my_path}/../
+
+# Set up django
+export DJANGO_SETTINGS_MODULE="cortex.settings.django"
 
 # Enter python world
 echo "Launching $PROJECT_NAME"
