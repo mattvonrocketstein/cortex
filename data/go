@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# Cortex, first phase init
+#
+
 _my_name=`basename $0`
 if [ "`echo $0 | cut -c1`" = "/" ]; then
   _my_path=`dirname $0`
@@ -20,8 +24,7 @@ export PYTHONPATH=$PYTHONPATH:${_my_path}/../
 # Set up django
 export DJANGO_SETTINGS_MODULE="cortex.settings.django"
 
-# Enter python world
+# Enter python world, launching second phase init
 echo "Launching $PROJECT_NAME"
 echo " with Python=$VENV_PY"
 $VENV_PY $GO_PY
-
