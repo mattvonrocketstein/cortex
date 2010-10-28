@@ -47,7 +47,7 @@ class IPShellTwisted(threading.Thread):
         from twisted.internet import reactor
         self.reactor = hijack_reactor()
 
-        mainquit = self.reactor.stop
+        self.mainquit = self.reactor.stop
 
         # Make sure IPython keeps going after reactor stop.
         def reactorstop():
@@ -62,7 +62,7 @@ class IPShellTwisted(threading.Thread):
 
         self.IP = make_IPython(argv, user_ns=user_ns, debug=debug,
                                shell_class=shell_class,
-                               on_kill=[mainquit])
+                               on_kill=[self.mainquit])
 
         threading.Thread.__init__(self)
 

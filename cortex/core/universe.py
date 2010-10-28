@@ -7,6 +7,8 @@ from twisted.internet import reactor
 
 from cortex.core.util import report, console
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
+from cortex.core.services import ServiceManager
+
 
 class __Universe__(object, AutonomyMixin, PerspectiveMixin):
     """
@@ -14,8 +16,10 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
     """
 
     node_list = []
+    _services = []
 
     class shell:
+        """ a dumb abstraction for a shell rooted at <path> """
         def __init__(self, path):
             self.path = path
 
@@ -23,10 +27,10 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
             """ """
             os.system('cd "'+path+'"; '+line)
 
-    @property
-    def nodeconf(self):
+    def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
         """
+        assert hasattr(self, 'nodeconf_file'), 'Universe.nodeconf_file is not set.'
         report("Universe.nodeconf: decoding")
         x = open(self.nodeconf_file).readlines()
         x = [z.strip() for z in x]
@@ -34,7 +38,7 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
         for line in x:
             if not line:
                 continue
-            report('got line',line)
+            report('got line', line)
             try:
                 nodedef = simplejson.loads(line)
             except:
@@ -44,6 +48,16 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
                 nodes.append(nodedef)
         return nodes
 
+    @property
+    def Nodes(self):
+        """ nodes: static definition """
+        return self.read_nodeconf()
+
+    @property
+    def nodes(self):
+        """ nodes: dynamic definition """
+        return self.node_list
+
     def play(self):
         """
             Post:
@@ -52,19 +66,37 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
         report("Universe.play!")
 
         # Starts all nodes registered via the nodeconf
-        for node in self.nodeconf:
-            name,kargs = node
-            kargs.update( {'name':name} )
+        for node in self.read_nodeconf():
+            name, kargs = node
+            kargs.update( {'name':name,'universe':self} )
             node = self.launch_instance(**kargs)
             self.node_list.append(node)
 
         # Start special services provided by the universe
-        self.stdoutbeacon_service()
-        self.terminal_service()
-        #self.filercvr()
+        for service in self.Services:
+            self._services.append(service(universe=self).play())
 
         # Main loop
         reactor.run()
+
+    @property
+    def services(self):
+        """ services: dynamic definition
+              this represents services that have already been
+              successfully started.
+        """
+        return ServiceManager(self._services)
+
+    @property
+    def Services(self):
+        """ services: static definition
+               computes services from defaults,
+               command line arguments, and
+               node definition files.
+        """
+        #[self.stdoutbeacon_service, self.filercvr]
+        from cortex.core.services.terminal import Terminal
+        return [Terminal]
 
     def django_service(self):
         """  Start special services provided by the universe """
@@ -86,26 +118,21 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
                  http://code.activestate.com/recipes/410670-integrating-twisted-reactor-with-ipython/
 
 
-        # Sample usage.
+               Sample usage.
 
-        # Create the shell object. This steals twisted.internet.reactor
-        # for its own purposes, to make sure you've already installed a
-        # reactor of your choice.
+               Create the shell object. This steals twisted.internet.reactor
+               for its own purposes, to make sure you've already installed a
+               reactor of your choice.
 
-        # Run the mainloop.  This runs the actual reactor.run() method.
-        # The twisted.internet.reactor object at this point is a dummy
-        # object that passes through to the actual reactor, but prevents
-        # run() from being called on it again.
+               Then, Run the mainloop.  This runs the actual reactor.run() method.
+               The twisted.internet.reactor object at this point is a dummy
+               object that passes through to the actual reactor, but prevents
+               run() from being called on it again.
 
-        # You must exit IPython to terminate your program.
+               You must exit IPython to terminate your program.
         """
-        from cortex.core import api
-        from cortex.core.terminal import IPShellTwisted, IPY_ARGS
-        universe = {'__name__': '__cortex_shell__'}
-        universe.update(api.publish())
-        shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe)
-        shell.mainloop()
-        report('the Terminal Service Dies.')
+        from cortex.core.services.terminal import Terminal
+        Terminal().play()
 
     def launch_instance(self, **kargs):
         from cortex.core.node import Node
