@@ -10,7 +10,11 @@ def publish():
     from cortex.core import api
     return NamespacePartition(api.__dict__).cleaned
 
-def loadfile(fname, adl=False, python=True):
+def register_service(service):
+    """ """
+    pass
+
+def load_file(fname, adl=False, python=True):
     """ loads a local file """
     assert os.path.exists(fname), filerror
 
