@@ -19,6 +19,8 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
         self.name = name
         self.instance = instance
         self.resource_description = resource_description
+        if hasattr(self,'_post_init'):
+            self._post_init()
 
     def __render_resource_description(self):
         """ """
@@ -37,9 +39,15 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
         return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]
 
     def play(self):
-        """
+        """ CONVENTION:
+              play should always return something similar to a derred.
+              this is a representation of <self> where <self> has
+              fundamentally been *invoked* already and is waiting
+              for the universal main loop to begin.
+
             NOTE: overrides AutonomyMixin.play
         """
         super(Node,self).play()
         for item in self.resource_description.items():
             print '\tevaluating resource:',item
+        return self

@@ -2,6 +2,8 @@
 """
 
 from cortex.core.node import Node
+from cortex.core.util import report
+from cortex.core.restrictions import __domain_restricted__
 
 class ServiceManager(object):
     """ ServiceManager exists mainly to make universe.services obey list
@@ -10,8 +12,16 @@ class ServiceManager(object):
     """
     class NotFound(Exception): pass
 
+    @__domain_restricted__
+    def register(self, auth, _rsrc):
+        """ registers resource <_rsrc> on <auth>'s authority.
+        """
+        self.registry[auth] = _rsrc
+        report('registering resource', _rsrc)
+
     def __init__(self, service_list):
         self.service_list = service_list
+        self.registry     = {}
 
     def __getitem__(self, name):
         """ retrieve service by name """
