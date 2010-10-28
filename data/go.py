@@ -1,12 +1,7 @@
 """ go.py: Second-phase init
-"""
 
-import os
-from cortex import core
-from cortex.core.universe import Universe
-# You need to override this for your project,
-#   or define a project file.
-NODE_CONF = None
+    Scratchpad:
+
 
 #os.environ['DJANGO_SETTINGS_MODULE'] = ''
 #from twisted.internet import reactor
@@ -15,32 +10,31 @@ NODE_CONF = None
 #from cortex.core.rcvr import RCVR
 #universe = core.universe
 
-def go_django():
-    import django.core.handlers.wsgi
-    application = django.core.handlers.wsgi.WSGIHandler()
-
-def main():
-    """
-    """
-    instance_dir = os.path.split(__file__)[0]
-    #NODE_CONF = NODE_CONF or os.path.join(__file__,'.nodeconf')
-    #assert os.path.exists(NODE_CONF), "You need to define a NODE_CONF@"+NODE_CONF
-    Universe.launch_instance(host="127.0.0.1",
-                             resource_description={},
-                             instance=instance_dir)
-    #Universe.load_nodeconf(project_dir)
-    #universe['terminal'] = core.Terminal()
-    #stdio.StandardIO(universe['terminal'])
-
-    #pf = Factory()
-    #pf.clients = []
-    #pf.protocol = core.RCVR
-    #reactor.listenTCP(1234, pf)
 
     #from cortex.core.rcvr import FileIOFactory
     #fileio = FileIOFactory({})
     #reactor.listenTCP(1234, fileio)
     #reactor.run()
+
+"""
+
+import os
+from cortex import core
+from cortex.core.universe import Universe
+
+NODE_CONF = None #'node.conf'
+
+def main():
+    """ """
+    # Set node configuration file in universe
+    instance_dir = os.path.split(__file__)[0]
+    nodeconf_file = NODE_CONF or os.path.join(instance_dir, 'node.conf')
+    assert os.path.exists(nodeconf_file), "Expected node.conf @ "+nodeconf_file
+    Universe.nodeconf_file = nodeconf_file
+
+if __name__ == '__main__':
+    main()
+    Universe.play() # Invoke the Universe
 
 if __name__ == '__main__':
     main()
