@@ -10,9 +10,11 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 class Node(object, AutonomyMixin, PerspectiveMixin):
     """
     """
-    def __init__(self, host=None, instance=None, name=None, resource_description=None):
+    def __init__(self, host=None, instance=None, universe=None,
+                 name=None, resource_description=None):
         """
         """
+        self.universe = universe
         self.host = host
         self.name = name
         self.instance = instance
