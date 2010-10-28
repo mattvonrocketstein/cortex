@@ -24,12 +24,15 @@ class ServiceManager(object):
         self.registry     = {}
 
     def __getitem__(self, name):
-        """ retrieve service by name """
+        """ retrieve service by name
+
+            NOTE: currently case insensitive!
+        """
         if isinstance(name, int):
             return self.service_list[name]
         if isinstance(name, str):
             for service in self.service_list:
-                if service.name == name:
+                if service.name.lower() == name.lower():
                     return service
             raise self.NotFound('No such service: ' + name)
 
@@ -46,3 +49,17 @@ class Service(Node):
         else:
             kargs.update({'name':self.__class__.__name__})
         super(Service,self).__init__(*args, **kargs)
+
+    def stop(self):
+        """
+        """
+        report("stopping")
+        self.is_stopped = True
+
+    def play(self):
+        """
+            CONVENTION: services *must* define start() and stop(), therefore
+                        the functionality of <play> is implied.
+        """
+        self.universe.reactor.callLater(1,self.start)
+        return self

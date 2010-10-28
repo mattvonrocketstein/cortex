@@ -22,6 +22,12 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
         if hasattr(self,'_post_init'):
             self._post_init()
 
+    def harikari(self):
+        """
+           CONVENTION:
+        """
+        pass
+
     def __render_resource_description(self):
         """ """
         return str(self.resource_description)

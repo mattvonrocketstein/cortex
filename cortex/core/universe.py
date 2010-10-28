@@ -28,6 +28,16 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
             os.system('cd "'+path+'"; '+line)
     """
     reactor = reactor
+
+    def leave(self, other=None):
+        """ other begs universe for permission to leave """
+        #self.nodes.remove()
+        def detect_other():
+            pass
+        if other==None:
+            other = detect_other()
+        pass
+
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
         """
@@ -78,18 +88,16 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
         for service in self.Services:
             self._services.append(service(universe=self).play())
 
-        # TODO: get rid of this special case.
-        reactor.callLater(1, self.services['Terminal'].begin)
-
         report('running reactor')
 
         # Main loop
-        reactor.run()
+        #reactor.run()
 
     @property
     @Memoize
     def services(self):
         """ services: dynamic definition
+
             this represents services that have already been
             successfully started.
         """
@@ -98,14 +106,16 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
     @property
     def Services(self):
         """ services: static definition
+
             computes services from defaults,
-            command line arguments, and
-            node definition files.
+             command line arguments, and
+              node definition files.
         """
         #[self.stdoutbeacon_service, self.filercvr]
         from cortex.core.services.terminal import Terminal
         from cortex.core.services.beacon import Beacon
-        return [Terminal, Beacon]
+        from cortex.core.services._linda import Linda
+        return [Linda,Terminal ] #Beacon]
 
     def django_service(self):
         """  Start special services provided by the universe """
