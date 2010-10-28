@@ -21,6 +21,7 @@
 import os
 from cortex import core
 from cortex.core.universe import Universe
+from cortex.core.util import report
 
 NODE_CONF = None #'node.conf'
 
@@ -29,8 +30,11 @@ def main():
     # Set node configuration file in universe
     instance_dir = os.path.split(__file__)[0]
     nodeconf_file = NODE_CONF or os.path.join(instance_dir, 'node.conf')
-    assert os.path.exists(nodeconf_file), "Expected node.conf @ "+nodeconf_file
-    Universe.nodeconf_file = nodeconf_file
+    if not os.path.exists(nodeconf_file):
+        report("Expected node.conf @ "+nodeconf_file+', None found.')
+        Universe.nodeconf_file = None
+    else:
+        Universe.nodeconf_file = nodeconf_file
 
 if __name__ == '__main__':
     main()
