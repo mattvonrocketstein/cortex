@@ -30,21 +30,21 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
         """
-        assert hasattr(self, 'nodeconf_file'), 'Universe.nodeconf_file is not set.'
-        report("Universe.nodeconf: decoding")
+        assert hasattr(self, 'nodeconf_file') and self.nodeconf_file, 'Universe.nodeconf_file tests false or is not set.'
+        #report("Universe.nodeconf: decoding")
         x = open(self.nodeconf_file).readlines()
         x = [z.strip() for z in x]
         nodes = []
         for line in x:
             if not line:
                 continue
-            report('got line', line)
+            #report('got line', line)
             try:
                 nodedef = simplejson.loads(line)
             except:
                 report("error decoding..", line)
             else:
-                report('encoded..', nodedef) #console.color(str(nodedef))
+                #report('encoded..', nodedef)
                 nodes.append(nodedef)
         return nodes
 
@@ -66,11 +66,12 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
         report("Universe.play!")
 
         # Starts all nodes registered via the nodeconf
-        for node in self.read_nodeconf():
-            name, kargs = node
-            kargs.update( {'name':name,'universe':self} )
-            node = self.launch_instance(**kargs)
-            self.node_list.append(node)
+        if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
+            for node in self.read_nodeconf():
+                name, kargs = node
+                kargs.update( {'name':name,'universe':self} )
+                node = self.launch_instance(**kargs)
+                self.node_list.append(node)
 
         # Start special services provided by the universe
         for service in self.Services:
