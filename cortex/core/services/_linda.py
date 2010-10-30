@@ -12,7 +12,8 @@ class ProcessReadSyndication(Service, protocol.ProcessProtocol):
           start:
           stop:
     """
-        #protocol.ProcessProtocol.__init__(self)
+
+    #protocol.ProcessProtocol.__init__(self)
     def errReceived(self, data):
         report("errReceived! with %d bytes!" % len(data))
         report(data)
@@ -69,8 +70,9 @@ class ProcessReadSyndication(Service, protocol.ProcessProtocol):
 from socket import socket
 #  node/lib/python2.6/site-packages/linda-0.6-py2.6.egg/linda/monitor/pyg_monitor.pyl
 #./node/lib/python2.6/site-packages/linda-0.6-py2.6.egg/lib/python2.6/site-packages/linda/monitor/pyg_monitor.pyl
+
 class Linda(Service): #ProcessReadSyndication):
-    """ Beacon Service:
+    """ Linda Service:
           start:
           stop:
     """
@@ -81,17 +83,26 @@ class Linda(Service): #ProcessReadSyndication):
 
     def start(self):
         """ """
+        from lindypy.TupleSpace import TSpace
+        self.ts = TSpace()
+        ts=self.ts
+        ts.add((1,2,3,4))
+        ts.add((5,2,3,7))
+        ts.add((1,2,3,4,5,6))
+        #print ts.get((object,2,3,object))
+        #print (1,2,3,4)
+
         report("Starting linda tuplespace")
         def main():
-            __requires__ = 'linda==0.6'
-            import pkg_resources
-            import linda
-            from linda.server import main
-            try:
-                main()
-            except IOError,e:
-                report('socket.error? ',str(e))
-
+            #__requires__ = 'linda==0.6'
+            #import pkg_resources
+            #import linda
+            #from linda.server import main
+            #try:
+            #    main()
+            #except IOError,e:
+            #    report('socket.error? ',str(e))
+            pass
         self.universe.reactor.callInThread(main)
 
 
