@@ -28,8 +28,11 @@ from cortex.core.util import report
 NODE_CONF = None #'node.conf'
 
 def build_parser():
+    universeHelp = "Use universe@FILE"
+    commandHelp = "same as python -c"
     parser = OptionParser()
-    parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="serialized universe to boot")
+    parser.add_option("-c",  dest="command", default="", help=commandHelp,  metavar="COMMAND")
+    parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
     return parser
 
 def main():
@@ -45,18 +48,22 @@ def main():
         Universe.nodeconf_file = nodeconf_file
 
 if __name__ == '__main__':
-    universeHelp = "Use universe@FILE"
     parser = build_parser()
     (options, args) = parser.parse_args()
-    if options.universe:
+    if args and len(args)==1:
+        fname = args[0]
+        if os.path.exists(fname):
+            print "cortex: assuming this is a file.."
+            execfile(fname)
+    elif options.command:
+        exec(options.command)
+    elif options.universe:
         if not os.path.exists(options.universe):
             print "Path does not exist."
             sys.exit()
         else:
             Universe = pickle.loads(open(options.universe).read())
+            Universe.play() # Invoke the Universe
     else:
         main()
-    Universe.play() # Invoke the Universe
-
-if __name__ == '__main__':
-    main()
+        Universe.play() # Invoke the Universe
