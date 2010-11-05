@@ -1,15 +1,21 @@
 """ cortex.core.universe
 """
-
+import os
 import inspect
 import simplejson
+from tempfile import NamedTemporaryFile
+
 from twisted.internet import reactor
+
 from cortex.util import Memoize
 from cortex.core.util import report, console
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
+from cortex.core.atoms import PersistenceMixin
 from cortex.core.services import ServiceManager
 
-class __Universe__(object, AutonomyMixin, PerspectiveMixin):
+
+class __Universe__(object, AutonomyMixin, PerspectiveMixin,
+                   PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
     """
@@ -28,6 +34,13 @@ class __Universe__(object, AutonomyMixin, PerspectiveMixin):
             os.system('cd "'+path+'"; '+line)
     """
     reactor = reactor
+    def tmpfile(self):
+        """ return a new temporary file """
+        tmpdir = os.path.join(self.instance_dir, 'tmp')
+        if not os.path.exists(tmpdir):
+            os.mkdir(tmpdir)
+        f = NamedTemporaryFile(delete=False,dir=tmpdir)
+        return f
 
     def leave(self, other=None):
         """ other begs universe for permission to leave """

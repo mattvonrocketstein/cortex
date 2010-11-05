@@ -47,7 +47,7 @@ class Service(Node):
         if 'name' in kargs:
             raise Exception,'services specify their own names'
         else:
-            kargs.update({'name':self.__class__.__name__})
+            kargs.update( { 'name' : self.__class__.__name__ } )
         super(Service,self).__init__(*args, **kargs)
 
     def stop(self):
@@ -61,5 +61,5 @@ class Service(Node):
             CONVENTION: services *must* define start() and stop(), therefore
                         the functionality of <play> is implied.
         """
-        self.universe.reactor.callLater(1,self.start)
+        self.universe.reactor.callLater(1, self.start)
         return self
