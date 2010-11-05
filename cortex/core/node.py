@@ -6,6 +6,7 @@ import os
 from cortex.core.common import NodeError
 from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
+from cortex.core.data import DEFAULT_HOST
 
 class Node(object, AutonomyMixin, PerspectiveMixin):
     """
@@ -15,12 +16,23 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
         """
         """
         self.universe = universe
-        self.host = host
+        self.host = host or DEFAULT_HOST
         self.name = name
-        self.instance = instance
+        #self.instance = instance
         self.resource_description = resource_description
         if hasattr(self,'_post_init'):
             self._post_init()
+
+    @property
+    def instance(self):
+        return self.universe.instance_dir
+
+    def __str__(self):
+        """ """
+        host     = str(self.host)
+        instance = str(self.instance)
+        resource_descr = self.__render_resource_description()
+        return "<"+self.name+"-" + self.__class__.__bases__[0].__name__ + "@" + host + "::" + instance + " " + resource_descr + ">"
 
     def harikari(self):
         """
@@ -31,13 +43,6 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
     def __render_resource_description(self):
         """ """
         return str(self.resource_description)
-
-    def __str__(self):
-        """ """
-        host = str(self.host)
-        instance = str(self.instance)
-        resource_descr = self.__render_resource_description()
-        return "<"+self.name+" Node@" + host + "::" + instance + " " + resource_descr + ">"
 
     @property
     def is_local(self):

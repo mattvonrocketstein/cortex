@@ -1,3 +1,4 @@
-twisted==10
+django
+twisted==10.04
 pygments
 ipython
