@@ -47,6 +47,8 @@ def main():
     else:
         Universe.nodeconf_file = nodeconf_file
 
+from cortex.core.reloading_helpers import run as RUN
+
 if __name__ == '__main__':
     parser = build_parser()
     (options, args) = parser.parse_args()
@@ -66,4 +68,5 @@ if __name__ == '__main__':
             Universe.play() # Invoke the Universe
     else:
         main()
-        Universe.play() # Invoke the Universe
+        RUN() # Invoke the Universe
+        s=Universe.play()

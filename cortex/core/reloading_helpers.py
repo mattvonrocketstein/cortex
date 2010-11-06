@@ -102,7 +102,7 @@ class ModuleWatcher:
 
     def _check_modules(self):
         while self.running:
-            time.sleep(0.01)
+            time.sleep(1)
             for m in sys.modules.values():
                 if not hasattr(m, '__file__'):
                     continue
@@ -132,6 +132,7 @@ class ModuleWatcher:
                     continue
 
                 try:
+                    print 'reloading module: ',m
                     superreload(m)
                 except:
                     import traceback

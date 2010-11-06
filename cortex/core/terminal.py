@@ -39,7 +39,7 @@ class IPShellTwisted(threading.Thread):
     passed code using a Twisted reactor callback.
     """
 
-    TIMEOUT = 0.01 # Millisecond interval between reactor runs.
+    TIMEOUT = 0.03 # Millisecond interval between reactor runs.
 
     def __init__(self, argv=None, user_ns=None, debug=1,
                  shell_class=MTInteractiveShell):

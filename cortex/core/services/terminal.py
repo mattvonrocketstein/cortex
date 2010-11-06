@@ -4,7 +4,7 @@ from cortex.core import api
 from cortex.core.util import report
 from cortex.core.services import Service
 from cortex.core.terminal import IPShellTwisted, IPY_ARGS
-
+# see also: http://ipython.scipy.org/moin/Cookbook/JobControl
 class Terminal(Service):
     """ Terminal Service:
          an ipython console that uses the cortex api
@@ -16,10 +16,10 @@ class Terminal(Service):
     def _post_init(self):
         universe = {'__name__' : '__cortex_shell__',
                     'universe' : self.universe,
-                    'services' : self.universe.services,}
+                    'services' : list(self.universe.services),}
         universe.update(api.publish())
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe)
-
+        self.universe.terminal = self
     def start(self):
         """ """
         self.shell.mainloop()
@@ -31,6 +31,6 @@ class Terminal(Service):
 
     def play(self):
         """ """
-        #self.universe.reactor.callLater(1, self.start)
-        self.start()
+        self.universe.reactor.callLater(1, self.start)
+        #self.start()
         return self
