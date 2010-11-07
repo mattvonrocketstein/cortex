@@ -2,6 +2,7 @@
 """
 import os
 from cortex.util.namespaces import NamespacePartition
+from cortex.core.universe import Universe as universe
 
 fileerror = "No such file"
 
@@ -9,7 +10,7 @@ def publish():
     """ return a dictionary of the namespace for this module """
     from cortex.core import api
     return NamespacePartition(api.__dict__).cleaned
-
+load_service = universe.loadService
 def register_service(service):
     """ """
     pass
