@@ -14,8 +14,8 @@ from IPython.ColorANSI import TermColors
 #from django.core.management.color import color_style
 
 # Style and style helpers
-style = color_style()
-yellow = style.HTTP_NOT_FOUND
+#style = color_style()
+#yellow = style.HTTP_NOT_FOUND
 
 # Pygments data
 plex = PythonLexer()
