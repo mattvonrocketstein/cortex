@@ -12,7 +12,6 @@ from pygments.formatters import HtmlFormatter,Terminal256Formatter
 from IPython.ColorANSI import TermColors
 
 #from django.core.management.color import color_style
-
 # Style and style helpers
 #style = color_style()
 #yellow = style.HTTP_NOT_FOUND
@@ -27,6 +26,18 @@ colorize2 = lambda code: highlight(code, plex, hfom2)
 
 class console:
     """ """
+    def __getattr__(self,name):
+        x = getattr(TermColors, name.title(),None)
+        if x!=None:
+            def func(string,_print=False):
+                z = x + string + TermColors.Normal
+                if _print:
+                    print z
+                return z
+            return func
+        else:
+            raise AttributeError,name
+
     @staticmethod
     def blue(string):
         """ TODO: generic function for this
@@ -43,6 +54,7 @@ class console:
         out = TermColor.Red+ '-' * length + TermColor.Normal
         print out
         return out
+console=console()
 
 def whoami():
     """ """

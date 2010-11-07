@@ -210,4 +210,4 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         return node
 
 Universe = __Universe__()
-Universe.name    = 'Universe' + str(id(Universe))
+Universe.name    = 'Universe ' + str(id(Universe))
