@@ -1,5 +1,6 @@
-""" cortex.core.services.magic
+""" cortex.core.services.autodiscovery
 """
+
 import time
 import IPython.Shell
 import multiprocessing
