@@ -16,7 +16,20 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
 from cortex.core.services import ServiceManager,Service
 
-class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
+class EventMixin(object):
+    def push_events(self, *args):
+        [self.push_event(arg) for arg in args]
+
+    def push_event(self,notice):
+        self.ground.add( ('system_event', notice) )
+
+    @property
+    def events(self):
+        """ """
+        return self.ground.get_many( ('system_event', object) )
+
+
+class __Universe__(AutoReloader, EventMixin, AutonomyMixin, PerspectiveMixin,
                    PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
@@ -35,17 +48,6 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             os.system('cd "'+path+'"; '+line)
     """
     reactor = reactor
-
-    def push_events(self, *args):
-        [self.push_event(arg) for arg in args]
-
-    def push_event(self,notice):
-        self.ground.add( ('system_event', notice) )
-
-    @property
-    def events(self):
-        """ """
-        return self.ground.get_many( ('system_event', object) )
 
     def sleep(self):
         """ """
@@ -134,13 +136,23 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         report("Universe.play!")
         self.name    = 'Universe'+str(id(self))
         self.started = True
+        def get_handler(instruction):
+            from cortex.core.api import publish
+            _api = publish()
+            return _api.get(instruction)
         # Starts all nodes registered via the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.read_nodeconf():
-                name, kargs = node
-                kargs.update( {'name':name,'universe':self} )
-                node = self.launch_instance(**kargs)
-                self.node_list.append(node)
+                original = node
+                node.reverse()
+                instruction = node.pop()
+                arguments = node
+                handler = get_handler(instruction)
+                handler(*node)
+                #name, kargs = node
+                #kargs.update( {'name':name,'universe':self} )
+                #node = self.launch_instance(**kargs)
+                #self.node_list.append(node)
 
         # Start special services provided by the universe
         for service in self.Services:
