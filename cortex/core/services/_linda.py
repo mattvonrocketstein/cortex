@@ -29,6 +29,9 @@ class Memory(TSpace,PersistenceMixin):
         self.add(('__name__',  self.name))
         self.add(('__stamp__', str(datetime.datetime.now())))
 
+    def __getattr__(self,name):
+        print 'fail',name
+
     def shutdown(self):
         """ TODO: proxy to TSpace shutdown? """
         pass

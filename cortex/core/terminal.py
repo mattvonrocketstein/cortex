@@ -8,6 +8,7 @@ import threading
 
 from IPython.Shell import MTInteractiveShell
 from IPython.ipmaker import make_IPython
+
 from cortex.core.data import IPY_ARGS
 
 def hijack_reactor():

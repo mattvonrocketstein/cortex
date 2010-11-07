@@ -22,8 +22,13 @@ class Terminal(Service):
                     #'load_service' : self.universe.loadService,
                     'services' : list(self.universe.services),}
         universe.update(api.publish())
-        self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe,controller=self)
 
+
+        def pre_prompt_hook(ip):
+            print 'Events', self.universe.events
+
+        self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe,controller=self)
+        self.shell.IP.set_hook('pre_prompt_hook',pre_prompt_hook)
         self.universe.terminal = self
 
     def start(self):

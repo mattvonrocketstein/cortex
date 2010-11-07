@@ -1,17 +1,18 @@
-# /home/matt/code/cortex/cortex/core/services/magic.py
+""" cortex.core.services.magic
+"""
+import time
+import IPython.Shell
 import multiprocessing
-from multiprocessing import Process, Value, Array
-
 import dbus, gobject, avahi
+
 from dbus import DBusException
 from dbus.mainloop.glib import DBusGMainLoop
+from multiprocessing import Process, Value, Array
+from cortex.core.services.zeroconf import ZeroconfService
 
 from cortex.core.util import report
 from cortex.core.services import Service
-import IPython.Shell
-
-TYPE = "_http._tcp"
-
+from cortex.core.data import AVAHI_TYPE as TYPE
 
 def service_resolved(*args):
     """ """
@@ -64,6 +65,7 @@ class Client(Service):
         self.loop_context = self.gloop.get_context()
         self.universe.reactor.callInThread(self.iterate)
         return self
+
     def setup_client(self):
          """ """
          loop = DBusGMainLoop()
@@ -74,17 +76,20 @@ class Client(Service):
                  server.ServiceBrowserNew(avahi.IF_UNSPEC,
                      avahi.PROTO_UNSPEC, TYPE, 'local', dbus.UInt32(0))),
                  avahi.DBUS_INTERFACE_SERVICE_BROWSER)
-         sbrowser.connect_to_signal("ItemNew", self.myhandler)
-    def myhandler(self, interface, protocol, name, stype, domain, flags):
+         sbrowser.connect_to_signal("ItemNew", self.peer_found)
+
+    def peer_found(self, interface, protocol, name, stype, domain, flags):
          """ """
          if name!=self.universe.name:
-             print "Found service '%s' type '%s' domain '%s' " % (name, stype, domain)
+             # TODO: push this onto system events list
+             notice="Found peer '%s' type '%s' domain '%s' " % (name, stype, domain)
+             print notice
+             self.universe.push_event(notice)
              if flags & avahi.LOOKUP_RESULT_LOCAL:
                  # local service, skip
                  pass
 
-from cortex.core.services.zeroconf import ZeroconfService
-class Server(Service):
+class AutodiscoveryServer(Service):
     """ Zeroconf-Server Service:
           start: ..
           stop:  ..
@@ -114,12 +119,10 @@ class Server(Service):
             time.sleep(1)
 
     def play(self):
-        """ """
+        """
+        """
         self.v = Value('d',1) # Shared memory for the exit-ttest
         self.p = Process(target=self.iterate, args=[self.v])
         self.p.start()
         return self
 
-
-#test()
-import time
