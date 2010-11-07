@@ -9,6 +9,7 @@ import pygments
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter,Terminal256Formatter
+from IPython.ColorANSI import TermColors
 
 from django.core.management.color import color_style
 
@@ -22,25 +23,33 @@ hfom = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
 colorize = lambda code: highlight(code, plex, hfom)
 colorize2 = lambda code: highlight(code, plex, hfom2)
-from IPython.ColorANSI import TermColors
+
+
 class console:
+    """ """
     @staticmethod
     def blue(string):
+        """ TODO: generic function for this
+        """
         return TermColors.Blue + string + TermColors.Normal
-    #, self.universe.events
+
     @staticmethod
     def color(string):
         return highlight(string, plex, Terminal256Formatter())
 
     @staticmethod
     def draw_line(length=80):
-        out=style.ERROR('-' * length)
+        #out = style.ERROR('-' * length)
+        out = TermColor.Red+ '-' * length + TermColor.Normal
         print out
         return out
+
 def whoami():
+    """ """
     return inspect.stack()[1][3]
 
 def whosdaddy():
+    """ """
     x = inspect.stack()[2]
     frame = x[0]
     fname = x[1]
@@ -54,6 +63,7 @@ def whosdaddy():
     print ' + ', fname, '\n  ', header,'--'
 
 def report(*args, **kargs):
+    """ """
     global console
     whosdaddy()
     print '\targs=',
