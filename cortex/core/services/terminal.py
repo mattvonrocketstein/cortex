@@ -31,6 +31,7 @@ class Terminal(Service):
 
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe,controller=self)
         self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
+        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name) + ' [\\#] '
         self.shell.IP.set_hook('pre_prompt_hook',pre_prompt_hook)
         self.universe.terminal = self
 

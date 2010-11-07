@@ -22,16 +22,32 @@ class AutodiscoveryClient(Service):
     """
 
     def service_resolved(self, *args):
-        """ unused, but apparently part of avahi interface """
-        print 'service resolved'
-        print 'name:', args[2]
-        print 'address:', args[7]
-        print 'port:', args[8]
+        """
+        """
+        address = args[7]
+        port    = args[8]
+        name    = args[2]
+        peerMan = self.universe.peers
 
-    def print_error(self, *args):
+        if name not in peerMan.registry:
+            # TODO: use core.hds
+            peerMan.registry[str(name)]={}
+            report('added registry entry for name',str(name))
+
+        peerMan.registry[name]['address'] = str(address)
+        peerMan.registry[name]['port'] = str(port)
+        peerMan.registry[name]['port'] = str(port)
+        report ('updated registry for name=' + str(name))
+
+        #report('service resolved @ ',str([name,address,port,args]))
+
+    def print_error(self, *errors):
         """ unused, but apparently part of avahi interface """
-        print 'error_handler'
-        print args[0]
+        for x in errors:
+            if 'Timeout reached' in str(x):
+                report('error_handler: timeout')
+                return
+        report('error_handler for name resolution',str(errors) )
 
     def _post_init(self):
         """ """
@@ -84,8 +100,8 @@ class AutodiscoveryClient(Service):
         """ handle peer discovery """
         if name != self.universe.name:
             # TODO: push this onto system events list
-            report('so',str([interface,type(interface)]))
-            report('so',str([protocol, type(protocol)]))
+            #report('interface',str([interface,type(interface)]))
+            #report('protocol',str([protocol, type(protocol)]))
             notice="Found peer '%s' type '%s' domain '%s' " % (name, stype, domain)
             self.universe.push_notice(notice)
             self.universe.peers.register(**dict(name=name,
@@ -128,10 +144,15 @@ class AutodiscoveryServer(Service):
         try:
             self.zeroconf.publish()
         except DBusException,e:
-            report("squashed dbus error",str(e))
-            self.iterate(v)
+            if str(e)=='org.freedesktop.DBus.Error.Disconnected: Connection is closed':
+                report("Giving up.")
+                self.p.terminate()
+                self.stop()
+            else:
+                report("squashed dbus error",str(e))
+                self.iterate(v)
         while v.value == 1:
-            time.sleep(2)
+            time.sleep(1.3)
 
     def start(self):
         """ """

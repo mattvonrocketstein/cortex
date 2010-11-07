@@ -7,10 +7,12 @@
 
 """
 
+
 from cortex.core.node import Node
 from cortex.core.util import report
 from cortex.core.restrictions import __domain_restricted__
 
+import datetime
 class Manager(object):
     class NotFound(Exception): pass
 
@@ -23,14 +25,39 @@ class Manager(object):
         self.registry[auth] = _rsrc
         report('registering resource', _rsrc)
 
+    def as_list(self):
+        out = [ x for x in self ]
+        out.sort(lambda x, y: cmp(self.registry[x]['stamp'],
+                                 self.registry[y]['stamp']))
+        return out
+
+    aslist=as_list
+
     def __init__(self):
         """ """
         self.registry     = {}
 
+    def __iter__(self):
+        """ dumb proxy """
+        return iter(self.registry)
+
 class PeerManager(Manager):
-    def register(self, **kargs):
-        report('registering',str(kargs))
-        
+    """ """
+    def register(self, name, **kargs):
+        """ """
+        name = str(name)
+        self.registry[name] = kargs
+        report('registering', str(kargs))
+        self.stamp(name)
+
+    def stamp(self,name):
+        """ """
+        self.registry[name]['stamp'] = datetime.datetime.now()
+
+    def __iter__(self):
+        """ dumb proxy """
+        return Manager.__iter__(self)
+
 
 
 class ServiceManager(Manager):
