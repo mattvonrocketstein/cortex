@@ -10,7 +10,7 @@ def publish():
     """ return a dictionary of the namespace for this module """
     from cortex.core import api
     return NamespacePartition(api.__dict__).cleaned
-load_service = universe.loadService
+
 def register_service(service):
     """ """
     pass
@@ -26,3 +26,7 @@ def load_file(fname, adl=False, python=True):
         universe = {}
         execfile(fname, universe)
         return NamespacePartition(universe).cleaned
+
+# Shortcuts into the Universe
+load_service = universe.loadService
+sleep        = universe.sleep

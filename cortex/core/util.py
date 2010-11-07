@@ -22,8 +22,12 @@ hfom = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
 colorize = lambda code: highlight(code, plex, hfom)
 colorize2 = lambda code: highlight(code, plex, hfom2)
-
+from IPython.ColorANSI import TermColors
 class console:
+    @staticmethod
+    def blue(string):
+        return TermColors.Blue + string + TermColors.Normal
+    #, self.universe.events
     @staticmethod
     def color(string):
         return highlight(string, plex, Terminal256Formatter())

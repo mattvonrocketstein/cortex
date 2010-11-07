@@ -83,7 +83,6 @@ class Client(Service):
          if name!=self.universe.name:
              # TODO: push this onto system events list
              notice="Found peer '%s' type '%s' domain '%s' " % (name, stype, domain)
-             print notice
              self.universe.push_event(notice)
              if flags & avahi.LOOKUP_RESULT_LOCAL:
                  # local service, skip

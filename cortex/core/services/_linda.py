@@ -29,12 +29,12 @@ class Memory(TSpace,PersistenceMixin):
         self.add(('__name__',  self.name))
         self.add(('__stamp__', str(datetime.datetime.now())))
 
-    def __getattr__(self,name):
-        print 'fail',name
+    #def __getattr__(self,name):
+    #    return print 'mem: getattr fail', name
 
     def shutdown(self):
         """ TODO: proxy to TSpace shutdown? """
-        pass
+        report("Shutting down Memory.")
 
     def serialize(self):
         """ """
@@ -47,19 +47,29 @@ class Memory(TSpace,PersistenceMixin):
         PersistenceMixin.save(self.filename)
         report('persisted memory to', self.filename)
 
+    def get_many(self, pattern):
+        """ """
+        out=[]
+        while True:
+            try:
+                out.append(self.get(pattern,remove=True))
+            except KeyError:
+                break
+        return out
+
     def values(self):
         """ """
-        print 'valued'
+        #print 'valued'
         return TSpace.values(self)
 
     def get(self, *args, **kargs):
         """ """
-        print 'added', args, kargs
+        #print 'get', args, kargs
         return TSpace.get(self, *args, **kargs)
 
     def add(self, *args, **kargs):
         """ """
-        print 'added', args, kargs
+        #print 'added', args, kargs
         return TSpace.add(self, *args, **kargs)
 
 class Linda(Service):
