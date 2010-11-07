@@ -18,7 +18,8 @@ from cortex.core.services import PeerManager,ServiceManager
 from cortex.core.services import Service
 from cortex.core.mixins import EventMixin, NoticeMixin, PIDMixin
 
-class __Universe__(AutoReloader, NoticeMixin, AutonomyMixin, PerspectiveMixin,
+class __Universe__(AutoReloader, PIDMixin,
+                   NoticeMixin, AutonomyMixin, PerspectiveMixin,
                    PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
@@ -42,7 +43,9 @@ class __Universe__(AutoReloader, NoticeMixin, AutonomyMixin, PerspectiveMixin,
     def sleep(self):
         """ """
         self.stop()
-
+        for pid in self.pids['children']:
+            os.system('kill -KILL '+str(pid))
+            #proc.terminate()
         # hack for terminal to exit cleanly
         try: sys.exit()
         except SystemExit:
@@ -125,7 +128,7 @@ class __Universe__(AutoReloader, NoticeMixin, AutonomyMixin, PerspectiveMixin,
                 self.node_list = [ <list of active nodes> ]
         """
         report("Universe.play!")
-        self.name    = 'Universe'+str(id(self))
+        self.name    = 'Universe-' + str(id(self)) + '@' + self.hostname
         self.started = True
         def get_handler(instruction):
             from cortex.core.api import publish
