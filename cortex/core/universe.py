@@ -4,11 +4,11 @@ import os
 import inspect
 import simplejson
 from tempfile import NamedTemporaryFile
-
+from peak.util.imports import lazyModule
 #from twisted.internet import gtk2reactor
 #gtk2reactor.install()
 from twisted.internet import reactor
-
+api = lazyModule('cortex.core.api')
 from cortex.util import Memoize
 from cortex.core.reloading import AutoReloader
 from cortex.core.util import report, console
@@ -68,14 +68,15 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         f = NamedTemporaryFile(delete=False,dir=tmpdir)
         return f
 
+    """
     def leave(self, other=None):
-        """ other begs universe for permission to leave """
+        other begs universe for permission to leave
         #self.nodes.remove()
         def detect_other():
             pass
         if other==None:
             other = detect_other()
-        pass
+        pass """
 
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
@@ -131,16 +132,24 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             Post-conditions:
                 self.node_list = [ <list of active nodes> ]
         """
+
         report("Universe.play!")
         self.name    = 'Universe'+str(id(self))
         self.started = True
         # Starts all nodes registered via the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.read_nodeconf():
-                name, kargs = node
-                kargs.update( {'name':name,'universe':self} )
-                node = self.launch_instance(**kargs)
-                self.node_list.append(node)
+                node.reverse()
+                instruction = node.pop()
+                arguments   = node
+                _api = api.publish()
+                if instruction in _api:
+                    handler = _api.get(instruction)
+                    handler(*arguments)
+                #name, kargs = node
+                #kargs.update( {'name':name,'universe':self} )
+                #node = self.launch_instance(**kargs)
+                #self.node_list.append(node)
 
         # Start special services provided by the universe
         for service in self.Services:
