@@ -40,7 +40,6 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
     """
         NOTE: this should effectively be a singleton
     """
-    testing = 131231111115
     node_list = []
     _services = []
 
@@ -55,6 +54,21 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             os.system('cd "'+path+'"; '+line)
     """
     reactor = reactor
+
+    def sleep(self):
+        """ """
+        import sys
+        self.stop()
+
+        # hack for terminal to exit cleanly
+        try: sys.exit()
+        except SystemExit:
+            pass
+
+        #if hasatre(self,'terminal'):
+        #    self.terminal.shell.IP.exit()
+
+
     def tmpfile(self):
         """ return a new temporary file """
         tmpdir = os.path.join(self.instance_dir, 'tmp')
@@ -145,26 +159,44 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
     def loadService(self,service):
         """ """
         if isinstance(service, str):
+            # handle dotpaths
             if "." in service:
-                raise Exception,'will not interpret dotpath yet'
+                service = service.split('.')
+                if len(service) == 2:
+                    mod_name, class_name = service
+                    namespace = get_mod(mod_name)
+                    if class_name in namespace:
+                        service_obj = namespace[class_name]
+                        return self.start_service(service_obj)
+                else:
+                    raise Exception,'will not interpret that dotpath yet'
+
+            # just one word.. what could it be?
             else:
-                import inspect
-                ns={}
-                exec('from cortex.core.services import '+service+' as mod',ns)
-                mod = ns['mod']
-                for name in dir(mod):
-                    val = getattr(mod,name)
+                mod_name = service
+                ret_vals = []
+                for name, val in get_mod(mod_name).items():
                     if inspect.isclass(val):
                         if not val==Service and issubclass(val, Service):
                             #launch_service = lambda: val(universe=self).play
-                            print 'discovered service in ', mod.__name__,'@',mod.__file__
-                            ret = val(universe=self).play()
-                            self._services.append(ret)
-                            return ret
-                            #getAnswer('launch service@'+str([name, val]),
-                            #          yesAction=val(universe=self).play)
+                            report('discovered service in ' + mod_name)
+                            ret_vals.append(self.start_service(val,ask=False))
+                return ret_vals
+
+        # Not a string? let's hope it's already a service-like thing
         else:
-            ret = service(universe=self).play()
+            return self.start_service(service)
+
+
+    def start_service(self, service_obj, ask=False):
+        """ """
+        if ask:
+            raise Exception,'niy'
+            getAnswer('launch service@'+str([name, val]),
+                      yesAction=service_obj(universe=self).play)
+            #return..
+        else:
+            ret = service_obj(universe=self).play()
             self._services.append(ret)
             return ret
 
@@ -185,21 +217,21 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             computes services from defaults,
              command line arguments, and
               node definition files.
+
+            TODO: move this stuff into nodeconf
         """
-        #[self.stdoutbeacon_service, self.filercvr]
+
         from cortex.core.services.terminal import Terminal
         from cortex.core.services.beacon import Beacon
         from cortex.core.services._linda import Linda
         _Services = [Linda, Terminal]
         # _Services.append(Beacon)
+        #_Services.append(self.stdoutbeacon_service)
+        #_Services.append(self.filercvr)
         return _Services
 
-    def django_service(self):
-        """  Start special services provided by the universe """
-        import django.core.handlers.wsgi
-        application = django.core.handlers.wsgi.WSGIHandler()
-
     def launch_instance(self, **kargs):
+        """ """
         from cortex.core.node import Node
         report(**kargs)
         node = Node(**kargs)
@@ -209,3 +241,14 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         return node
 
 Universe = __Universe__()
+def get_mod(mod_name, root_dotpath='cortex.core.services'):
+    """ stupid helper to snag modules from inside the services root """
+    out = {}
+    ns  = {}
+    exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
+    mod = ns['mod']
+
+    for name in dir(mod):
+        val = getattr(mod, name)
+        out[name] = val
+    return out

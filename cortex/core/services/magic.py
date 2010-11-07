@@ -1,4 +1,7 @@
 # /home/matt/code/cortex/cortex/core/services/magic.py
+import multiprocessing
+from multiprocessing import Process, Value, Array
+
 import dbus, gobject, avahi
 from dbus import DBusException
 from dbus.mainloop.glib import DBusGMainLoop
@@ -8,61 +11,6 @@ from cortex.core.services import Service
 import IPython.Shell
 
 TYPE = "_http._tcp"
-def service_resolved(*args):
-        print 'service resolved'
-        print 'name:', args[2]
-        print 'address:', args[7]
-        print 'port:', args[8]
-
-def print_error(*args):
-        print 'error_handler'
-        print args[0]
-
-def myhandler(interface, protocol, name, stype, domain, flags):
-        print "Found service '%s' type '%s' domain '%s' " % (name, stype, domain)
-
-        if flags & avahi.LOOKUP_RESULT_LOCAL:
-                # local service, skip
-                pass
-
-class Client(Service):
-    """ Beacon Service:
-          start:
-          stop:
-    """
-
-    def _post_init(self):
-        self.is_stopped=False
-
-    def stop(self):
-        """ """
-        self.is_stoppped = True
-        self.gloop.quit()
-
-    def iterate(self):
-        #print 'client iterating'
-        while not self.is_stopped:
-            self.loop_context.iteration(True)
-        #self.universe.reactor.callLater(1, self.iterate)
-
-    def play(self):
-        setup_client()
-        #self.universe.reactor.callLater(1, gobject.MainLoop().run)
-        loop = gobject.MainLoop()
-        gobject.threads_init()
-        self.gloop = loop
-        self.loop_context = self.gloop.get_context()
-        #self.universe.reactor.callInThread(self.gloop.run)
-        self.universe.reactor.callInThread(self.iterate)
-        #
-        #import threading
-        #threading.Thread(target=gobject.MainLoop().run).start()
-        #self.iterate()
-        # Handle commands here
-        #self.loop_context.iteration(True)
-
-        #
-        return self
 
 def setup_client():
     """ """
@@ -76,21 +24,94 @@ def setup_client():
             avahi.DBUS_INTERFACE_SERVICE_BROWSER)
     sbrowser.connect_to_signal("ItemNew", myhandler)
 
-def main():
+def service_resolved(*args):
     """ """
-    def callback():
-        print 'callback'
-    setup_client()
-    gobject.threads_init()
-    loop = gobject.MainLoop()
-    gobject.timeout_add(1,callback)
-    loop.run()
+    print 'service resolved'
+    print 'name:', args[2]
+    print 'address:', args[7]
+    print 'port:', args[8]
 
-    #context = loop.get_context()
-    #while 1:
-    #    print '3'
-    #    # Handle commands here
-    #    context.iteration(True)
+def print_error(*args):
+    """ """
+    print 'error_handler'
+    print args[0]
 
-if __name__=='__main__':
-    main()
+def myhandler(interface, protocol, name, stype, domain, flags):
+    """ """
+    print "Found service '%s' type '%s' domain '%s' " % (name, stype, domain)
+    if flags & avahi.LOOKUP_RESULT_LOCAL:
+        # local service, skip
+        pass
+
+class Client(Service):
+    """ Zeroconf Client Service:
+          start: begin looking for peers
+          stop:  stop looking for peers
+    """
+    def _post_init(self):
+        """ """
+        self.is_stopped=False
+
+    def stop(self):
+        """ """
+        self.is_stoppped = True
+        self.gloop.quit()
+
+    def iterate(self):
+        """
+            self.universe.reactor.callLater(1, self.iterate)
+        """
+        while not self.is_stopped:
+            self.loop_context.iteration(True)
+
+    def play(self):
+        """
+            #import threading
+            #threading.Thread(target=gobject.MainLoop().run).start()
+            #self.iterate()
+            # Handle commands here
+            #self.loop_context.iteration(True)
+            #self.universe.reactor.callLater(1, gobject.MainLoop().run)
+            #self.universe.reactor.callInThread(self.gloop.run)
+        """
+        setup_client()
+        loop = gobject.MainLoop()
+        gobject.threads_init()
+        self.gloop = loop
+        self.loop_context = self.gloop.get_context()
+        self.universe.reactor.callInThread(self.iterate)
+        return self
+
+from cortex.core.services.zeroconf import ZeroconfService
+class Server(Service):
+    """ Zeroconf-Server Service:
+          start: ..
+          stop:  ..
+    """
+    def _post_init(self):
+        """ """
+        self.zeroconf = ZeroconfService(name="TestService", port=3000)
+
+    def stop(self):
+        """ """ #super(Service,self).stop()
+        self.zeroconf.unpublish()
+
+    def iterate(self):
+        """ """
+        self.started=True
+        self.zeroconf.publish()
+        while self.started:
+            time.sleep(1)
+            print 'blammo'
+        p.join()
+
+    def play(self):
+        """ """
+        p = Process(target=self.iterate) #, args=(num, arr))
+        p.start()
+
+        return self
+
+
+#test()
+import time

@@ -14,16 +14,27 @@ class Terminal(Service):
     """
 
     def _post_init(self):
+        """ """
         universe = {'__name__' : '__cortex_shell__',
+                    'sleep'    :   self.universe.sleep,
                     'universe' : self.universe,
                     'services' : list(self.universe.services),}
         universe.update(api.publish())
-        self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe)
+        self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe,controller=self)
+
         self.universe.terminal = self
+
     def start(self):
         """ """
-        self.shell.mainloop()
-        report('the Terminal Service Dies.')
+        # Set IPython "autocall" to "Full"
+        self.shell.IP.magic_autocall(2)
+        from twisted.internet.error import ReactorAlreadyRunning
+        try:
+            self.shell.mainloop()
+        except ReactorAlreadyRunning:
+            pass
+        return self
+        #report('the Terminal Service Dies.')
 
     def stop(self):
         """ """
