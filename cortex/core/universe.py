@@ -16,25 +16,6 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
 from cortex.core.services import ServiceManager,Service
 
-def getAnswer(Q, yesAction=None, noAction=None, dispatcher=None):
-    """ getAnswer: ask a "yes or no" question, dispatch to an action
-        (possibly the empty-action) based on user-response on stdin
-
-          Some Shortcuts w/ Questions:
-             <Q> will be given a question mark if it doesn't have one,
-             <Q> capitalization will be formulated as if a book title
-    """
-    ans = "JUNK_DATA"
-    if not Q.endswith('?'): Q += '?'
-    question = Q.title()
-    question+=' [y/n] > '
-    while ans not in 'ynYN':
-        ans = raw_input(question)
-    if ans.lower()=='y':   ans = True;  result = yesAction and yesAction()
-    elif ans.lower()=='n': ans = False; result = noAction and noAction()
-    return ans,result
-
-
 class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
                    PersistenceMixin):
     """
@@ -54,6 +35,12 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             os.system('cd "'+path+'"; '+line)
     """
     reactor = reactor
+    def push_event(self,notice):
+        self.ground.add( ('system_event', notice) )
+
+    @property
+    def events(self):
+        return self.ground.get(('system_event',object),remove=True)
 
     def sleep(self):
         """ """
@@ -68,6 +55,10 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         #if hasatre(self,'terminal'):
         #    self.terminal.shell.IP.exit()
 
+    @property
+    def events(self):
+        """ """
+        self.ground
 
     def tmpfile(self):
         """ return a new temporary file """
