@@ -4,7 +4,7 @@
                      ActiveState Code (http://code.activestate.com/recipes/286150/)
 
 """
-#!/usr/bin/env python 
+#!/usr/bin/env python
 
 class HierarchicalData(object):
 
@@ -25,7 +25,7 @@ class HierarchicalData(object):
             return self._d.setdefault(name, HierarchicalData())
         raise AttributeError("object %r has no attribute %s" % (self, name))
 
-    def __getstate__(self): 
+    def __getstate__(self):
         # for pickling
         return self._d, self._attributes()
 
@@ -55,21 +55,21 @@ class HierarchicalData(object):
 
     def __str__(self):
         # easy to read string representation of data
-        rl = [] 
+        rl = []
         for k,v in self._getLeaves().items():
             rl.append("%s = %s" %  (k,v))
-        return "\n".join(rl)
+        return "  "+"\n  ".join(rl)
 
 
-def getLeaves(ob, pre=""): 
-    """ getLeavess tree, returns dictionary mapping 
-        paths from root to leafs to value of leafs 
+def getLeaves(ob, pre=""):
+    """ getLeavess tree, returns dictionary mapping
+        paths from root to leafs to value of leafs
     """
     return ob._getLeaves(pre)
 
 
 if __name__=="__main__":
-    
+
     model=HierarchicalData()
 
     # model.person is contstruted on the fly:
@@ -77,7 +77,7 @@ if __name__=="__main__":
     model.person.name = "schmitt"
     model.number = 1
 
-    print 
+    print
     print "access via attributes:"
     print
     print "model.person.surname=", model.person.surname
@@ -88,7 +88,7 @@ if __name__=="__main__":
     print "print complete model:"
     print
     print model
-    print 
+    print
 
     import pickle
 
@@ -99,5 +99,5 @@ if __name__=="__main__":
     print o
     print
     print "paths from root to leaves and values at leaves:"
-    print 
+    print
     print getLeaves(o)

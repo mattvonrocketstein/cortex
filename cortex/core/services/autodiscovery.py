@@ -34,18 +34,16 @@ class AutodiscoveryClient(Service):
             peerMan.registry[str(name)]={}
             report('added registry entry for name',str(name))
 
-        peerMan.registry[name]['address'] = str(address)
-        peerMan.registry[name]['port'] = str(port)
-        peerMan.registry[name]['port'] = str(port)
+        peerMan.registry[name].address = str(address)
+        peerMan.registry[name].port = str(port)
+        peerMan.registry[name].port = str(port)
         report ('updated registry for name=' + str(name))
-
-        #report('service resolved @ ',str([name,address,port,args]))
 
     def print_error(self, *errors):
         """ unused, but apparently part of avahi interface """
         for x in errors:
             if 'Timeout reached' in str(x):
-                report('error_handler: timeout')
+                #report('error_handler: timeout')
                 return
         report('error_handler for name resolution',str(errors) )
 
@@ -146,7 +144,18 @@ class AutodiscoveryServer(Service):
         except DBusException,e:
             if str(e)=='org.freedesktop.DBus.Error.Disconnected: Connection is closed':
                 report("Giving up.")
-                self.p.terminate()
+                try:
+                    self.p.terminate()
+                except AttributeError:
+                    """ Processes have a terminate method, but this
+                        part appears to be caused by a strange race condition:
+                          File "/usr/lib/python2.6/multiprocessing/process.py", line 111, in terminate
+                              self._popen.terminate()
+                          AttributeError: 'NoneType' object has no attribute 'terminate'
+
+                    """
+                    pass
+
                 self.stop()
             else:
                 report("squashed dbus error",str(e))

@@ -30,3 +30,9 @@ def load_file(fname, adl=False, python=True):
 # Shortcuts into the Universe
 load_service = universe.loadService
 sleep        = universe.sleep
+peers        = universe.peers
+
+def last_peer():
+    return peers[peers[0]]
+def show_last_peer():
+    print last_peer()

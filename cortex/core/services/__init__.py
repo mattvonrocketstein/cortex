@@ -15,6 +15,22 @@ from cortex.core.restrictions import __domain_restricted__
 import datetime
 class Manager(object):
     class NotFound(Exception): pass
+    def __str__(self):
+        return str(self.as_list)
+    def __repr__(self):
+        return 'peer-manager('+str(self)+')'
+    def __getitem__(self, name):
+        """ retrieve service by name
+
+            NOTE: currently case insensitive!
+        """
+        if isinstance(name, int):
+            return self.as_list[name]
+        if isinstance(name, str):
+            for nayme in self.registry:
+                if name.lower() == nayme.lower():
+                    return self.registry[name]
+            raise self.NotFound('No such service: ' + name)
 
     @__domain_restricted__
     def register(self, auth, _rsrc):
@@ -23,12 +39,13 @@ class Manager(object):
               NotImplementedYet
         """
         self.registry[auth] = _rsrc
-        report('registering resource', _rsrc)
+        #report('registering resource', _rsrc)
 
+    @property
     def as_list(self):
         out = [ x for x in self ]
-        out.sort(lambda x, y: cmp(self.registry[x]['stamp'],
-                                 self.registry[y]['stamp']))
+        out.sort(lambda x, y: cmp(self.registry[x].stamp,
+                                 self.registry[y].stamp))
         return out
 
     aslist=as_list
@@ -40,19 +57,21 @@ class Manager(object):
     def __iter__(self):
         """ dumb proxy """
         return iter(self.registry)
-
+from cortex.core.hds import HierarchicalData
 class PeerManager(Manager):
     """ """
     def register(self, name, **kargs):
         """ """
         name = str(name)
-        self.registry[name] = kargs
-        report('registering', str(kargs))
+        self.registry[name] = HierarchicalData()
+        for key,value in kargs.items():
+            setattr(self.registry[name], key, value)
+        #report('registering', str(kargs))
         self.stamp(name)
 
     def stamp(self,name):
         """ """
-        self.registry[name]['stamp'] = datetime.datetime.now()
+        self.registry[name].stamp = datetime.datetime.now()
 
     def __iter__(self):
         """ dumb proxy """
@@ -74,19 +93,6 @@ class ServiceManager(Manager):
     def stop_all(self):
         """ """
         [ s.stop() for s in self ]
-
-    def __getitem__(self, name):
-        """ retrieve service by name
-
-            NOTE: currently case insensitive!
-        """
-        if isinstance(name, int):
-            return self.service_list[name]
-        if isinstance(name, str):
-            for service in self.service_list:
-                if service.name.lower() == name.lower():
-                    return service
-            raise self.NotFound('No such service: ' + name)
 
     def __iter__(self):
         """ dumb proxy """
