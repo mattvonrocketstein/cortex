@@ -11,11 +11,7 @@ from cortex.core.node import Node
 from cortex.core.util import report
 from cortex.core.restrictions import __domain_restricted__
 
-class ServiceManager(object):
-    """ ServiceManager exists mainly to make universe.services obey list
-        and dictionary api simultaneously.  Additionally, it provides a
-        commonly used Exception.
-    """
+class Manager(object):
     class NotFound(Exception): pass
 
     @__domain_restricted__
@@ -27,14 +23,29 @@ class ServiceManager(object):
         self.registry[auth] = _rsrc
         report('registering resource', _rsrc)
 
+    def __init__(self):
+        """ """
+        self.registry     = {}
+
+class PeerManager(Manager):
+    def register(self, **kargs):
+        report('registering',str(kargs))
+
+
+class ServiceManager(Manager):
+    """ ServiceManager exists mainly to make universe.services obey list
+        and dictionary api simultaneously.  Additionally, it provides a
+        commonly used Exception.
+    """
+
     def __init__(self, service_list):
         """ """
+        Manager.__init__(self)
         self.service_list = service_list
-        self.registry     = {}
 
     def stop_all(self):
         """ """
-        [s.stop() for s in self]
+        [ s.stop() for s in self ]
 
     def __getitem__(self, name):
         """ retrieve service by name

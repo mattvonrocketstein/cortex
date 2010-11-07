@@ -1,20 +1,32 @@
 """ cortex.core.mixins
 """
 
-class EventMixin(object):
-    """ Can be used on anything with a tuplespace named <ground>
-    """
-    BASE_NOTICE_TOKEN = 'system_event'
-    def push_events(self, *args):
-        """ """
-        [self.push_event(arg) for arg in args]
+NOTICE_T = 'system_notice'
 
-    def push_event(self,notice):
+class EventMixin(object):
+    """ """
+    def push_events(self, string_type, *args):
         """ """
-        self.ground.add( (EventMixin.BASE_NOTICE_TOKEN, notice) )
+        return [self.push_event(string_type, arg) for arg in args]
+
+    def push_event(self, type_string, notice):
+        """ """
+        return self.ground.add( (type_string, notice) )
+
+    def events(self,string_type):
+        """ """
+        out = self.ground.get_many( (string_type, object) )
+        out = [x[1:] for x in out] # clean up by chopping off the token
+        return out
+
+
+class NoticeMixin(EventMixin):
+    """"""
+    def push_notice(self, notice):
+        """ """
+        return self.push_event(NOTICE_T, notice)
 
     @property
-    def events(self):
-        """ NOTE: currently get_many is destructive by default.
-        """
-        return self.ground.get_many( (EventMixin.BASE_NOTICE_TOKEN, object) )
+    def notices(self):
+        """ """
+        return self.events(NOTICE_T)
