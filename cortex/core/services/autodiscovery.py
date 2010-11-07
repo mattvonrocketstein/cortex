@@ -15,27 +15,27 @@ from cortex.core.util import report
 from cortex.core.services import Service
 from cortex.core.data import AVAHI_TYPE as TYPE
 
-def service_resolved(*args):
-    """ """
-    print 'service resolved'
-    print 'name:', args[2]
-    print 'address:', args[7]
-    print 'port:', args[8]
-
-def print_error(*args):
-    """ """
-    print 'error_handler'
-    print args[0]
-
-
-class Client(Service):
+class AutodiscoveryClient(Service):
     """ Zeroconf Client Service:
           start: begin looking for peers
           stop:  stop looking for peers
     """
+
+    def service_resolved(self, *args):
+        """ unused, but apparently part of avahi interface """
+        print 'service resolved'
+        print 'name:', args[2]
+        print 'address:', args[7]
+        print 'port:', args[8]
+
+    def print_error(self, *args):
+        """ unused, but apparently part of avahi interface """
+        print 'error_handler'
+        print args[0]
+
     def _post_init(self):
         """ """
-        self.is_stopped=False
+        self.is_stopped = False
 
     def stop(self):
         """ """
@@ -81,10 +81,13 @@ class Client(Service):
 
     def peer_found(self, interface, protocol, name, stype, domain, flags):
          """ """
-         if name!=self.universe.name:
+         if name != self.universe.name:
              # TODO: push this onto system events list
              notice="Found peer '%s' type '%s' domain '%s' " % (name, stype, domain)
-             self.universe.push_event(notice)
+             self.universe.push_notice(notice)
+             self.universe.peers.register(**dict(name=name,
+                                               stype=stype,
+                                               domain=domain))
              if flags & avahi.LOOKUP_RESULT_LOCAL:
                  # local service, skip
                  pass
@@ -106,23 +109,23 @@ class AutodiscoveryServer(Service):
         report('Server is dying')
         self.started = False
         self.is_stopped = True
-        try:
-            self.zeroconf.unpublish()
-        except AttributeError:
-            pass
+        self.zeroconf.unpublish()
+        #except AttributeError:
+        #    pass
 
     def iterate(self, v):
         """ """
         self.started = True,
-        self.zeroconf.publish()
+        try:
+            self.zeroconf.publish()
+        except DBusException:
+            report("squashed dbus error")
         while v.value == 1:
             time.sleep(1)
-    
+
     def start(self):
-        """
-        """
+        """ """
         self.v = Value('d',1) # Shared memory for the exit-ttest
         self.p = Process(target=self.iterate, args=[self.v])
         self.p.start()
         return self
-

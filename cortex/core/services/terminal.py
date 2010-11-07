@@ -18,21 +18,15 @@ class Terminal(Service):
     def _post_init(self):
         """ """
         universe = {'__name__' : '__cortex_shell__',
-
                     'services' : list(self.universe.services),
-                    #Now published by api
-                    #'universe' : self.universe,
-                    #'load_service' : self.universe.loadService,
-                    #'sleep'    :   self.universe.sleep,
                    }
         universe.update(api.publish())
 
 
         def pre_prompt_hook(ip):
-            """ """
-            #from IPython.ColorANSI import TermColors
-            print console.blue('Events:'),console.color(str(self.universe.events))
-            #print TermColors.Blue + 'Events:',TermColors.Normal, self.universe.events
+            """ IPython hook to display system notices
+            """
+            print console.blue('Events:'),console.color(str(self.universe.notices))
 
 
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe,controller=self)
@@ -42,7 +36,6 @@ class Terminal(Service):
 
     def start(self):
         """ """
-
         # Set IPython "autocall" to "Full"
         self.shell.IP.magic_autocall(2)
         from twisted.internet.error import ReactorAlreadyRunning

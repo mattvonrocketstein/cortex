@@ -1,5 +1,9 @@
 """ cortex.core.util
 """
+# Patterns in reporting
+####################################################################
+
+
 
 # Patterns in reporting
 ####################################################################
@@ -10,11 +14,6 @@ from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter,Terminal256Formatter
 from IPython.ColorANSI import TermColors
-
-#from django.core.management.color import color_style
-# Style and style helpers
-#style = color_style()
-#yellow = style.HTTP_NOT_FOUND
 
 # Pygments data
 plex = PythonLexer()

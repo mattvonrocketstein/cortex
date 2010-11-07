@@ -1,12 +1,11 @@
 """ cortex.core.universe
 """
 import os
+import sys
 import inspect
 import simplejson
 from tempfile import NamedTemporaryFile
 
-#from twisted.internet import gtk2reactor
-#gtk2reactor.install()
 from twisted.internet import reactor
 
 from cortex.util import Memoize
@@ -14,44 +13,40 @@ from cortex.core.reloading import AutoReloader
 from cortex.core.util import report, console
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
-from cortex.core.services import ServiceManager,Service
+from cortex.core.services import PeerManager,ServiceManager
+from cortex.core.services import Service
+from cortex.core.mixins import EventMixin, NoticeMixin
 
-class EventMixin(object):
-    def push_events(self, *args):
-        [self.push_event(arg) for arg in args]
-
-    def push_event(self,notice):
-        self.ground.add( ('system_event', notice) )
-
-    @property
-    def events(self):
-        """ """
-        return self.ground.get_many( ('system_event', object) )
-
-
-class __Universe__(AutoReloader, EventMixin, AutonomyMixin, PerspectiveMixin,
+class __Universe__(AutoReloader, NoticeMixin, AutonomyMixin, PerspectiveMixin,
                    PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
     """
     node_list = []
     _services = []
+    reactor   = reactor
+    peers     = PeerManager()
 
-    """
-    class shell:
-         a dumb abstraction for a shell rooted at <path>
-        def __init__(self, path):
-            self.path = path
+    @property
+    def ip(self):
+        pass
 
-        def __call__(self, line, quiet=False):
-            """ """
-            os.system('cd "'+path+'"; '+line)
-    """
-    reactor = reactor
+    @property
+    def pid(self):
+        """
+            NOTE: universe.pid[1] should be the pid of the bash process
+                  of "go" -- the phase 1 init platform
+        """
+        return os.getpid(), os.getppid()
+
+    @property
+    def hostname(self):
+        """ TODO: memoize """
+        import socket
+        return socket.gethostname()
 
     def sleep(self):
         """ """
-        import sys
         self.stop()
 
         # hack for terminal to exit cleanly
@@ -59,8 +54,6 @@ class __Universe__(AutoReloader, EventMixin, AutonomyMixin, PerspectiveMixin,
         except SystemExit:
             pass
 
-        #if hasatre(self,'terminal'):
-        #    self.terminal.shell.IP.exit()
 
     def tmpfile(self):
         """ return a new temporary file """
@@ -140,7 +133,8 @@ class __Universe__(AutoReloader, EventMixin, AutonomyMixin, PerspectiveMixin,
             from cortex.core.api import publish
             _api = publish()
             return _api.get(instruction)
-        # Starts all nodes registered via the nodeconf
+
+        # Interprets all the instructions in the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.read_nodeconf():
                 original = node
@@ -149,20 +143,15 @@ class __Universe__(AutoReloader, EventMixin, AutonomyMixin, PerspectiveMixin,
                 arguments = node
                 handler = get_handler(instruction)
                 handler(*node)
-                #name, kargs = node
-                #kargs.update( {'name':name,'universe':self} )
-                #node = self.launch_instance(**kargs)
-                #self.node_list.append(node)
 
         # Start special services provided by the universe
         for service in self.Services:
             report('launching service',service)
             self.loadService(service)
 
-
-        #report('running reactor')
         # Main loop
         reactor.run()
+
     def loadService(self,service):
         """ """
         if isinstance(service, str):
@@ -178,7 +167,7 @@ class __Universe__(AutoReloader, EventMixin, AutonomyMixin, PerspectiveMixin,
                 else:
                     raise Exception,'will not interpret that dotpath yet'
 
-            # just one word.. what could it be?
+            # just one word.. where/what could it be?
             else:
                 mod_name = service
                 ret_vals = []
