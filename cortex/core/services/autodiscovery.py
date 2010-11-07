@@ -17,8 +17,8 @@ from cortex.core.data import AVAHI_TYPE as TYPE
 
 class AutodiscoveryClient(Service):
     """ Zeroconf Client Service:
-          start: begin looking for peers
-          stop:  stop looking for peers
+        start: begin looking for peers
+        stop:  stop looking for peers
     """
 
     def service_resolved(self, *args):
@@ -59,7 +59,7 @@ class AutodiscoveryClient(Service):
             #self.universe.reactor.callLater(1, gobject.MainLoop().run)
             #self.universe.reactor.callInThread(self.gloop.run)
         """
-        self.setup_client()
+        self.server = self.setup_client()
         loop = gobject.MainLoop()
         gobject.threads_init()
         self.gloop = loop
@@ -68,27 +68,35 @@ class AutodiscoveryClient(Service):
         return self
 
     def setup_client(self):
-         """ """
-         loop = DBusGMainLoop()
-         bus = dbus.SystemBus(mainloop=loop)
-         server = dbus.Interface( bus.get_object(avahi.DBUS_NAME, '/'),
-                                  'org.freedesktop.Avahi.Server')
-         sbrowser = dbus.Interface(bus.get_object(avahi.DBUS_NAME,
-                 server.ServiceBrowserNew(avahi.IF_UNSPEC,
-                     avahi.PROTO_UNSPEC, TYPE, 'local', dbus.UInt32(0))),
-                 avahi.DBUS_INTERFACE_SERVICE_BROWSER)
-         sbrowser.connect_to_signal("ItemNew", self.peer_found)
+        """ """
+        loop = DBusGMainLoop()
+        bus = dbus.SystemBus(mainloop=loop)
+        server = dbus.Interface( bus.get_object(avahi.DBUS_NAME, '/'),
+                                 'org.freedesktop.Avahi.Server')
+        sbrowser = dbus.Interface(bus.get_object(avahi.DBUS_NAME,
+                server.ServiceBrowserNew(avahi.IF_UNSPEC,
+                    avahi.PROTO_UNSPEC, TYPE, 'local', dbus.UInt32(0))),
+                avahi.DBUS_INTERFACE_SERVICE_BROWSER)
+        sbrowser.connect_to_signal("ItemNew", self.peer_found)
+        return server
 
     def peer_found(self, interface, protocol, name, stype, domain, flags):
-         """ """
-         if name != self.universe.name:
-             # TODO: push this onto system events list
-             notice="Found peer '%s' type '%s' domain '%s' " % (name, stype, domain)
-             self.universe.push_notice(notice)
-             self.universe.peers.register(**dict(name=name,
-                                               stype=stype,
-                                               domain=domain))
-             if flags & avahi.LOOKUP_RESULT_LOCAL:
+        """ handle peer discovery """
+        if name != self.universe.name:
+            # TODO: push this onto system events list
+            report('so',str([interface,type(interface)]))
+            report('so',str([protocol, type(protocol)]))
+            notice="Found peer '%s' type '%s' domain '%s' " % (name, stype, domain)
+            self.universe.push_notice(notice)
+            self.universe.peers.register(**dict(name=name,
+                                              stype=stype,
+                                              domain=domain))
+            self.server.ResolveService(interface, protocol, name, stype,
+                                       domain, avahi.PROTO_UNSPEC, dbus.UInt32(0),
+                                       reply_handler=self.service_resolved,
+                                       error_handler=self.print_error)
+
+        if flags & avahi.LOOKUP_RESULT_LOCAL:
                  # local service, skip
                  pass
 
@@ -99,7 +107,8 @@ class AutodiscoveryServer(Service):
     """
     def _post_init(self):
         """ """
-        self.zeroconf = ZeroconfService(name=self.universe.name, port=3000)
+        self.zeroconf = ZeroconfService(name=self.universe.name,
+                                        port=3001, text="testing")
 
     def stop(self):
         """
@@ -115,17 +124,19 @@ class AutodiscoveryServer(Service):
 
     def iterate(self, v):
         """ """
-        self.started = True,
+        self.started = True
         try:
             self.zeroconf.publish()
-        except DBusException:
-            report("squashed dbus error")
+        except DBusException,e:
+            report("squashed dbus error",str(e))
+            self.iterate(v)
         while v.value == 1:
-            time.sleep(1)
+            time.sleep(2)
 
     def start(self):
         """ """
         self.v = Value('d',1) # Shared memory for the exit-ttest
         self.p = Process(target=self.iterate, args=[self.v])
+        self.universe._procs.append(self.p)
         self.p.start()
         return self

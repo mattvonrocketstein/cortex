@@ -3,7 +3,7 @@
 """
 
 from cortex.core import api
-from cortex.core.util import report, console
+from cortex.core.util import report, console#, notifier
 from cortex.core.services import Service
 from cortex.core.terminal import IPShellTwisted, IPY_ARGS
 
@@ -46,7 +46,9 @@ class Terminal(Service):
             self.shell.mainloop()
         except ReactorAlreadyRunning:
             pass
+
         return self
+
 
     def stop(self):
         """ """

@@ -4,6 +4,7 @@ import os
 import sys
 import inspect
 import simplejson
+import multiprocessing
 from tempfile import NamedTemporaryFile
 
 from twisted.internet import reactor
@@ -15,7 +16,7 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
 from cortex.core.services import PeerManager,ServiceManager
 from cortex.core.services import Service
-from cortex.core.mixins import EventMixin, NoticeMixin
+from cortex.core.mixins import EventMixin, NoticeMixin, PIDMixin
 
 class __Universe__(AutoReloader, NoticeMixin, AutonomyMixin, PerspectiveMixin,
                    PersistenceMixin):
@@ -24,20 +25,13 @@ class __Universe__(AutoReloader, NoticeMixin, AutonomyMixin, PerspectiveMixin,
     """
     node_list = []
     _services = []
+    _procs    = []
     reactor   = reactor
     peers     = PeerManager()
 
     @property
     def ip(self):
         pass
-
-    @property
-    def pid(self):
-        """
-            NOTE: universe.pid[1] should be the pid of the bash process
-                  of "go" -- the phase 1 init platform
-        """
-        return os.getpid(), os.getppid()
 
     @property
     def hostname(self):
@@ -99,6 +93,10 @@ class __Universe__(AutoReloader, NoticeMixin, AutonomyMixin, PerspectiveMixin,
     def Nodes(self):
         """ nodes: static definition """
         return self.read_nodeconf()
+
+    @property
+    def procs(self):
+        return self._procs
 
     @property
     def threads(self):
