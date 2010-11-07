@@ -117,8 +117,8 @@ class AutodiscoveryServer(Service):
         self.zeroconf.publish()
         while v.value == 1:
             time.sleep(1)
-
-    def play(self):
+    
+    def start(self):
         """
         """
         self.v = Value('d',1) # Shared memory for the exit-ttest

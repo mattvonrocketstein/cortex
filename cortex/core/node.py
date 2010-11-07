@@ -49,6 +49,10 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
         """ """
         return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]
 
+    def stop(self):
+        report("node::stopping")
+        super(Node,self).stop()
+
     def play(self):
         """ CONVENTION:
               play should always return something similar to a derred.

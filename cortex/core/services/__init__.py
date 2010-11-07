@@ -21,15 +21,19 @@ class ServiceManager(object):
     @__domain_restricted__
     def register(self, auth, _rsrc):
         """ registers resource <_rsrc> on <auth>'s authority.
+
+              NotImplementedYet
         """
         self.registry[auth] = _rsrc
         report('registering resource', _rsrc)
 
     def __init__(self, service_list):
+        """ """
         self.service_list = service_list
         self.registry     = {}
 
     def stop_all(self):
+        """ """
         [s.stop() for s in self]
 
     def __getitem__(self, name):
@@ -62,12 +66,14 @@ class Service(Node):
     def stop(self):
         """
         """
-        report("stopping")
+        report("service::stopping")
         self.is_stopped = True
+        self.started    = False
+        super(Service,self).stop()
 
     def play(self):
         """
-            CONVENTION: services *must* define start() and stop(), therefore
+            Convention: services *must* define start() and stop(), therefore
                         the functionality of <play> is implied.
         """
         self.universe.reactor.callLater(1, self.start)
