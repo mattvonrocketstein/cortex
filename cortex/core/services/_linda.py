@@ -29,6 +29,10 @@ class Memory(TSpace,PersistenceMixin):
         self.add(('__name__',  self.name))
         self.add(('__stamp__', str(datetime.datetime.now())))
 
+    def shutdown(self):
+        """ TODO: proxy to TSpace shutdown? """
+        pass
+
     def serialize(self):
         """ """
         _str = pickle.dumps(self.values())
@@ -79,4 +83,4 @@ class Linda(Service):
     def stop(self):
         """ """
         super(Linda,self).stop()
-        self.ts.shutdown()
+        self.universe.ground.shutdown()

@@ -30,7 +30,7 @@ class ServiceManager(object):
         self.registry     = {}
 
     def stop_all(self):
-        report('NIY')
+        [s.stop() for s in self]
 
     def __getitem__(self, name):
         """ retrieve service by name

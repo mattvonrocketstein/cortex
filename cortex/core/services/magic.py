@@ -93,23 +93,32 @@ class Server(Service):
         self.zeroconf = ZeroconfService(name="TestService", port=3000)
 
     def stop(self):
-        """ """ #super(Service,self).stop()
-        self.zeroconf.unpublish()
+        """
+        super(Service,self).stop()
+        """
+        self.v.value = 0
+        report('Server is dying')
+        self.started = False
+        self.is_stopped = True
+        try:
+            self.zeroconf.unpublish()
+        except AttributeError:
+            pass
 
-    def iterate(self):
+    def iterate(self, v):
         """ """
-        self.started=True
+        self.started = True, 
         self.zeroconf.publish()
-        while self.started:
+        while v.value==1:
             time.sleep(1)
             print 'blammo'
-        p.join()
+        #self.p.join()
 
     def play(self):
         """ """
-        p = Process(target=self.iterate) #, args=(num, arr))
-        p.start()
-
+        self.v = Value('d',1) # Shared memory for the exit-ttest
+        self.p = Process(target=self.iterate, args=[self.v])
+        self.p.start()
         return self
 
 
