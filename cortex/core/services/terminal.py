@@ -6,6 +6,7 @@ from cortex.core import api
 from cortex.core.util import report, console
 from cortex.core.services import Service
 from cortex.core.terminal import IPShellTwisted, IPY_ARGS
+
 class Terminal(Service):
     """ Terminal Service:
          an ipython console that uses the cortex api
@@ -33,7 +34,9 @@ class Terminal(Service):
             print console.blue('Events:'),console.color(str(self.universe.events))
             #print TermColors.Blue + 'Events:',TermColors.Normal, self.universe.events
 
+
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe,controller=self)
+        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
         self.shell.IP.set_hook('pre_prompt_hook',pre_prompt_hook)
         self.universe.terminal = self
 
