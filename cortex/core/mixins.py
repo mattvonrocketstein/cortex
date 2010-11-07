@@ -30,3 +30,30 @@ class NoticeMixin(EventMixin):
     def notices(self):
         """ """
         return self.events(NOTICE_T)
+
+class PIDMixin:
+    """ os pid properties """
+
+    @property
+    def parent_pid(self):
+        """ should be the pid of the bash process
+                  of "go" -- the phase 1 init platform
+        """
+        return os.getppid()
+
+    @property
+    def child_pid(self):
+        return getattr(self, 'procs', []) and \
+               [proc.pid for proc in self.procs]
+    child_pids=child_pid
+
+    @property
+    def pids(self):
+        return dict(parent=self.parent_pid,
+                    self=self.pid,
+                    children=self.child_pid)
+
+    @property
+    def pid(self):
+        """ """
+        return os.getpid()

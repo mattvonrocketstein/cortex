@@ -1,8 +1,5 @@
 """ cortex.core.util
 """
-# Patterns in reporting
-####################################################################
-
 
 
 # Patterns in reporting
@@ -130,3 +127,23 @@ def is_cortex_node(other):
 
 # Misc Patterns
 ####################################################################
+"""
+try:
+    import pynotify
+except ImportError:
+    report("you don't seem to have pynotify installed")
+else:
+    if pynotify.init("Cortex"):
+        def notifier(header, stuff):
+            n = pynotify.Notification(header,stuff)
+            #n = pynotify.Notification("Cortex started", "stuff")
+            #n.set_urgency(pynotify.URGENCY_LOW)
+            #n.set_urgency(pynotify.URGENCY_NORMAL)
+            n.set_urgency(pynotify.URGENCY_CRITICAL)
+            n.set_timeout(1000)
+            n.show()
+    else:
+        def notifier(header,stuff):
+            report("NOTIFIER: ",header,stuff)
+        print "there was a problem initializing the pynotify module"
+"""

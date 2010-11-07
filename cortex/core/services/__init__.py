@@ -30,6 +30,7 @@ class Manager(object):
 class PeerManager(Manager):
     def register(self, **kargs):
         report('registering',str(kargs))
+        
 
 
 class ServiceManager(Manager):
