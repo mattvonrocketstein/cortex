@@ -35,12 +35,17 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             os.system('cd "'+path+'"; '+line)
     """
     reactor = reactor
+
+    def push_events(self, *args):
+        [self.push_event(arg) for arg in args]
+
     def push_event(self,notice):
         self.ground.add( ('system_event', notice) )
 
     @property
     def events(self):
-        return self.ground.get(('system_event',object),remove=True)
+        """ """
+        return self.ground.get_many( ('system_event', object) )
 
     def sleep(self):
         """ """
@@ -54,11 +59,6 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
 
         #if hasatre(self,'terminal'):
         #    self.terminal.shell.IP.exit()
-
-    @property
-    def events(self):
-        """ """
-        self.ground
 
     def tmpfile(self):
         """ return a new temporary file """
