@@ -134,12 +134,14 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         for thr in self.threads:
             thr._Thread__stop()
         self.reactor.stop()
+
     def play(self):
         """
-            Post:
+            Post-conditions:
                 self.node_list = [ <list of active nodes> ]
         """
         report("Universe.play!")
+        self.name    = 'Universe'+str(id(self))
         self.started = True
         # Starts all nodes registered via the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
