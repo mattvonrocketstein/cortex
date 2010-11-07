@@ -1,3 +1,6 @@
+""" cortex.core.services.zeroconf
+"""
+
 import avahi
 import dbus
 
@@ -9,7 +12,8 @@ class ZeroconfService:
 
     """
 
-    def __init__(self, name, port, stype="_http._tcp",domain="", host="", text=""):
+    def __init__(self, name, port, stype="_http._tcp",
+                 domain="", host="", text=""):
         self.name = name
         self.stype = stype
         self.domain = domain
@@ -39,13 +43,3 @@ class ZeroconfService:
 
     def unpublish(self):
         self.group.Reset()
-
-
-def test():
-    service = ZeroconfService(name="TestService", port=3000)
-    service.publish()
-    raw_input("Press any key to unpublish the service ")
-    service.unpublish()
-
-if __name__ == "__main__":
-    test()

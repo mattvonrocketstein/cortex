@@ -1,6 +1,8 @@
 """ cortex.core.terminal
 
       Adapted from: http://code.activestate.com/recipes/410670-integrating-twisted-reactor-with-ipython/
+
+      TODO: this appears to be in twshell in ipython 0.10.1 .. extend that
 """
 import threading
 
@@ -41,9 +43,9 @@ class IPShellTwisted(threading.Thread):
 
     TIMEOUT = 0.03 # Millisecond interval between reactor runs.
 
-    def __init__(self, argv=None, user_ns=None, debug=1,
+    def __init__(self, argv=None, user_ns=None, controller=None,debug=1,
                  shell_class=MTInteractiveShell):
-
+        self.controller=controller
         from twisted.internet import reactor
         self.reactor = hijack_reactor()
 
@@ -62,7 +64,7 @@ class IPShellTwisted(threading.Thread):
 
         self.IP = make_IPython(argv, user_ns=user_ns, debug=debug,
                                shell_class=shell_class,
-                               on_kill=[self.mainquit])
+                               on_kill=[self.mainquit,self.controller.universe.sleep])
 
         threading.Thread.__init__(self)
 
