@@ -12,17 +12,6 @@ import IPython.Shell
 
 TYPE = "_http._tcp"
 
-def setup_client():
-    """ """
-    loop = DBusGMainLoop()
-    bus = dbus.SystemBus(mainloop=loop)
-    server = dbus.Interface( bus.get_object(avahi.DBUS_NAME, '/'),
-                             'org.freedesktop.Avahi.Server')
-    sbrowser = dbus.Interface(bus.get_object(avahi.DBUS_NAME,
-            server.ServiceBrowserNew(avahi.IF_UNSPEC,
-                avahi.PROTO_UNSPEC, TYPE, 'local', dbus.UInt32(0))),
-            avahi.DBUS_INTERFACE_SERVICE_BROWSER)
-    sbrowser.connect_to_signal("ItemNew", myhandler)
 
 def service_resolved(*args):
     """ """
@@ -36,12 +25,6 @@ def print_error(*args):
     print 'error_handler'
     print args[0]
 
-def myhandler(interface, protocol, name, stype, domain, flags):
-    """ """
-    print "Found service '%s' type '%s' domain '%s' " % (name, stype, domain)
-    if flags & avahi.LOOKUP_RESULT_LOCAL:
-        # local service, skip
-        pass
 
 class Client(Service):
     """ Zeroconf Client Service:
@@ -74,13 +57,31 @@ class Client(Service):
             #self.universe.reactor.callLater(1, gobject.MainLoop().run)
             #self.universe.reactor.callInThread(self.gloop.run)
         """
-        setup_client()
+        self.setup_client()
         loop = gobject.MainLoop()
         gobject.threads_init()
         self.gloop = loop
         self.loop_context = self.gloop.get_context()
         self.universe.reactor.callInThread(self.iterate)
         return self
+    def setup_client(self):
+         """ """
+         loop = DBusGMainLoop()
+         bus = dbus.SystemBus(mainloop=loop)
+         server = dbus.Interface( bus.get_object(avahi.DBUS_NAME, '/'),
+                                  'org.freedesktop.Avahi.Server')
+         sbrowser = dbus.Interface(bus.get_object(avahi.DBUS_NAME,
+                 server.ServiceBrowserNew(avahi.IF_UNSPEC,
+                     avahi.PROTO_UNSPEC, TYPE, 'local', dbus.UInt32(0))),
+                 avahi.DBUS_INTERFACE_SERVICE_BROWSER)
+         sbrowser.connect_to_signal("ItemNew", self.myhandler)
+    def myhandler(self, interface, protocol, name, stype, domain, flags):
+         """ """
+         if name!=self.universe.name:
+             print "Found service '%s' type '%s' domain '%s' " % (name, stype, domain)
+             if flags & avahi.LOOKUP_RESULT_LOCAL:
+                 # local service, skip
+                 pass
 
 from cortex.core.services.zeroconf import ZeroconfService
 class Server(Service):
@@ -90,7 +91,7 @@ class Server(Service):
     """
     def _post_init(self):
         """ """
-        self.zeroconf = ZeroconfService(name="TestService", port=3000)
+        self.zeroconf = ZeroconfService(name=self.universe.name, port=3000)
 
     def stop(self):
         """
@@ -107,12 +108,10 @@ class Server(Service):
 
     def iterate(self, v):
         """ """
-        self.started = True, 
+        self.started = True,
         self.zeroconf.publish()
-        while v.value==1:
+        while v.value == 1:
             time.sleep(1)
-            print 'blammo'
-        #self.p.join()
 
     def play(self):
         """ """
