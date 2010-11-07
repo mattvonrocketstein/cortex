@@ -67,6 +67,7 @@ class AutonomyMixin:
         """
         report("play for "+self.name)
         self.started = True
+        self.is_stopped = False
 
     def resume(self):
         """ Convention:

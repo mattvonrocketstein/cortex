@@ -1,41 +1,24 @@
 """ cortex.core.universe
 """
 import os
+import sys
 import inspect
 import simplejson
-from tempfile import NamedTemporaryFile
 from peak.util.imports import lazyModule
-#from twisted.internet import gtk2reactor
-#gtk2reactor.install()
+from tempfile import NamedTemporaryFile
 from twisted.internet import reactor
-api = lazyModule('cortex.core.api')
-from cortex.util import Memoize
-from cortex.core.reloading import AutoReloader
-from cortex.core.util import report, console
+
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
-from cortex.core.services import ServiceManager,Service
+from cortex.util import Memoize
+from cortex.core.reloading import AutoReloader
+from cortex.core.helpers import get_mod
+from cortex.core.util import report, console
+from cortex.core.services import ServiceManager, Service
 
-class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
-                   PersistenceMixin):
-    """
-        NOTE: this should effectively be a singleton
-    """
-    node_list = []
-    _services = []
+api = lazyModule('cortex.core.api')
 
-    """
-    class shell:
-         a dumb abstraction for a shell rooted at <path>
-        def __init__(self, path):
-            self.path = path
-
-        def __call__(self, line, quiet=False):
-            """ """
-            os.system('cd "'+path+'"; '+line)
-    """
-    reactor = reactor
-
+class EventMixin(object):
     def push_events(self, *args):
         [self.push_event(arg) for arg in args]
 
@@ -47,18 +30,25 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         """ """
         return self.ground.get_many( ('system_event', object) )
 
+
+class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
+                   PersistenceMixin, EventMixin):
+    """
+        NOTE: this should effectively be a singleton
+    """
+    node_list = []
+    _services = []
+    reactor   = reactor
+
     def sleep(self):
         """ """
-        import sys
+
         self.stop()
 
         # hack for terminal to exit cleanly
         try: sys.exit()
         except SystemExit:
             pass
-
-        #if hasatre(self,'terminal'):
-        #    self.terminal.shell.IP.exit()
 
     def tmpfile(self):
         """ return a new temporary file """
@@ -67,16 +57,6 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             os.mkdir(tmpdir)
         f = NamedTemporaryFile(delete=False,dir=tmpdir)
         return f
-
-    """
-    def leave(self, other=None):
-        other begs universe for permission to leave
-        #self.nodes.remove()
-        def detect_other():
-            pass
-        if other==None:
-            other = detect_other()
-        pass """
 
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
@@ -91,13 +71,11 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             if not line or line.startswith('#'):
 
                 continue
-            #report('got line', line)
             try:
                 nodedef = simplejson.loads(line)
             except:
                 report("error decoding..", line)
             else:
-                #report('encoded..', nodedef)
                 nodes.append(nodedef)
         return nodes
 
@@ -117,6 +95,9 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         return self.node_list
 
     def stop(self):
+        """
+        """
+        super(__Universe__, self).stop()
         for service in self.services:
             try: service.stop()
             except Exception,e:
@@ -132,13 +113,12 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
             Post-conditions:
                 self.node_list = [ <list of active nodes> ]
         """
+        super(__Universe__,self).play()
 
-        report("Universe.play!")
-        self.name    = 'Universe'+str(id(self))
-        self.started = True
         # Starts all nodes registered via the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.read_nodeconf():
+                original = node
                 node.reverse()
                 instruction = node.pop()
                 arguments   = node
@@ -146,20 +126,17 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
                 if instruction in _api:
                     handler = _api.get(instruction)
                     handler(*arguments)
-                #name, kargs = node
-                #kargs.update( {'name':name,'universe':self} )
-                #node = self.launch_instance(**kargs)
-                #self.node_list.append(node)
+                else:
+                    raise NodeconfSyntaxError,original
 
         # Start special services provided by the universe
         for service in self.Services:
-            report('launching service',service)
+            report('launching service', service)
             self.loadService(service)
 
-
-        #report('running reactor')
         # Main loop
         reactor.run()
+
     def loadService(self,service):
         """ """
         if isinstance(service, str):
@@ -245,14 +222,5 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         return node
 
 Universe = __Universe__()
-def get_mod(mod_name, root_dotpath='cortex.core.services'):
-    """ stupid helper to snag modules from inside the services root """
-    out = {}
-    ns  = {}
-    exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
-    mod = ns['mod']
+Universe.name    = 'Universe' + str(id(Universe))
 
-    for name in dir(mod):
-        val = getattr(mod, name)
-        out[name] = val
-    return out

@@ -11,7 +11,6 @@ class shell:
         """ """
         os.system('cd "'+path+'"; '+line)
 
-
 def get_mod(mod_name, root_dotpath='cortex.core.services'):
     """ stupid helper to snag modules from inside the services root """
     out = {}
