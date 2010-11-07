@@ -17,7 +17,9 @@ class Terminal(Service):
         """ """
         universe = {'__name__' : '__cortex_shell__',
                     'sleep'    :   self.universe.sleep,
-                    'universe' : self.universe,
+                    #Now published by api
+                    #'universe' : self.universe,
+                    #'load_service' : self.universe.loadService,
                     'services' : list(self.universe.services),}
         universe.update(api.publish())
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe,controller=self)

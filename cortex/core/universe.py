@@ -95,7 +95,9 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
         x = [z.strip() for z in x]
         nodes = []
         for line in x:
-            if not line:
+            # Respect comments and disregard empties
+            if not line or line.startswith('#'):
+
                 continue
             #report('got line', line)
             try:
