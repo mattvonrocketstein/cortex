@@ -36,11 +36,10 @@ class Terminal(Service):
         except ReactorAlreadyRunning:
             pass
         return self
-        #report('the Terminal Service Dies.')
 
     def stop(self):
         """ """
-        report('NIY')
+        report('the Terminal Service Dies.')
 
     def play(self):
         """ """
