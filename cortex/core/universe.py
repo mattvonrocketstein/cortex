@@ -15,25 +15,13 @@ from cortex.core.reloading import AutoReloader
 from cortex.core.helpers import get_mod
 from cortex.core.util import report, console
 from cortex.core.services import ServiceManager, Service
+from cortex.core.mixins import EventMixin
 
 api = lazyModule('cortex.core.api')
 
-class EventMixin(object):
-    def push_events(self, *args):
-        [self.push_event(arg) for arg in args]
-
-    def push_event(self,notice):
-        self.ground.add( ('system_event', notice) )
-
-    @property
-    def events(self):
-        """ """
-        return self.ground.get_many( ('system_event', object) )
-
-
 class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
                    PersistenceMixin, EventMixin):
-    """
+    """ TODO: does AutoReloader actually even work?
         NOTE: this should effectively be a singleton
     """
     node_list = []
@@ -223,4 +211,3 @@ class __Universe__(AutoReloader, AutonomyMixin, PerspectiveMixin,
 
 Universe = __Universe__()
 Universe.name    = 'Universe' + str(id(Universe))
-
