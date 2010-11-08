@@ -83,8 +83,8 @@ NOTE: This does not work in-place. (see the copy import up there?)
 
     def doit(self):
         """ useful after you've invoked this with "dictionaries=False" to chain
-queries, but, at the end you want a dictionary again.
-"""
+        queries, but, at the end you want a dictionary again.
+        """
         return self.namespace
 
     def items(self):

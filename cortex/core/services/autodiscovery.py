@@ -43,7 +43,7 @@ class AutodiscoveryClient(Service):
         """ unused, but apparently part of avahi interface """
         for x in errors:
             if 'Timeout reached' in str(x):
-                #report('error_handler: timeout')
+                # report('error_handler: timeout') # Do not remove this line
                 return
         report('error_handler for name resolution',str(errors) )
 
@@ -97,10 +97,7 @@ class AutodiscoveryClient(Service):
     def peer_found(self, interface, protocol, name, stype, domain, flags):
         """ handle peer discovery """
         if name != self.universe.name:
-            # TODO: push this onto system events list
-            #report('interface',str([interface,type(interface)]))
-            #report('protocol',str([protocol, type(protocol)]))
-            notice="Found peer '%s' type '%s' domain '%s' " % (name, stype, domain)
+            notice="Found Peer @ " + name
             self.universe.push_notice(notice)
             self.universe.peers.register(**dict(name=name,
                                               stype=stype,

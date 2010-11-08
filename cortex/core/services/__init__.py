@@ -1,28 +1,62 @@
 """ cortex.core.__init__
 
     TODO: stub out this one
+
        def django_service(self):
            import django.core.handlers.wsgi
            application = django.core.handlers.wsgi.WSGIHandler()
-
 """
 
 
 from cortex.core.node import Node
 from cortex.core.util import report
 from cortex.core.restrictions import __domain_restricted__
+from cortex.core.hds import HierarchicalData
 
 import datetime
 class Manager(object):
+    """ """
     class NotFound(Exception): pass
+
+    @property
+    def oldest(self):
+        return self[self.as_list[-1]]
+
+    @property
+    def newest(self):
+        return self[self.as_list[0]]
+
+    def stamp(self,name):
+        """ """
+        self.registry[name].stamp = datetime.datetime.now()
+    def register(self, name, **kargs):
+        """ """
+        name = str(name)
+        self.registry[name] = HierarchicalData()
+        for key,value in kargs.items():
+            setattr(self.registry[name], key, value)
+        self.stamp(name)
+
     def __str__(self):
+        """ """
         return str(self.as_list)
+
     def __repr__(self):
-        return 'peer-manager('+str(self)+')'
+        """ """
+        return 'manager('+str(self)+')'
+
     def __getitem__(self, name):
         """ retrieve service by name
+            Example:
+
+               peers.as_list --> sorted by stamp, returns a list of names
+               peers[int]    --> sorted by stamp, returns a names
+               peers[str]    --> sorted by stamp, returns a HDS-Peer
+               peers[peers[0]] --> returns the most recent HDS-Peer
 
             NOTE: currently case insensitive!
+
+
         """
         if isinstance(name, int):
             return self.as_list[name]
@@ -32,17 +66,9 @@ class Manager(object):
                     return self.registry[name]
             raise self.NotFound('No such service: ' + name)
 
-    @__domain_restricted__
-    def register(self, auth, _rsrc):
-        """ registers resource <_rsrc> on <auth>'s authority.
-
-              NotImplementedYet
-        """
-        self.registry[auth] = _rsrc
-        #report('registering resource', _rsrc)
-
     @property
     def as_list(self):
+        """ """
         out = [ x for x in self ]
         out.sort(lambda x, y: cmp(self.registry[x].stamp,
                                  self.registry[y].stamp))
@@ -50,28 +76,24 @@ class Manager(object):
 
     aslist=as_list
 
-    def __init__(self):
+    def __init__(self, *args, **kargs):
         """ """
+        #raise Exception,[args,kargs]
+        #assert not kargs, "NIY"
+        #if args and isinstance(args[0], dict):
+        #    self.registery = args[0]
+        #else:
         self.registry     = {}
 
     def __iter__(self):
         """ dumb proxy """
         return iter(self.registry)
-from cortex.core.hds import HierarchicalData
+
 class PeerManager(Manager):
     """ """
-    def register(self, name, **kargs):
-        """ """
-        name = str(name)
-        self.registry[name] = HierarchicalData()
-        for key,value in kargs.items():
-            setattr(self.registry[name], key, value)
-        #report('registering', str(kargs))
-        self.stamp(name)
 
-    def stamp(self,name):
-        """ """
-        self.registry[name].stamp = datetime.datetime.now()
+    class Peer(object):
+        pass
 
     def __iter__(self):
         """ dumb proxy """
@@ -84,24 +106,16 @@ class ServiceManager(Manager):
         and dictionary api simultaneously.  Additionally, it provides a
         commonly used Exception.
     """
-
-    def __init__(self, service_list):
-        """ """
-        Manager.__init__(self)
-        self.service_list = service_list
-
     def stop_all(self):
         """ """
         [ s.stop() for s in self ]
 
-    def __iter__(self):
-        """ dumb proxy """
-        return iter(self.service_list)
-
 class Service(Node):
     """
     """
+
     def __init__(self, *args, **kargs):
+        """ """
         if 'name' in kargs:
             raise Exception,'services specify their own names'
         else:
@@ -109,8 +123,7 @@ class Service(Node):
         super(Service,self).__init__(*args, **kargs)
 
     def stop(self):
-        """
-        """
+        """ """
         report("service::stopping")
         self.is_stopped = True
         self.started    = False

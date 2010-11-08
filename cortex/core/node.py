@@ -7,7 +7,7 @@ from cortex.core.common import NodeError
 from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.data import DEFAULT_HOST
-
+from cortex.core.util import report
 class Node(object, AutonomyMixin, PerspectiveMixin):
     """
     """

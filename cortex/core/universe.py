@@ -205,8 +205,12 @@ class __Universe__(AutoReloader, PIDMixin,
             this represents services that have already been
             successfully started.
         """
-        return ServiceManager(self._services)
-
+        out = ServiceManager()
+        for s in self._services:
+            out.register(s.__class__.__name__.lower(),
+                         service_obj=s)
+            #dict([[s.__class__.__name__.lower(),s] for s in self._services])
+        return out
     @property
     def Services(self):
         """ services: static definition

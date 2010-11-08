@@ -18,7 +18,6 @@ class Terminal(Service):
     def _post_init(self):
         """ """
         universe = {'__name__' : '__cortex_shell__',
-                    'services' : list(self.universe.services),
                    }
         universe.update(api.publish())
 
@@ -59,4 +58,5 @@ class Terminal(Service):
     def play(self):
         """ """
         self.universe.reactor.callLater(1, self.start)
+
         return self
