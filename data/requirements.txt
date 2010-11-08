@@ -1,4 +1,8 @@
-django
+#django
 twisted==10.04
+importing
 pygments
 ipython
+python-Levenshtein
+txJSON-RPC # cortex/data/txjsonrpc
+

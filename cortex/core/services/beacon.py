@@ -17,6 +17,7 @@ def set_trace():
 
 from cortex.core.util import report
 from cortex.core.services import Service
+from cortex.core.util import report, console
 
 class Beacon(Service):
     """ Beacon Service:
@@ -29,13 +30,13 @@ class Beacon(Service):
 
     def stop(self):
         """ """
-        self.is_stopped = True
+        super(Beacon,self).stop()
+        report("The beacon dies.")
 
     def beacon(self):
         if not self.is_stopped:
             self.universe.reactor.callLater(1, self.beacon)
         print " blip "
 
-    def play(self):
-        self.universe.reactor.callLater(1,self.beacon)
-        return self
+    def start(self):
+        self.beacon()
