@@ -1,7 +1,6 @@
 """ cortex.core.universe
 """
-import os
-import sys
+import os, sys
 import inspect
 import simplejson
 import multiprocessing
@@ -14,8 +13,10 @@ from cortex.core.reloading import AutoReloader
 from cortex.core.util import report, console
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
-from cortex.core.services import PeerManager,ServiceManager
-from cortex.core.services import Service
+from cortex.core.peer import PeerManager #,ServiceManager
+from cortex.core.service import Service
+from cortex.core.service import ServiceManager
+
 from cortex.core.mixins import EventMixin, NoticeMixin, PIDMixin
 
 class __Universe__(AutoReloader, PIDMixin,
@@ -32,6 +33,7 @@ class __Universe__(AutoReloader, PIDMixin,
 
     @property
     def ip(self):
+        """ """
         pass
 
     @property
@@ -99,10 +101,12 @@ class __Universe__(AutoReloader, PIDMixin,
 
     @property
     def procs(self):
+        """ """
         return self._procs
 
     @property
     def threads(self):
+        """ """
         import threading
         return threading.enumerate()
 
@@ -112,6 +116,7 @@ class __Universe__(AutoReloader, PIDMixin,
         return self.node_list
 
     def stop(self):
+        """ """
         for service in self.services:
             try: service.stop()
             except Exception,e:
