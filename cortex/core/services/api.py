@@ -7,16 +7,16 @@
 from cortex.core.util import report, console
 from cortex.core.services import Service
 
-from twisted.internet import reactor
-#from txjsonrpc.netstring.jsonrpc import Proxy
+from twisted.internet import reactor #from txjsonrpc.netstring.jsonrpc import Proxy
 from twisted.application import service, internet
 from txjsonrpc.netstring import jsonrpc
 from peak.util.imports import lazyModule
-from cortex.core.api import publish #api = lazyModule('')
 
-def api_wrapper(name="ApiWrapper",
-                bases=(object,),
-                _dict= lambda: publish()):
+from cortex.core.api import publish
+
+DEFAULT_PORT=7080
+
+def api_wrapper(name="ApiWrapper", bases=(object,), _dict= lambda: publish()):
 
     # if _dict is not a dict then it should be a callable that returns one.
     if hasattr(_dict,'__call__'):
@@ -41,7 +41,8 @@ class API(Service, ApiWrapper):
            start:
            stop:
     """
-    def __init__(self,*args, **kargs):
+    def __init__(self, *args, **kargs):
+        self.port = kargs.pop('port',DEFAULT_PORT)
         Service.__init__(self, *args, **kargs)
         #jsonrpc.JSONRPC
         ApiWrapper.__init__(self)
@@ -60,4 +61,4 @@ class API(Service, ApiWrapper):
         """ """
         factory = jsonrpc.RPCFactory(API)
         factory.addIntrospection()
-        self.universe.reactor.listenTCP(7080,factory)
+        self.universe.reactor.listenTCP(self.port,factory)

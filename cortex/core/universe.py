@@ -144,21 +144,28 @@ class __Universe__(AutoReloader, PIDMixin,
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.read_nodeconf():
                 original = node
-                node.reverse()
-                instruction = node.pop()
-                arguments = node
+                #node.reverse()
+                #instruction = node.pop()
+                instruction,node=node[0],node[1:]
+                if len(node)==1:
+                    arguments = node
+                    kargs={}
+                else:
+                    arguments = node[:-1]
+                    kargs = node[-1]
+                #raw_input([arguments,kargs])
                 handler = get_handler(instruction)
-                handler(*node)
+                handler(*arguments, **kargs)
 
         # Start special services provided by the universe
         for service in self.Services:
-            report('launching service',service)
+            report('launching service', service)
             self.loadService(service)
 
         # Main loop
         reactor.run()
 
-    def loadService(self,service):
+    def loadService(self, service, **kargs):
         """ """
         if isinstance(service, str):
             # handle dotpaths
@@ -169,7 +176,7 @@ class __Universe__(AutoReloader, PIDMixin,
                     namespace = get_mod(mod_name)
                     if class_name in namespace:
                         service_obj = namespace[class_name]
-                        return self.start_service(service_obj)
+                        return self.start_service(service_obj, **kargs)
                 else:
                     raise Exception,'will not interpret that dotpath yet'
 
@@ -182,23 +189,23 @@ class __Universe__(AutoReloader, PIDMixin,
                         if not val==Service and issubclass(val, Service):
                             #launch_service = lambda: val(universe=self).play
                             report('discovered service in ' + mod_name)
-                            ret_vals.append(self.start_service(val,ask=False))
+                            ret_vals.append(self.start_service(val,ask=False,**kargs))
                 return ret_vals
 
         # Not a string? let's hope it's already a service-like thing
         else:
-            return self.start_service(service)
+            return self.start_service(service, **kargs)
 
 
-    def start_service(self, service_obj, ask=False):
+    def start_service(self, service_obj, ask=False, **kargs):
         """ """
         if ask:
             raise Exception,'niy'
             getAnswer('launch service@'+str([name, val]),
-                      yesAction=service_obj(universe=self).play)
-            #return..
+                      yesAction=service_obj(universe=self, **kargs).play)
+            return service_obj # TODO: return service_obj.play()
         else:
-            ret = service_obj(universe=self).play()
+            ret = service_obj(universe=self, **kargs).play()
             self._services.append(ret)
             return ret
 

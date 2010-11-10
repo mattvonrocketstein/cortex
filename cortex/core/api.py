@@ -17,7 +17,13 @@ def register_service(service):
     pass
 
 def load_file(fname, adl=False, python=True):
-    """ loads a local file """
+    """ loads a local file
+
+          known formats:
+            python code
+            agent description language
+            node configuration file format
+    """
     assert os.path.exists(fname), filerror
 
     if adl:
@@ -28,8 +34,13 @@ def load_file(fname, adl=False, python=True):
         execfile(fname, universe)
         return NamespacePartition(universe).cleaned
 
+def ping(*args, **kargs):
+    """ """
+    print "answering ping"
+    return 'pong', args, kargs
+
 # Shortcuts into the Universe
-services= lambda: list(universe.services)
+services     = lambda: list(universe.services)
 load_service = universe.loadService
 sleep        = universe.sleep
 peers        = universe.peers

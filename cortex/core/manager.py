@@ -7,27 +7,31 @@ import datetime
 from cortex.core.hds import HierarchicalData
 
 class Manager(object):
-    """ """
+    """
+         NOTE: if subclasses define 'asset_class', then ..
+    """
     class NotFound(Exception): pass
 
     @property
     def oldest(self):
+        """ """
         return self[self.as_list[-1]]
 
     @property
     def newest(self):
         return self[self.as_list[0]]
 
-    def stamp(self,name):
-        """ """
+    def stamp(self, name):
+        """ timestamp element with name <name> """
         self.registry[name].stamp = datetime.datetime.now()
 
-    def register(self, name, **kargs):
-        """ """
+    def register(self, name, **item_metadata):
+        """ register object <name> with namespace <item_metadata>
+        """
         name = str(name)
-        self.registry[name] = HierarchicalData()
-        for key,value in kargs.items():
-            setattr(self.registry[name], key, value)
+        self.registry[name] = getattr(self, 'asset_class', HierarchicalData)()
+        for key,value in item_metadata.items():
+            setattr( self.registry[name], key, value)
         self.stamp(name)
 
     def __str__(self):
@@ -43,7 +47,7 @@ class Manager(object):
             Example:
 
                peers.as_list --> sorted by stamp, returns a list of names
-               peers[int]    --> sorted by stamp, returns a names
+               peers[int]    --> sorted by stamp, returns a HDS-Peer
                peers[str]    --> sorted by stamp, returns a HDS-Peer
                peers[peers[0]] --> returns the most recent HDS-Peer
 
@@ -52,7 +56,7 @@ class Manager(object):
 
         """
         if isinstance(name, int):
-            return self.as_list[name]
+            return self.registry[self.as_list[name]]
         if isinstance(name, str):
             for nayme in self.registry:
                 if name.lower() == nayme.lower():
