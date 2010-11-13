@@ -1,8 +1,9 @@
 #django
-twisted==10.04
+twisted
 importing
 pygments
 ipython
 python-Levenshtein
-txJSON-RPC # cortex/data/txjsonrpc
-
+#txJSON-RPC
+simplejson
+lindypy
