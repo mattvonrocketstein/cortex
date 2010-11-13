@@ -1,0 +1,2 @@
+* Discover peers
+  >> peers #At the repl
