@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 #
 # Cortex, first phase init
 #
@@ -12,22 +11,24 @@ else
 fi
 
 # Set up basic context
-export SCRIPT=$_my_path$_my_name
+export SCRIPT=$_my_path/$_my_name
 export PROJECT_NAME="cortex-testing node"
-export DOT_FILE=${_my_path}.project
-export BINDIR=${_my_path}bin
-export VENV_PY=$BINDIR/python
+export DOT_FILE=${_my_path}/.project
+export BINDIR=${_my_path}/bin
+export VENV_PY=$(which python)
 export GO_NAME="go.py"
-export GO_PY=${_my_path}$GO_NAME
+export GO_PY=${_my_path}/$GO_NAME
 
 # Set up django (useful to hijack the ORM)
 export DJANGO_SETTINGS_MODULE="cortex.settings.django"
 
 # HACK (to use development files for now)
-export PYTHONPATH=$PYTHONPATH:${_my_path}/../
+#export PYTHONPATH=$PYTHONPATH:${_my_path}/../
 
 # Enter python world, launching second phase init
 echo "Launching $PROJECT_NAME"
 echo " with Python=$VENV_PY"
+echo " with my_path: $_my_path"
+echo " with my_name: $_my_name"
 echo
 $VENV_PY $GO_PY "$@"
