@@ -1,2 +1,5 @@
 * Discover peers
   >> peers #At the repl
+
+* BUGS
+** TODO 'go' script fails when run in a virtualenv where the app was installed 'setup.py install' rather than 'setup.py develop'
