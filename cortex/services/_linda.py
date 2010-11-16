@@ -5,7 +5,7 @@ import datetime
 from socket import socket
 
 from cortex.core.util import report, console
-from cortex.core.services import Service
+from cortex.services import Service
 from cortex.core.atoms import PersistenceMixin
 
 from twisted.internet import protocol

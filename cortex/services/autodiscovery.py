@@ -1,4 +1,4 @@
-""" cortex.core.services.autodiscovery
+""" cortex.services.autodiscovery
 """
 
 import time
@@ -9,10 +9,10 @@ import dbus, gobject, avahi
 from dbus import DBusException
 from dbus.mainloop.glib import DBusGMainLoop
 from multiprocessing import Process, Value, Array
-from cortex.core.services.zeroconf import ZeroconfService
+from cortex.services.zeroconf import ZeroconfService
 
 from cortex.core.util import report
-from cortex.core.services import Service
+from cortex.services import Service
 from cortex.core.data import AVAHI_TYPE as TYPE
 
 class AutodiscoveryClient(Service):

@@ -1,4 +1,4 @@
-""" cortex.core.services.zeroconf
+""" cortex.services.zeroconf
 """
 
 import avahi
@@ -7,9 +7,8 @@ import dbus
 __all__ = ["ZeroconfService"]
 
 class ZeroconfService:
-    """A simple class to publish a network service with zeroconf using
-    avahi.
-
+    """ A simple class to publish a network service
+        with zeroconf using avahi.
     """
 
     def __init__(self, name, port, stype="_http._tcp",

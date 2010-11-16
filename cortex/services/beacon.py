@@ -16,7 +16,7 @@ def set_trace():
 """
 
 from cortex.core.util import report
-from cortex.core.services import Service
+from cortex.services import Service
 from cortex.core.util import report, console
 
 class Beacon(Service):

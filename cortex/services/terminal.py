@@ -1,11 +1,12 @@
-""" cortex.core.services.terminal
+""" cortex.services.terminal
       see also: http://ipython.scipy.org/moin/Cookbook/JobControl
 """
 
 from cortex.core import api
-from cortex.core.util import report, console#, notifier
-from cortex.core.services import Service
+from cortex.services import Service
+from cortex.core.util import report, console #, notifier
 from cortex.core.terminal import IPShellTwisted, IPY_ARGS
+
 
 class Terminal(Service):
     """ Terminal Service:
