@@ -55,6 +55,7 @@ def boot(opts, *args, **options):
     if options.get('exit', False): exit(0)
 
 if __name__=='__main__':
+    os.chdir(BASEDIR)
     parser = OptionParser()
     parser.add_option('--boot', '-b', dest="boot",
                       action="store_true",
