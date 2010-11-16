@@ -29,7 +29,7 @@ def boot(opts, *args, **options):
               "Failed to virtualenv")
     
     sys.stderr.write("=> Installing reqs\n")
-    do_or_die('source {name}/bin/activate && pip install -E {name} -r requirements.txt'.format(name=opts.name),
+    do_or_die('source {name}/bin/activate && pip install -E {name} --download-cache=.cache -r requirements.txt'.format(name=opts.name),
               "Failed to install requirements")
     
     sys.stderr.write("=> Installing self\n")
