@@ -4,3 +4,4 @@ node/*
 /data/_scripts/tmp/*
 build/*
 dist/*
+.cache/*
