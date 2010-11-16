@@ -2,8 +2,12 @@
 
       smart datastructures for storage
 """
+import datetime
+
 from lindypy.TupleSpace import TSpace
 from lindypy.TupleSpace import Client,tuplespace
+
+from cortex.core.atoms import PersistenceMixin
 
 class Memory(TSpace,PersistenceMixin):
     """ A thin wrapper around lindypy's tuplespace. """
@@ -72,6 +76,7 @@ class Memory(TSpace,PersistenceMixin):
         """ """
         #print 'added', args, kargs
         return TSpace.add(self, *args, **kargs)
+
 
 class Keyspace(Memory):
     """ Thin wrapper around <Memory> to make it look like a dictionary
