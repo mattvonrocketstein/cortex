@@ -2,6 +2,8 @@
 """
 import os
 
+from cortex.core.data import SERVICES_DOTPATH
+
 class shell:
     """a dumb abstraction for a shell rooted at <path>"""
     def __init__(self, path):
@@ -11,7 +13,7 @@ class shell:
         """ """
         os.system('cd "'+path+'"; '+line)
 
-def get_mod(mod_name, root_dotpath='cortex.core.services'):
+def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
     """ stupid helper to snag modules from inside the services root """
     out = {}
     ns  = {}

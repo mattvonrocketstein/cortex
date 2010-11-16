@@ -1,11 +1,11 @@
-""" cortex.core.services.api
+""" cortex.services.api
 
       This service publishes the api via json-rpc
 """
 
 
 from cortex.core.util import report, console
-from cortex.core.services import Service
+from cortex.services import Service
 
 from twisted.internet import reactor #from txjsonrpc.netstring.jsonrpc import Proxy
 from twisted.application import service, internet

@@ -1,5 +1,6 @@
 """ cortex.core.universe
 """
+
 import os, sys
 import inspect
 import simplejson
@@ -11,6 +12,7 @@ from twisted.internet import reactor
 from cortex.util import Memoize
 from cortex.core.reloading import AutoReloader
 from cortex.core.util import report, console
+from cortex.core.data import SERVICES_DOTPATH
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
 from cortex.core.peer import PeerManager #,ServiceManager
@@ -234,9 +236,9 @@ class __Universe__(AutoReloader, PIDMixin,
             TODO: move this stuff into nodeconf
         """
 
-        from cortex.core.services.terminal import Terminal
-        from cortex.core.services.beacon import Beacon
-        from cortex.core.services._linda import Linda
+        from cortex.services.terminal import Terminal
+        from cortex.services.beacon import Beacon
+        from cortex.services._linda import Linda
         _Services = [Linda, Terminal]
         # _Services.append(Beacon)
         #_Services.append(self.stdoutbeacon_service)
@@ -254,7 +256,7 @@ class __Universe__(AutoReloader, PIDMixin,
         return node
 
 Universe = __Universe__()
-def get_mod(mod_name, root_dotpath='cortex.core.services'):
+def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
     """ stupid helper to snag modules from inside the services root """
     out = {}
     ns  = {}

@@ -1,6 +1,8 @@
 """ cortex.core.data
 """
 
+SERVICES_DOTPATH = 'cortex.services'
+
 GENERIC_LOCALHOST = "0"
 LOOPBACK_HOST     = '127.0.0.1'
 DEFAULT_HOST      = LOOPBACK_HOST
