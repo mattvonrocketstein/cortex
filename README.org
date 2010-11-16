@@ -9,7 +9,7 @@
    Have `virtualenv` with `pip` available on PATH
 
 ** Process
-  $ git://github.com/mattvonrocketstein/cortex.git
+  $ git clone git://github.com/mattvonrocketstein/cortex.git
 
   $ cd cortex
 
