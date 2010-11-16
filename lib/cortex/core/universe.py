@@ -21,6 +21,14 @@ from cortex.core.service import ServiceManager
 
 from cortex.core.mixins import EventMixin, NoticeMixin, PIDMixin
 
+class OSMixin(object):
+    """ For things that really should be in the os module """
+
+    def has_bin(self, cmd):
+        """ use POSIX "command" tool to see if a binary
+            exists on the system """
+        return 0 == os.system('command -v '+cmd)
+
 class __Universe__(AutoReloader, PIDMixin,
                    NoticeMixin, AutonomyMixin, PerspectiveMixin,
                    PersistenceMixin):
