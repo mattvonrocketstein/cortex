@@ -17,8 +17,8 @@ from cortex.core.data import AVAHI_TYPE as TYPE
 
 class AutodiscoveryClient(Service):
     """ Zeroconf Client Service:
-        start: begin looking for peers
-        stop:  stop looking for peers
+          start: begin looking for peers
+          stop:  stop looking for peers
     """
 
     def service_resolved(self, *args):

@@ -3,7 +3,7 @@
 
 from cortex.core.node import Node
 from cortex.core.manager import Manager
- 
+
 class ServiceManager(Manager):
     """ ServiceManager exists mainly to make universe.services obey list
         and dictionary api simultaneously.  Additionally, it provides a
@@ -25,6 +25,10 @@ class Service(Node):
         else:
             kargs.update( { 'name' : self.__class__.__name__ } )
         super(Service,self).__init__(*args, **kargs)
+
+    def _post_init(self):
+        """ """
+        self.is_stopped = False
 
     def stop(self):
         """ """

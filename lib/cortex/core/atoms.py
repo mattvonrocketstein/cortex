@@ -100,6 +100,10 @@ class AutonomyMixin:
             raise NodeError,"Only node-local's can be booted at this time."
 
 class PerspectiveMixin:
+    def ground(self):
+        """ run filters on the ground here """
+        return universe.ground
+
     def darkly(self):
         """ if this host refers to a local version, obtain an image of
             self suitable for acurate transmission/storage elsewhere
