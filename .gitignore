@@ -1,4 +1,4 @@
 *.pyc
 node/*
 *.egg-info
-/data/_scripts/tmp/tmpm1Lwkh
+/data/_scripts/tmp/*
