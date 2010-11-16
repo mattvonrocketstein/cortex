@@ -28,8 +28,8 @@ def boot(opts, *args, **options):
     def pip_flags(flags=None):
         flags = dict(
             {
-                '--download-cache': '/tmp/.cortex.pip_cache',
-                '--build': '/tmp/.cortex.build',
+                '--download-cache': opts.down_cache,
+                '--build': opts.build_cache,
                 },
             **(flags or {}))
         return reduce(lambda acc, pair: acc + "%s=%s " % pair,
@@ -63,6 +63,12 @@ if __name__=='__main__':
     parser.add_option('--name', '-n', dest="name",
                       default="node",
                       help="Name of environment to build [default: node]")
+    parser.add_option('--download', '-d', dest='down_cache',
+                      default="/tmp/.cortex.pip_cache.down",
+                      help="Location of the download cache [default: /tmp/.cortex.pip_cache.down]")
+    parser.add_option('--build', '-c', dest='build_cache',
+                      default="/tmp/.cortex.pip_cache.build",
+                      help="Location of the build dir [default: /tmp/.cortex.pip_cache.build]")
     parser.add_option("--permanent", '-p', dest="develop",
                       action='store_false',
                       default=True,
