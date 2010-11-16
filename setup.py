@@ -90,9 +90,13 @@ if __name__=='__main__':
         package_dir = {'': 'lib'},
         packages    = find_packages('lib'),
 
-        scripts     = [ 'data/_scripts/go',
-                        'data/_scripts/go.py',
-                        'data/_scripts/panic',
+        entry_points = {
+            'console_scripts': [
+                'go = cortex.bin.go:entry',
+            ],
+        },
+
+        scripts     = [ 'data/_scripts/panic',
                         'data/_scripts/panic.py',]
     )
 
