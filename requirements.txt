@@ -1,10 +1,10 @@
-#django
 Twisted
 importing
-pygments
+Pygments
 ipython
 python-Levenshtein
-#txJSON-RPC
 simplejson
 lindypy
 python-nmap
+
+bzr+http://launchpad.net/txjsonrpc/trunk#egg=txjsonrpc
