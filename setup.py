@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os, sys
+import errno
+import shutil
 import subprocess
 from setuptools import setup, find_packages
 from optparse import OptionParser
@@ -51,6 +53,13 @@ def boot(opts, *args, **options):
                                                                                     "install"),
               "Failed to install self")
 
+    sys.stderr.write("=> Copying etc\n")
+    try:
+        shutil.copytree('etc', os.path.join(opts.name, 'etc'))
+    except OSError, e:
+        if errno.errorcode[e.errno] == 'EEXIST':
+            sys.stderr.write("   \=> already exists\n")
+        else: raise
 
     if options.get('exit', False): exit(0)
 

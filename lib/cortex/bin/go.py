@@ -53,6 +53,7 @@ def main(options, args):
         report("Expected node.conf @ "+nodeconf_file+', None found.')
         Universe.nodeconf_file = None
     else:
+        report("Loading with config @ %s" % nodeconf_file)
         Universe.nodeconf_file = nodeconf_file
 
 from cortex.core.reloading_helpers import run as RUN
