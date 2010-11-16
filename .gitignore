@@ -1,5 +1,5 @@
 *.pyc
-node/*
+node*/*
 *.egg-info
 /data/_scripts/tmp/*
 build/*
