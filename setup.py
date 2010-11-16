@@ -16,22 +16,35 @@ def boot(opts, *args, **options):
                                  )
         shell.communicate(things)
         return shell.poll() == 0
-    
+
     def die(message):
         sys.stderr.write("=> ERROR: %s\n" % message)
         sys.exit(9000)
 
     def do_or_die(thing, message):
+        sys.stderr.write("::%s\n" % thing)
         return do(thing) or die(message)
+
+    def pip_flags(flags=None):
+        flags = dict(
+            {
+                '--download-cache': '/tmp/.cortex.pip_cache',
+                '--build': '/tmp/.cortex.build',
+                },
+            **(flags or {}))
+        return reduce(lambda acc, pair: acc + "%s=%s " % pair,
+                      flags.items(),
+                      "").strip()
 
     sys.stderr.write("=> Making env {name}\n".format(name=opts.name))
     do_or_die('virtualenv --no-site-packages {name}'.format(name=opts.name),
               "Failed to virtualenv")
-    
+
     sys.stderr.write("=> Installing reqs\n")
-    do_or_die('source {name}/bin/activate && pip install -E {name} --download-cache=.cache -r requirements.txt'.format(name=opts.name),
+    do_or_die('source {name}/bin/activate && pip install -E {name} {flags} -r requirements.txt'.format(name=opts.name,
+                                                                                                       flags=pip_flags()),
               "Failed to install requirements")
-    
+
     sys.stderr.write("=> Installing self\n")
     do_or_die('source {name}/bin/activate && python setup.py {arguments}'.format(name=opts.name,
                                                                           arguments=opts.develop and "develop" or
