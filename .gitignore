@@ -1,7 +1,6 @@
 *.pyc
 node*/*
 *.egg-info
-data/_scripts/tmp/*
 lib/cortex/bin/tmp/*
 build/*
 dist/*
