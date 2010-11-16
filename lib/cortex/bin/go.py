@@ -64,8 +64,8 @@ def entry():
             print "Path does not exist."
             sys.exit()
         else:
-            Universe = pickle.loads(open(options.universe).read())
-            Universe.play() # Invoke the Universe
+            U = pickle.loads(open(options.universe).read())
+            U.play() # Invoke the Universe
     else:
         main()
         RUN() # Invoke the Universe
