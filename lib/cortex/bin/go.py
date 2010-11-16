@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ go.py: Second-phase init
 
     Scratchpad:
