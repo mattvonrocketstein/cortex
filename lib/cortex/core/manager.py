@@ -4,22 +4,49 @@
 """
 
 import datetime
+
 from cortex.core.hds import HierarchicalData
 from cortex.core.util import report
 
 class Manager(object):
+    """ Managers are inspired by django's managers.  Think of
+        this class as a collection of patterns in tracking,
+        reporting, and order statistics.  Example usage follows.
+
+          Build an empty manager, or initialize it with some data
+            >>> person_manager = Manager()
+            >>> person_manager = Manager(**data) # Not implemented yet
+
+          A person as a named collection of attributes:
+            >>> jenny_attrs = dict(name='Jenny', phone=8675309, button=lambda x: x)
+
+          Use <Manager> to wrap it
+            >>> jenny = person_manager.register('jenny', jenny_attrs)
+
+          Use lazy attributes as implicit data store (these examples are equivalent)
+            >>> person_manager['jenny'].random.extra.data = {1:1,2:2,'whatever:''}
+            >>> person_manager.jenny.random.extra.data = {1:1,2:2,'whatever:''}
+            >>> jenny.random.extra.data = {1:1,2:2,'whatever:''}
+
+
+         NOTE: if subclasses define 'asset_class', then it will be used in place of
+               the default HierarchicalData
     """
-         NOTE: if subclasses define 'asset_class', then ..
-    """
+
     class NotFound(Exception): pass
 
-    @property
-    def oldest(self):
+    def __init__(self, *args, **kargs):
         """ """
+        self.registry     = {}
+
+    @property
+    def last(self):
+        """ all incoming data should be stamped; this function returns the oldest"""
         return self[self.as_list[-1]]
 
     @property
-    def newest(self):
+    def first(self):
+        """ all incoming data should be stamped; this function returns the youngest"""
         return self[self.as_list[0]]
 
     def stamp(self, name):
@@ -39,7 +66,7 @@ class Manager(object):
 
     def __str__(self):
         """ """
-        return str(self.as_list)
+        return str( self.as_list )
 
     def __repr__(self):
         """ """
@@ -55,8 +82,6 @@ class Manager(object):
                peers[peers[0]] --> returns the most recent HDS-Peer
 
             NOTE: currently case insensitive!
-
-
         """
         if isinstance(name, int):
             return self.registry[self.as_list[name]]
@@ -75,10 +100,6 @@ class Manager(object):
         return out
 
     aslist=as_list
-
-    def __init__(self, *args, **kargs):
-        """ """
-        self.registry     = {}
 
     def __iter__(self):
         """ dumb proxy """
