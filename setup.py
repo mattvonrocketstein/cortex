@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 import subprocess
-from setuptools import setup
+from setuptools import setup, find_packages
 from optparse import OptionParser
 
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
@@ -52,7 +52,8 @@ if __name__=='__main__':
         author      = 'mattvonrocketstein, in the gmails',
         url         = 'one of these days',
 
-        packages    = ['cortex'],
+        package_dir = {'': 'lib'},
+        packages    = find_packages('lib'),
 
         scripts     = [ 'data/_scripts/go',
                         'data/_scripts/go.py',
