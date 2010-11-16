@@ -7,21 +7,36 @@ from optparse import OptionParser
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
 
 def boot(opts, *args, **options):
-    do = lambda things: subprocess.Popen(
-                                    'bash',
-                                     cwd=BASEDIR, shell=True, universal_newlines=True,
-                                     env=os.environ,
-                                     stdout=sys.stderr, stderr=sys.stderr, stdin=subprocess.PIPE
-                                    ).communicate(things)
+    def do(things):
+        shell = subprocess.Popen(
+                                   'bash',
+                                   cwd=BASEDIR, shell=True, universal_newlines=True,
+                                   env=os.environ,
+                                   stdout=sys.stderr, stderr=sys.stderr, stdin=subprocess.PIPE
+                                 )
+        shell.communicate(things)
+        return shell.poll() == 0
+    
+    def die(message):
+        sys.stderr.write("=> ERROR: %s\n" % message)
+        sys.exit(9000)
+
+    def do_or_die(thing, message):
+        return do(thing) or die(message)
 
     sys.stderr.write("=> Making env {name}\n".format(name=opts.name))
-    do('virtualenv --no-site-packages {name}'.format(name=opts.name))
+    do_or_die('virtualenv --no-site-packages {name}'.format(name=opts.name),
+              "Failed to virtualenv")
+    
     sys.stderr.write("=> Installing reqs\n")
-    do('source {name}/bin/activate && pip install -E {name} -r requirements.txt'.format(name=opts.name))
+    do_or_die('source {name}/bin/activate && pip install -E {name} -r requirements.txt'.format(name=opts.name),
+              "Failed to install requirements")
+    
     sys.stderr.write("=> Installing self\n")
-    do('source {name}/bin/activate && python setup.py {arguments}'.format(name=opts.name,
+    do_or_die('source {name}/bin/activate && python setup.py {arguments}'.format(name=opts.name,
                                                                           arguments=opts.develop and "develop" or
-                                                                                    "install"))
+                                                                                    "install"),
+              "Failed to install self")
 
 
     if options.get('exit', False): exit(0)
