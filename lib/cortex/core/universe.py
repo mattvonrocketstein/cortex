@@ -15,7 +15,7 @@ from cortex.core.util import report, console
 from cortex.core.data import SERVICES_DOTPATH
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
-from cortex.core.peer import PeerManager #,ServiceManager
+from cortex.core.peer import PeerManager,PEERS #,ServiceManager
 from cortex.core.service import Service
 from cortex.core.service import ServiceManager
 
@@ -39,7 +39,7 @@ class __Universe__(AutoReloader, PIDMixin,
     _services = []
     _procs    = []
     reactor   = reactor
-    peers     = PeerManager()
+    peers     = PEERS
 
     @property
     def ip(self):
