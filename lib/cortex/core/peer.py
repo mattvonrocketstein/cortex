@@ -34,3 +34,4 @@ class PeerManager(Manager):
     def __iter__(self):
         """ dumb proxy """
         return Manager.__iter__(self)
+PEERS=PeerManager()
