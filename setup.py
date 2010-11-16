@@ -93,10 +93,8 @@ if __name__=='__main__':
         entry_points = {
             'console_scripts': [
                 'go = cortex.bin.go:entry',
+                'panic = cortex.bin.panic:entry',
             ],
         },
-
-        scripts     = [ 'data/_scripts/panic',
-                        'data/_scripts/panic.py',]
     )
 
