@@ -7,3 +7,4 @@ python-Levenshtein
 #txJSON-RPC
 simplejson
 lindypy
+python-nmap
