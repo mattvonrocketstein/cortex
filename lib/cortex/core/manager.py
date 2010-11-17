@@ -37,7 +37,17 @@ class Manager(object):
 
     def __init__(self, *args, **kargs):
         """ """
-        self.registry     = {}
+        self.registry      = {}
+        self.generic_store = HierarchicalData()
+
+    def __getattr__(self,name):
+        out = None
+        if name!='asset_class':
+            try:
+                return object.__getattribute__(self, '__getitem__')(name)
+            except self.NotFound:
+                return getattr(object.__getattribute__(self, 'generic_store'), name)
+        raise AttributeError,'nonesuch'
 
     @property
     def last(self):
@@ -61,7 +71,7 @@ class Manager(object):
         for key,value in item_metadata.items():
             setattr( self.registry[name], key, value)
         self.stamp(name)
-        report('saving name', name)
+        #report('saving name', name)
         return self[name]
 
     def __str__(self):
@@ -85,6 +95,7 @@ class Manager(object):
         """
         if isinstance(name, int):
             return self.registry[self.as_list[name]]
+
         if isinstance(name, str):
             for nayme in self.registry:
                 if name.lower() == nayme.lower():

@@ -5,6 +5,7 @@ import os, sys
 import inspect
 import simplejson
 import multiprocessing
+import types
 from tempfile import NamedTemporaryFile
 
 from twisted.internet import reactor
@@ -147,29 +148,37 @@ class __Universe__(AutoReloader, PIDMixin,
 
     def loadService(self, service, **kargs):
         """ """
-        if isinstance(service, str):
+        if isinstance(service, types.StringTypes):
             # handle dotpaths
             if "." in service:
                 service = service.split('.')
                 if len(service) == 2:
                     mod_name, class_name = service
-                    namespace = get_mod(mod_name)
-                    if class_name in namespace:
-                        service_obj = namespace[class_name]
-                        return self.start_service(service_obj, **kargs)
+
+                    try: namespace = get_mod(mod_name)
+                    except ImportError, e:
+                        report("Failed to get module {mod} to load service.".format(mod=mod_name))
+                    else:
+                        if class_name in namespace:
+                            service_obj = namespace[class_name]
+                            return self.start_service(service_obj, **kargs)
                 else:
                     raise Exception,'will not interpret that dotpath yet'
 
             # just one word.. where/what could it be?
             else:
                 mod_name = service
+                try: mod = get_mod(mod_name)
+                except ImportError, e:
+                    report("Failed to get module '{mod}' to load service.".format(mod=mod_name))
+                    mod = {}
+
                 ret_vals = []
-                for name, val in get_mod(mod_name).items():
+                for name, val in mod.items():
                     if inspect.isclass(val):
                         if not val==Service and issubclass(val, Service):
-                            #launch_service = lambda: val(universe=self).play
-                            report('discovered service in ' + mod_name)
-                            ret_vals.append(self.start_service(val,ask=False,**kargs))
+                            #report('discovered service in ' + mod_name)
+                            ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
                 return ret_vals
 
         # Not a string? let's hope it's already a service-like thing
