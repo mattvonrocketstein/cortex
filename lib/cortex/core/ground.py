@@ -9,15 +9,24 @@ from lindypy.TupleSpace import Client,tuplespace
 
 from cortex.core.atoms import PersistenceMixin
 
-class Memory(TSpace,PersistenceMixin):
+class Memory(TSpace, PersistenceMixin):
     """ A thin wrapper around lindypy's tuplespace. """
+
+    universe = None
+
     def __init__(self, owner, name=None, filename=None):
         """ """
         self.owner = owner
         self.name  = name or (str(owner) + ' :: ' + str(id(owner)))
 
         # persistence mixin
-        self.filename = filename or self.owner.universe.tmpfile().name
+        if not filename:
+            universe = self.owner.universe
+            if universe:
+                filename = universe.tmpfile().name
+        else:
+            self.filename = filename
+
         TSpace.__init__(self)
 
         self.john_hancock()
@@ -27,15 +36,20 @@ class Memory(TSpace,PersistenceMixin):
         self.add(('__name__',  self.name))
         self.add(('__stamp__', str(datetime.datetime.now())))
 
-    def as_keyspace(self):
+    def as_keyspace(self, name=None):
         """
             NOTE: this is a cheap, stupid, and possibly error-prone
                   cloning operation that is running.. but the alternative
                   is very expensive
         """
+        import copy
+        name = name or (self.name+':as:Keyspace')
+        k = type('dynamicKeyspace',(Keyspace,),{})(self,name=name)
+        k.__dict__ = self.__dict__ #copy.copy(self.__dict__)
+        return k
 
-    #def __getattr__(self,name):
-    #    return print 'mem: getattr fail', name
+    def asdf__getattr__(self,name):
+        print 'mem: getattr fail', name
 
     def shutdown(self):
         """ TODO: proxy to TSpace shutdown? """
@@ -62,6 +76,18 @@ class Memory(TSpace,PersistenceMixin):
                 break
         return out
 
+    #@cache these
+    def filter(self, *tests):
+        """ """
+        out = []
+        for item in iter(self.values()):
+            passes = True
+            for test in tests:
+                if not test(item):
+                    passes = False
+            if passes: out.append(item)
+        return out
+
     def values(self):
         """ """
         #print 'valued'
@@ -77,22 +103,40 @@ class Memory(TSpace,PersistenceMixin):
         #print 'added', args, kargs
         return TSpace.add(self, *args, **kargs)
 
-
-class Keyspace(Memory):
-    """ Thin wrapper around <Memory> to make it look like a dictionary
+class DefaultKeyMapper(object):
+    """ The trivial protocol for mapping a tuplespace to a keyspace
     """
+    def tuple2key(self,t):
+        """ """
+        return t[0]
 
-    def keys(self):
-        """ dict compat """
-        return iter([x[0] for x in self.values()])
-
-    def items(self):
-        """ dict compat """
-        return iter([x[0],x[1:]] for x in self.values())
+    def tuple2value(self,t):
+        """ """
+        return t[1:]
 
     def __setitem__(self, key, value):
         """ dict compat """
-        self.add((key,value))
+        self.add((key, value))
+
+class Keyspace(Memory, DefaultKeyMapper):
+    """ Thin wrapper around <Memory> to make it look like a dictionary
+    """
+    def __contains__(self,other):
+        return other in self.keys()
+
+    def keys(self):
+        """ dict compat """
+        return [ self.tuple2key(x) for x in self.values() ]
+
+    def __getitem__(self, other):
+        return self.filter(lambda x: x==other)
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def items(self):
+        """ dict compat """
+        return [ [ self.tuple2key(x), self.tuple2value(x) ] for x in self.values() ]
 
     def asdf__getitem__(self,key):
         """ transparent encryption, serialization, perspective warping? """

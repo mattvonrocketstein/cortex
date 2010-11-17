@@ -18,15 +18,18 @@ class Linda(Service):
     """
 
     def _post_init(self):
-        """ """
+        """ instantiate and back-link """
+        Memory.universe = self.universe
         self.universe.ground = Memory(self)
 
     def monitor(self):
-        """ """
+        """ placeholder """
         pass #self.universe.reactor.callLater(1, self.monitor)
 
     def start(self, universe=True):
-        """ """
+        """ placeholder for invoking lindypy multiprocessing,
+            for now we just use the underlying datastructures.
+        """
         Service.start(self)
         report("Starting linda tuplespace")
         self.universe.reactor.callLater(1, self.monitor)
