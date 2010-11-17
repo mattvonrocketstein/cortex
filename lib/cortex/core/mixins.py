@@ -4,6 +4,38 @@ import os
 
 NOTICE_T = 'system_notice'
 
+class OSMixin(object):
+    """ For things that really should be in the os module """
+
+    _procs    = []
+
+    @property
+    def procs(self):
+        """ """
+        return self._procs
+
+    @property
+    def threads(self):
+        """ """
+        import threading
+        return threading.enumerate()
+
+    def has_bin(self, cmd):
+        """ use POSIX "command" tool to see if a binary
+            exists on the system """
+        return 0 == os.system('command -v '+cmd)
+
+    @property
+    def ip(self):
+        """ """
+        pass
+
+    @property
+    def hostname(self):
+        """ TODO: memoize """
+        import socket
+        return socket.gethostname()
+
 class EventMixin(object):
     """ """
     def push_events(self, string_type, *args):
