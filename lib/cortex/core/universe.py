@@ -99,9 +99,11 @@ class __Universe__(AutoReloader, PIDMixin,
     def stop(self):
         """ """
         for service in self.services:
-            try: service.stop()
+            try: self.services[service].service_obj.stop()
             except Exception,e:
-                print 'exc',e
+                err_msg = 'Squashed exception stopping service "{service}".  Original Exception follows'.format(service=service)
+                report(err_msg)
+                report(str(e))
                 #IP.quitting=True
         self.started = False
         for thr in self.threads:
