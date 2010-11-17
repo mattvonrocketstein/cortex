@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os, sys
+import errno
+import shutil
 import subprocess
 from setuptools import setup, find_packages
 from optparse import OptionParser
@@ -7,26 +9,62 @@ from optparse import OptionParser
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
 
 def boot(opts, *args, **options):
-    do = lambda things: subprocess.Popen(
-                                    'bash',
-                                     cwd=BASEDIR, shell=True, universal_newlines=True,
-                                     env=os.environ,
-                                     stdout=sys.stderr, stderr=sys.stderr, stdin=subprocess.PIPE
-                                    ).communicate(things)
+    def do(things):
+        shell = subprocess.Popen(
+                                   'bash',
+                                   cwd=BASEDIR, shell=True, universal_newlines=True,
+                                   env=os.environ,
+                                   stdout=sys.stderr, stderr=sys.stderr, stdin=subprocess.PIPE
+                                 )
+        shell.communicate(things)
+        return shell.poll() == 0
+
+    def die(message):
+        sys.stderr.write("=> ERROR: %s\n" % message)
+        sys.exit(9000)
+
+    def do_or_die(thing, message):
+        sys.stderr.write("::%s\n" % thing)
+        return do(thing) or die(message)
+
+    def pip_flags(flags=None):
+        flags = dict(
+            {
+                '--download-cache': opts.down_cache,
+                '--build': opts.build_cache,
+                },
+            **(flags or {}))
+        return reduce(lambda acc, pair: acc + "%s=%s " % pair,
+                      flags.items(),
+                      "").strip()
 
     sys.stderr.write("=> Making env {name}\n".format(name=opts.name))
-    do('virtualenv --no-site-packages {name}'.format(name=opts.name))
-    sys.stderr.write("=> Installing reqs\n")
-    do('source {name}/bin/activate && pip install -E {name} -r requirements.txt'.format(name=opts.name))
-    sys.stderr.write("=> Installing self\n")
-    do('source {name}/bin/activate && python setup.py {arguments}'.format(name=opts.name,
-                                                                          arguments=opts.develop and "develop" or
-                                                                                    "install"))
+    do_or_die('virtualenv --no-site-packages {name}'.format(name=opts.name),
+              "Failed to virtualenv")
 
+    sys.stderr.write("=> Installing reqs\n")
+    do_or_die('source {name}/bin/activate && pip install -E {name} {flags} -r requirements.txt'.format(name=opts.name,
+                                                                                                       flags=pip_flags()),
+              "Failed to install requirements")
+
+    sys.stderr.write("=> Installing self\n")
+    do_or_die('source {name}/bin/activate && python setup.py {arguments}'.format(name=opts.name,
+                                                                          arguments=opts.develop and "develop" or
+                                                                                    "install"),
+              "Failed to install self")
+
+    sys.stderr.write("=> Copying etc\n")
+    try:
+        shutil.copytree('etc', os.path.join(opts.name, 'etc'))
+    except OSError, e:
+        if errno.errorcode[e.errno] == 'EEXIST':
+            sys.stderr.write("   \=> already exists\n")
+        else: raise
 
     if options.get('exit', False): exit(0)
 
 if __name__=='__main__':
+    os.chdir(BASEDIR)
     parser = OptionParser()
     parser.add_option('--boot', '-b', dest="boot",
                       action="store_true",
@@ -35,6 +73,12 @@ if __name__=='__main__':
     parser.add_option('--name', '-n', dest="name",
                       default="node",
                       help="Name of environment to build [default: node]")
+    parser.add_option('--download', '-d', dest='down_cache',
+                      default="/tmp/.cortex.pip_cache.down",
+                      help="Location of the download cache [default: /tmp/.cortex.pip_cache.down]")
+    parser.add_option('--build', '-c', dest='build_cache',
+                      default="/tmp/.cortex.pip_cache.build",
+                      help="Location of the build dir [default: /tmp/.cortex.pip_cache.build]")
     parser.add_option("--permanent", '-p', dest="develop",
                       action='store_false',
                       default=True,
@@ -55,9 +99,11 @@ if __name__=='__main__':
         package_dir = {'': 'lib'},
         packages    = find_packages('lib'),
 
-        scripts     = [ 'data/_scripts/go',
-                        'data/_scripts/go.py',
-                        'data/_scripts/panic',
-                        'data/_scripts/panic.py',]
+        entry_points = {
+            'console_scripts': [
+                'go = cortex.bin.go:entry',
+                'panic = cortex.bin.panic:entry',
+            ],
+        },
     )
 
