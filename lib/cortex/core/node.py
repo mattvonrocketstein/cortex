@@ -9,8 +9,14 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.data import DEFAULT_HOST
 from cortex.core.util import report
 
+class MobileCodeMixin(object):
+    """ """
+    @property
+    def is_local(self):
+        """ """
+        return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]
 
-class Node(object, AutonomyMixin, PerspectiveMixin):
+class Node(object, MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
     """
     def __init__(self, host=None, instance=None, universe=None,
@@ -26,7 +32,7 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
             self._post_init()
 
     @property
-    def instance(self):
+    def cortex_instance(self):
         return self.universe.instance_dir
 
     def __str__(self):
@@ -35,24 +41,13 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
         names = dict(nayme     = nayme,
                      parent   = self.__class__.__bases__[0].__name__,
                      host     = str(self.host),
-                     instance = str(self.instance),
-                     resource_descr = self.__render_resource_description())
-        return "<{nayme}-{parent}@{host}::{instance} {resource_descr}>".format(**names)
-
-    def harikari(self):
-        """
-           CONVENTION:
-        """
-        pass
+                     instance = str(self.instance),)
+                     #resource_descr = self.__render_resource_description())
+        return "<{nayme}-{parent}@{host}::{instance}>".format(**names)
 
     def __render_resource_description(self):
-        """ """
+        """ OBSOLETE? """
         return str(self.resource_description)
-
-    @property
-    def is_local(self):
-        """ """
-        return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]
 
     def stop(self):
         report("node::stopping")
