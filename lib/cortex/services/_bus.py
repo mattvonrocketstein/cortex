@@ -1,19 +1,19 @@
 """ cortex.services._bus
 """
-from cyrusbus.bus import Bus
 
+from cyrusbus.bus import Bus
 from cortex.core.util import report
 from cortex.core.ground import Keyspace
 from cortex.services import Service
 
-class CortexBus(Service, Keyspace, Bus):
-    """ CortexBus Service: thin wrapper over cyrusbus's basic layout
+class PostOffice(Service, Keyspace, Bus):
+    """ PostOffice Service: a thin wrapper over cyrusbus's basic layout
           start: brief description of service start-up here
           stop:  brief description service shutdown here
     """
+
     def __init__(self, *args, **kargs):
         Service.__init__(self, *args, **kargs)
-
         keyspace_name  = self.universe or 'CortexBus::keyspace'
         keyspace_owner = self
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
@@ -26,26 +26,27 @@ class CortexBus(Service, Keyspace, Bus):
         """
         self.subscriptions = self
 
-    def unsubscribe(self, key, callback=None):
-        if callback==None:
-            return self.subscriptions.remove(key)
-        else:
-            return Bus.unsubscribe(self,key,callback)
+    def has_subscription(self, key, callback):
+        if key not in self.public_keys():
+            return False
+        subscription = {'key': key, 'callback': callback}
+        return subscription in self[key]
+
     def subscribe(self, key, callback, force=False):
         """ override from cyrusbus forcing tuples, not lists """
-        print 'subscribing', key, callback
-        if key not in self.subscriptions:
-            self.subscriptions[key] = tuple(callback)
+        report ('subscribing', dict(key=key, callback=callback,subscriptions=self.subscriptions,flush=True))
+        report ('all keys',[x for x in self.public_keys()])
+        report ('this key',self[key])
 
-        subscription = {
-            'key': key,
-            'callback': callback
-        }
+        if key not in self.public_keys():
+            self[key] = (None,)
 
+        subscription = { 'key':key, 'callback':callback }
         if force or not self.has_subscription(key, callback):
-            self.subscriptions[key] = append(subscription)
+            print '-'*80, self[key],(subscription,)
 
         return self
+
     def start(self):
         return self.reset()
 

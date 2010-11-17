@@ -31,10 +31,13 @@ class Node(object, AutonomyMixin, PerspectiveMixin):
 
     def __str__(self):
         """ """
-        host     = str(self.host)
-        instance = str(self.instance)
-        resource_descr = self.__render_resource_description()
-        return "<"+self.name+"-" + self.__class__.__bases__[0].__name__ + "@" + host + "::" + instance + " " + resource_descr + ">"
+        nayme=self.name
+        names = dict(nayme     = nayme,
+                     parent   = self.__class__.__bases__[0].__name__,
+                     host     = str(self.host),
+                     instance = str(self.instance),
+                     resource_descr = self.__render_resource_description())
+        return "<{nayme}-{parent}@{host}::{instance} {resource_descr}>".format(**names)
 
     def harikari(self):
         """

@@ -172,7 +172,7 @@ class __Universe__(AutoReloader, PIDMixin,
                 except ImportError, e:
                     report("Failed to get module '{mod}' to load service.".format(mod=mod_name))
                     mod = {}
-                    
+
                 ret_vals = []
                 for name, val in mod.items():
                     if inspect.isclass(val):

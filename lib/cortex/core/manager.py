@@ -61,7 +61,7 @@ class Manager(object):
         for key,value in item_metadata.items():
             setattr( self.registry[name], key, value)
         self.stamp(name)
-        report('saving name', name)
+        #report('saving name', name)
         return self[name]
 
     def __str__(self):

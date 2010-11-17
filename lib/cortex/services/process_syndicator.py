@@ -1,4 +1,5 @@
-
+"""
+"""
 class ProcessReadSyndication(Service, protocol.ProcessProtocol):
     """ ProcessReaderSyndication Service:
           start:
