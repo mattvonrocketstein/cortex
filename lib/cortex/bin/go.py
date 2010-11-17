@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ go.py: Second-phase init
 
     Scratchpad:
@@ -33,23 +34,31 @@ def build_parser():
     parser = OptionParser()
     parser.add_option("-c",  dest="command", default="", help=commandHelp,  metavar="COMMAND")
     parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
+    parser.add_option('--conf', dest="conf", default=os.path.join(
+                                                 os.path.realpath(os.getcwd()),
+                                                 'etc',
+                                                 'node.conf'
+                                             ),
+                      help="Config to use [default: %default]"
+                      )
     return parser
 
-def main():
+def main(options, args):
     """ """
     # Set node configuration file in universe
     instance_dir = os.path.split(__file__)[0]
-    nodeconf_file = NODE_CONF or os.path.join(instance_dir, 'node.conf')
+    nodeconf_file = NODE_CONF or options.conf
     Universe.instance_dir = instance_dir
     if not os.path.exists(nodeconf_file):
         report("Expected node.conf @ "+nodeconf_file+', None found.')
         Universe.nodeconf_file = None
     else:
+        report("Loading with config @ %s" % nodeconf_file)
         Universe.nodeconf_file = nodeconf_file
 
 from cortex.core.reloading_helpers import run as RUN
 
-if __name__ == '__main__':
+def entry():
     parser = build_parser()
     (options, args) = parser.parse_args()
     if args and len(args)==1:
@@ -64,9 +73,12 @@ if __name__ == '__main__':
             print "Path does not exist."
             sys.exit()
         else:
-            Universe = pickle.loads(open(options.universe).read())
-            Universe.play() # Invoke the Universe
+            U = pickle.loads(open(options.universe).read())
+            U.play() # Invoke the Universe
     else:
-        main()
+        main(options, args)
         RUN() # Invoke the Universe
         s=Universe.play()
+
+if __name__ == '__main__':
+    entry()

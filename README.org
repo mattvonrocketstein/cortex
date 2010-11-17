@@ -2,4 +2,21 @@
   >> peers #At the repl
 
 * BUGS
-** TODO 'go' script fails when run in a virtualenv where the app was installed 'setup.py install' rather than 'setup.py develop'
+  Bugs as todos go here
+
+* Booting up
+** Prereqs
+   Have `virtualenv` with `pip` available on PATH
+
+** Process
+  $ git clone git://github.com/mattvonrocketstein/cortex.git
+
+  $ cd cortex
+
+  $ ./setup.py -h # Look at the helpers
+
+  $ ./setup.py -b -n node.mine # This will build a virtualenv named node.mine with cortex installed in develop mode
+
+  $ . node.mine/bin/activate # Enter the built virtual env
+
+  (node.mine)$ go # Launch
