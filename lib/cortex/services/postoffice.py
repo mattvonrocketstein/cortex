@@ -25,13 +25,10 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
     def __init__(self, *args, **kargs):
         """ """
         Service.__init__(self, *args, **kargs)
-
         default_name   = 'PostOffice::{_id}::keyspace'.format(_id=str(id(self)))
         keyspace_name  = self.universe or default_name
-
         keyspace_owner = self
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
-
         SelfHostingTupleBus.__init__(self) # will call self.reset()
 
     def msg(self, *args, **kargs):
@@ -43,3 +40,14 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         """ """
         super(Service,self).start()
         self.reset()
+
+class ParanoidPostOffice(PostOffice):
+    """ ParanoidPostOffice Service
+          Same as PostOffice, but with more restricted access to
+          the <publish> operation.
+    """
+
+    do_not_discover = True
+
+    def start(self):
+        raise Exception,NIY
