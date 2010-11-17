@@ -14,7 +14,8 @@ class Stub(Service):
         start: brief description of service start-up here
         stop:  brief description service shutdown here
     """
-
+    # Setting this attribute as True means load_service will not work with autodiscovery
+    do_not_discover = True
 
     def print_error(self, *errors):
         """ """

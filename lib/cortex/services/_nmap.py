@@ -6,12 +6,14 @@ import time
 import nmap
 
 from cortex.core.util import report
+from cortex.core.data import PEER_T
 from cortex.services import Service
+import simplejson
 
 class Mapper(Service):
     """ Stub Service:
-        start: brief description of service start-up here
-        stop:  brief description service shutdown here
+          start: brief description of service start-up here
+          stop:  brief description service shutdown here
     """
     def callback_result(self, host, **scan_result):
         """ """
@@ -39,7 +41,7 @@ class Mapper(Service):
         Service.start(self)
         nma = nmap.PortScannerAsync()
         def foo(*args, **kargs):
-            print kargs or "FOOOOOO"
+            print 'inside nmap callback', args, kargs
             host    = args[0]
             results = args[1]
             host_up = results['scan'][host]['status']['state']
@@ -48,10 +50,10 @@ class Mapper(Service):
                                   address = host,    #
                                   alive   = host_up, #
                                   )
-            peerMan = self.universe.peers
-            report('got peerman',peerMan)
-
-            report('stored in peermap', peerMan.register(host, **peer_metadata),peerMan[host])
+            self.universe.services['postoffice'].service_obj.publish(PEER_T, simplejson.dumps(peer_metadata))
+            #peerMan = self.universe.peers
+            #report('got peerman',peerMan)
+            #report('stored in peermap', peerMan.register(host, **peer_metadata),peerMan[host])
             #self.universe.reactor.callLater(300,self.start)
 
             #print args, kargs
