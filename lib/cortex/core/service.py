@@ -3,6 +3,7 @@
 
 from cortex.core.node import Node
 from cortex.core.manager import Manager
+from cortex.core.util import report, console
 
 class ServiceManager(Manager):
     """ ServiceManager exists mainly to make universe.services obey list

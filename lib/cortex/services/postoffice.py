@@ -6,6 +6,7 @@
 from cortex.core.util import report
 from cortex.core.ground import Keyspace
 from cortex.services import Service
+from cortex.core.bus import SelfHostingTupleBus
 
 class PostOffice(Service, Keyspace, SelfHostingTupleBus):
     """ PostOffice Service:
@@ -31,7 +32,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         keyspace_owner = self
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
 
-        Bus.__init__(self) # will call self.reset()
+        SelfHostingTupleBus.__init__(self) # will call self.reset()
 
     def msg(self, *args, **kargs):
         """ TODO: determine caller function and dispatch to publish
