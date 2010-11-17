@@ -1,4 +1,18 @@
 """ cortex.core.util
+
+      Scratch:
+
+        import sys
+        from IPython.Debugger import Pdb
+        from IPython.Shell import IPShell
+        from IPython import ipapi
+
+        shell = IPShell(argv=[''])
+
+        def set_trace():
+            ip = ipapi.get()
+            def_colors = ip.options.colors
+            Pdb(def_colors).set_trace(sys._getframe().f_back)
 """
 
 
@@ -85,8 +99,10 @@ def report(*args, **kargs):
 
     flush = kargs.pop('flush',False)
     console.color(str(kargs))
-    if flush:
-        sys.stdout.flush() # is this even working with ipython?
+
+    #if flush:
+    #    sys.stdout.flush() # is this even working with ipython?
+
 # Patterns in files, directories
 ####################################################################
 
