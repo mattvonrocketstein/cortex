@@ -7,7 +7,12 @@ from cortex.core.hds import HDS
 from cortex.core.util import report
 
 class PeerManager(Manager):
-    """ """
+    """
+
+        peerMan = PeerManager()
+        bob     = peerMan.register('bob',**bob_attributes)
+
+    """
 
     class asset_class(HDS):
         """ """

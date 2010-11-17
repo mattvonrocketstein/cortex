@@ -42,7 +42,7 @@ class API(Service, ApiWrapper):
            stop:
     """
     def __init__(self, *args, **kargs):
-        self.port = kargs.pop('port',DEFAULT_PORT)
+        self.port = kargs.pop('port', DEFAULT_PORT)
         Service.__init__(self, *args, **kargs)
         #jsonrpc.JSONRPC
         ApiWrapper.__init__(self)
@@ -61,4 +61,4 @@ class API(Service, ApiWrapper):
         """ """
         factory = jsonrpc.RPCFactory(API)
         factory.addIntrospection()
-        self.universe.reactor.listenTCP(self.port,factory)
+        self.universe.reactor.listenTCP(self.port, factory)

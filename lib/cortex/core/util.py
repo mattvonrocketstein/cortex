@@ -4,7 +4,7 @@
 
 # Patterns in reporting
 ####################################################################
-import inspect
+import sys, inspect
 
 import pygments
 from pygments import highlight
@@ -82,8 +82,11 @@ def report(*args, **kargs):
     print '\targs=',
     print console.color(str(args)),
     print '\tkargs=',
-    console.color(str(kargs))
 
+    flush = kargs.pop('flush',False)
+    console.color(str(kargs))
+    if flush:
+        sys.stdout.flush() # is this even working with ipython?
 # Patterns in files, directories
 ####################################################################
 

@@ -2,10 +2,12 @@
 
       smart datastructures for storage
 """
+
+import copy
 import datetime
 
 from lindypy.TupleSpace import TSpace
-from lindypy.TupleSpace import Client,tuplespace
+from lindypy.TupleSpace import Client, tuplespace
 
 from cortex.core.atoms import PersistenceMixin
 
@@ -42,7 +44,6 @@ class Memory(TSpace, PersistenceMixin):
                   cloning operation that is running.. but the alternative
                   is very expensive
         """
-        import copy
         name = name or (self.name+':as:Keyspace')
         k = type('dynamicKeyspace',(Keyspace,),{})(self,name=name)
         k.__dict__ = self.__dict__ #copy.copy(self.__dict__)
@@ -78,14 +79,15 @@ class Memory(TSpace, PersistenceMixin):
 
     #@cache these
     def filter(self, *tests):
-        """ """
-        out = []
+        """
+        """
+        out = (None,)
         for item in iter(self.values()):
             passes = True
             for test in tests:
                 if not test(item):
                     passes = False
-            if passes: out.append(item)
+            if passes: out+= (item,)
         return out
 
     def values(self):
@@ -121,15 +123,27 @@ class DefaultKeyMapper(object):
 class Keyspace(Memory, DefaultKeyMapper):
     """ Thin wrapper around <Memory> to make it look like a dictionary
     """
+
     def __contains__(self,other):
+        """ """
         return other in self.keys()
+
+    def public_keys(self):
+        """ like keys, only respects privacy for _ and __
+        """
+        FORBIDDEN_PREFIXES = '_ __'.split()
+        return [ k for k in self.keys() if not any( map(k.startswith, FORBIDDEN_PREFIXES) ) ]
 
     def keys(self):
         """ dict compat """
         return [ self.tuple2key(x) for x in self.values() ]
 
     def __getitem__(self, other):
-        return self.filter(lambda x: x==other)
+        """ """
+        matching_tuples = self.filter(lambda tpl: self.tuple2key(tpl)==other)
+        if matching_tuples:
+            return self.tuple2value(wmatching_tuples[0])
+        return "NOT FOUND"
 
     def __iter__(self):
         return iter(self.keys())

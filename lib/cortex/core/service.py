@@ -17,7 +17,6 @@ class ServiceManager(Manager):
 class Service(Node):
     """
     """
-
     def __init__(self, *args, **kargs):
         """ """
         if 'name' in kargs:
