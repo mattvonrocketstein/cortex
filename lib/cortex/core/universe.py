@@ -153,7 +153,11 @@ class __Universe__(AutoReloader, PIDMixin,
                 service = service.split('.')
                 if len(service) == 2:
                     mod_name, class_name = service
-                    namespace = get_mod(mod_name)
+                    try:
+                        namespace = get_mod(mod_name)
+                    except ImportError:
+                        report("Import error getting module from",mod_name)
+
                     if class_name in namespace:
                         service_obj = namespace[class_name]
                         return self.start_service(service_obj, **kargs)
@@ -164,12 +168,17 @@ class __Universe__(AutoReloader, PIDMixin,
             else:
                 mod_name = service
                 ret_vals = []
-                for name, val in get_mod(mod_name).items():
+                try:
+                    nspace   = get_mod(mod_name).items()
+                except ImportError:
+                    report('Squashing ImportError chasing after ' + mod_name)
+                    nspace = []
+                for name, val in nspace:
                     if inspect.isclass(val):
                         if not val==Service and issubclass(val, Service):
-                            #launch_service = lambda: val(universe=self).play
+                            # launch_service = lambda: val(universe=self).play
                             report('discovered service in ' + mod_name)
-                            ret_vals.append(self.start_service(val,ask=False,**kargs))
+                            ret_vals.append(self.start_service(val,ask=False,**kargs)) # THUNK
                 return ret_vals
 
         # Not a string? let's hope it's already a service-like thing
