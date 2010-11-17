@@ -16,7 +16,7 @@ class MobileCodeMixin(object):
         """ """
         return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]
 
-class Node(object, MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
+class Node(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
     """
     def __init__(self, host=None, instance=None, universe=None,
@@ -41,7 +41,7 @@ class Node(object, MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
         names = dict(nayme     = nayme,
                      parent   = self.__class__.__bases__[0].__name__,
                      host     = str(self.host),
-                     instance = str(self.instance),)
+                     instance = str(self.cortex_instance),)
                      #resource_descr = self.__render_resource_description())
         return "<{nayme}-{parent}@{host}::{instance}>".format(**names)
 
