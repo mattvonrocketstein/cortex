@@ -53,11 +53,12 @@ class console:
 console=console()
 
 def whoami():
-    """ """
+    """ gives information about the caller """
     return inspect.stack()[1][3]
 
 def whosdaddy():
-    """ """
+    """ displays information about the caller's caller
+    """
     x = inspect.stack()[2]
     frame = x[0]
     fname = x[1]
@@ -66,12 +67,16 @@ def whosdaddy():
     if 'self' in flocals:
         header = flocals['self'].__class__.__name__
     else:
-        header='<??>'
-    header = header+'.'+func_name
-    print ' + ', fname, '\n  ', header,'--'
+        header = '<??>'
+    header = header + '.' + func_name
+    print ' + ', fname, '\n  ', header, '--'
 
 def report(*args, **kargs):
-    """ """
+    """ the global reporting mechanism.
+
+          TODO: clean this up and allow subscribers like
+               <log>, <syndicate>,  and <call-your-moms-cell-phone>.
+    """
     global console
     whosdaddy()
     print '\targs=',

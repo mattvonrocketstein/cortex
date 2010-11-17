@@ -30,7 +30,7 @@ class Manager(object):
 
 
          NOTE: if subclasses define 'asset_class', then it will be used in place of
-               the default HierarchicalData
+               the default class <HierarchicalData>
     """
 
     class NotFound(Exception): pass
