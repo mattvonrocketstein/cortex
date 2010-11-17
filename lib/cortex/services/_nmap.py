@@ -1,9 +1,5 @@
 """ cortex.services.nmap
 
-while nma.still_scanning():
-    print("Waiting >>>")
-    nma.wait(2)
-
 """
 
 import time
@@ -18,13 +14,14 @@ class Mapper(Service):
         stop:  brief description service shutdown here
     """
     def callback_result(self, host, **scan_result):
-        report('cback',host,**scan_result)
+        """ """
+        report('cback', host, **scan_result)
 
     def print_error(self, *errors):
         """ """
         for x in errors:
             pass # choose any errors to ignore and remove them
-        report('error_handler for name resolution',str(errors) )
+        report('error_handler for name resolution', str(errors) )
 
     def stop(self):
         """ """
@@ -55,7 +52,7 @@ class Mapper(Service):
             report('got peerman',peerMan)
 
             report('stored in peermap', peerMan.register(host, **peer_metadata),peerMan[host])
-            self.universe.reactor.callLater(300,self.start)
+            #self.universe.reactor.callLater(300,self.start)
 
             #print args, kargs
             #self.callback_result(*args, **kargs)
