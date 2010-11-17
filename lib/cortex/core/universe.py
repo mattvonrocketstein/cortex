@@ -177,9 +177,8 @@ class __Universe__(AutoReloader, PIDMixin,
                 for name, val in mod.items():
                     if inspect.isclass(val):
                         if not val==Service and issubclass(val, Service):
-                            # launch_service = lambda: val(universe=self).play
-                            report('discovered service in ' + mod_name)
-                            ret_vals.append(self.start_service(val,ask=False,**kargs)) # THUNK
+                            #report('discovered service in ' + mod_name)
+                            ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
                 return ret_vals
 
         # Not a string? let's hope it's already a service-like thing

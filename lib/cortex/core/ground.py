@@ -9,6 +9,7 @@ import datetime
 from lindypy.TupleSpace import TSpace
 from lindypy.TupleSpace import Client, tuplespace
 
+from cortex.core.util import report
 from cortex.core.atoms import PersistenceMixin
 
 class Memory(TSpace, PersistenceMixin):
@@ -78,22 +79,40 @@ class Memory(TSpace, PersistenceMixin):
         return out
 
     #@cache these
-    def filter(self, *tests):
+    def filter(self, *tests, **kargs):
         """
         """
-        out = (None,)
-        for item in iter(self.values()):
+        remove = kargs.pop('remove', False)
+        out    = tuple()
+        for item in iter(self.values(safe=True)):
+            #item =self.get(item)
             passes = True
             for test in tests:
                 if not test(item):
                     passes = False
-            if passes: out+= (item,)
+            if passes:
+                out += (item,)
+                if remove:
+                    self.get(item, remove=remove)
         return out
 
-    def values(self):
-        """ """
-        #print 'valued'
-        return TSpace.values(self)
+    def values(self, safe=False):
+        """ values can be stale.. safe ensures they are
+            availible to be get'ed and not just ghosts
+        """
+        out = TSpace.values(self)
+        if safe:
+            for tpl in out:
+                try:
+                    self.get(tpl)
+                except KeyError:
+                    out.remove(tpl)
+        return out
+
+
+    def values_safe(self):
+        """ use get to raise a keyerror if we're looking at something stale """
+        return [ self.get(v) for v in self.values() ]
 
     def get(self, *args, **kargs):
         """ """
@@ -112,13 +131,16 @@ class DefaultKeyMapper(object):
         """ """
         return t[0]
 
-    def tuple2value(self,t):
+    def tuple2value(self, t):
         """ """
-        return t[1:]
+        return t and t[1:][0]
 
     def __setitem__(self, key, value):
         """ dict compat """
-        self.add((key, value))
+        if key in self.keys():
+            # enforce the rule by pruning, then add
+            old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
+        self.add( (key, value) )
 
 class Keyspace(Memory, DefaultKeyMapper):
     """ Thin wrapper around <Memory> to make it look like a dictionary
@@ -138,11 +160,13 @@ class Keyspace(Memory, DefaultKeyMapper):
         """ dict compat """
         return [ self.tuple2key(x) for x in self.values() ]
 
-    def __getitem__(self, other):
+    def __getitem__(self, key):
         """ """
-        matching_tuples = self.filter(lambda tpl: self.tuple2key(tpl)==other)
+        matching_tuples = self.filter(lambda tpl: self.tuple2key(tpl)==key)
+        #assert len(matching_tuples)<2,"Found duplicate matching tuples.. not really a keyspace then, is it?"
         if matching_tuples:
-            return self.tuple2value(wmatching_tuples[0])
+            first_match = matching_tuples[0]
+            return self.tuple2value(first_match)
         return "NOT FOUND"
 
     def __iter__(self):
