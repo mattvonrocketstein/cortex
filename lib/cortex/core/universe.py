@@ -21,10 +21,9 @@ from cortex.core.service import Service
 from cortex.core.service import ServiceManager
 
 from cortex.core.mixins import OSMixin, PIDMixin
-from cortex.core.mixins import EventMixin, NoticeMixin
+#from cortex.core.mixins import EventMixin, NoticeMixin
 
-class __Universe__(AutoReloader, PIDMixin,
-                   NoticeMixin, AutonomyMixin,
+class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
                    OSMixin, PerspectiveMixin,
                    PersistenceMixin):
     """
@@ -34,6 +33,11 @@ class __Universe__(AutoReloader, PIDMixin,
     _services = []
     reactor   = reactor
     peers     = PEERS
+
+    def __or__(self, other):
+        """ syntactic sugar for grabbing a service by name """
+        out = self.services[other]
+        return out and out.service_obj
 
     def sleep(self):
         """ """
@@ -51,17 +55,8 @@ class __Universe__(AutoReloader, PIDMixin,
         tmpdir = os.path.join(self.instance_dir, 'tmp')
         if not os.path.exists(tmpdir):
             os.mkdir(tmpdir)
-        f = NamedTemporaryFile(delete=False,dir=tmpdir)
+        f = NamedTemporaryFile(delete=False, dir=tmpdir)
         return f
-
-    def leave(self, other=None):
-        """ other begs universe for permission to leave """
-        #self.nodes.remove()
-        def detect_other():
-            pass
-        if other==None:
-            other = detect_other()
-        pass
 
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
@@ -180,7 +175,8 @@ class __Universe__(AutoReloader, PIDMixin,
                     if inspect.isclass(val):
                         if not val==Service and issubclass(val, Service):
                             #report('discovered service in ' + mod_name)
-                            ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
+                            if not getattr(val, 'do_not_discover', False):
+                                ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
                 return ret_vals
 
         # Not a string? let's hope it's already a service-like thing
