@@ -5,6 +5,7 @@ import os, sys
 import inspect
 import simplejson
 import multiprocessing
+import types
 from tempfile import NamedTemporaryFile
 
 from twisted.internet import reactor
@@ -177,7 +178,7 @@ class __Universe__(AutoReloader, PIDMixin,
 
     def loadService(self, service, **kargs):
         """ """
-        if isinstance(service, str):
+        if isinstance(service, types.StringTypes):
             # handle dotpaths
             if "." in service:
                 service = service.split('.')
