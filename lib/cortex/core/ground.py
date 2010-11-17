@@ -136,7 +136,7 @@ class DefaultKeyMapper(object):
         return t and t[1:][0]
 
     def __setitem__(self, key, value):
-        """ dict compat """
+        """ dictionary compatibility """
         if key in self.keys():
             # enforce the rule by pruning, then add
             old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
@@ -146,22 +146,16 @@ class Keyspace(Memory, DefaultKeyMapper):
     """ Thin wrapper around <Memory> to make it look like a dictionary
     """
 
-    def __contains__(self,other):
-        """ """
-        return other in self.keys()
-
     def public_keys(self):
-        """ like keys, only respects privacy for _ and __
+        """ like self.keys(), only respects privacy for _ and __
         """
         FORBIDDEN_PREFIXES = '_ __'.split()
         return [ k for k in self.keys() if not any( map(k.startswith, FORBIDDEN_PREFIXES) ) ]
 
-    def keys(self):
-        """ dict compat """
-        return [ self.tuple2key(x) for x in self.values() ]
-
     def __getitem__(self, key):
-        """ """
+        """ TODO: is this tailored too much for the PostOffice, or is it sufficiently generic?
+            TODO: transparent encryption, serialization, perspective warping?
+        """
         matching_tuples = self.filter(lambda tpl: self.tuple2key(tpl)==key)
         #assert len(matching_tuples)<2,"Found duplicate matching tuples.. not really a keyspace then, is it?"
         if matching_tuples:
@@ -169,13 +163,22 @@ class Keyspace(Memory, DefaultKeyMapper):
             return self.tuple2value(first_match)
         return "NOT FOUND"
 
+    def subspace(self, name):
+        """ return a nested keyspace with name <name> """
+        NIY
+
+    def __contains__(self,other):
+        """ dictionary compatibility """
+        return other in self.keys()
+
+    def keys(self):
+        """ dictionary compatibility """
+        return [ self.tuple2key(x) for x in self.values() ]
+
     def __iter__(self):
+        """ dictionary compatibility """
         return iter(self.keys())
 
     def items(self):
-        """ dict compat """
+        """ dictionary compatibility """
         return [ [ self.tuple2key(x), self.tuple2value(x) ] for x in self.values() ]
-
-    def asdf__getitem__(self,key):
-        """ transparent encryption, serialization, perspective warping? """
-        pass
