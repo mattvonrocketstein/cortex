@@ -26,7 +26,17 @@ class Service(Node):
             kargs.update( { 'name' : self.__class__.__name__ } )
         super(Service,self).__init__(*args, **kargs)
 
-    def _post_init(self):
+    @property
+    def status(self):
+        """ placeholder """
+        return self.is_stopped,self.started
+
+    def __repr__(self):
+        """ """
+        return '<{name}-Service {_id}>'.format(_id=str(id(self)),
+                                               name=self.__class__.__name__)
+
+    def _post_init(self, **kargs):
         """ """
         self.is_stopped = False
 
