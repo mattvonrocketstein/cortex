@@ -20,7 +20,7 @@ class Stub(Service):
         """ """
         for x in errors:
             pass # choose any errors to ignore and remove them
-        report('error_handler for name resolution',str(errors) )
+        report('error_handler for generic service', str(errors) )
 
     def stop(self):
         """ """
@@ -28,7 +28,7 @@ class Stub(Service):
         report('Custom stop for', self)
 
     def start(self):
-        """ start is a function, called once (and typically by <play>), which may or
+        """ <start> is an operation, called once (and typically by <play>), which may or
             may not return and so may be blocking or non-blocking.
 
             most blocking services will either a) need to be wrapped to made non-blocking,
@@ -36,13 +36,18 @@ class Stub(Service):
             of this function and iterate()
         """
         Service.start(self)
+        report('Custom start for', self)
 
     def iterate(self):
-        """ placeholder for an probably atomic action.  this name is used by
-            convention ie if <start> invokes it in a while-loop
+        """ a placeholder for some "probably-atomic-action".
+            this name is used by convention ie if <start> invokes
+            it repeatedly as in from a while-loop or "reactor-recursion"
+            with reactor.callLater
         """
+        pass
 
     def play(self):
-        """ stubbed out although services should override
-            usually override "start" and not "play" """
+        """ <play> is stubbed out although services should usually
+            override <start> instead.
+        """
         return Service.play(self)
