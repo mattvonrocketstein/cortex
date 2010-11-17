@@ -27,15 +27,30 @@ class PostOffice(Service, Keyspace, Bus):
         """
         self.subscriptions = self # hack to make the bus use the Keyspace
 
+    def unsubscribe(self, key, callback):
+        if not self.has_subscription(key, callback):
+            return self
+        self[key] = tuple([cb for cb in self[key] if cb!=callback])
+
     def has_subscription(self, key, callback):
         """ override from cyrusbus """
         if key not in self.public_keys():
             return False
-        subscription = callback
-        return subscription in self[key]
+        return callback in self[key]
+
+    def publish(self, key, *args, **kwargs):
+        """ override from cyrusbus enforcing simple callbacks as subscriptions
+        """
+        if not self.has_any_subscriptions(key):
+            return self
+
+        for subscriber in self.subscriptions[key]:
+            subscriber(self, *args, **kwargs)
 
     def subscribe(self, key, callback, force=False):
-        """ override from cyrusbus forcing tuples, not lists """
+        """ override from cyrusbus forcing tuples, not lists
+            also changed return-value, now sends all subscribers
+        """
         subscription = callback
 
         if key not in self.public_keys():
@@ -43,8 +58,7 @@ class PostOffice(Service, Keyspace, Bus):
 
         elif force or not self.has_subscription(key, callback):
             self[key] = self[key] + (subscription,)
-
-        return self
+        return self[key]
 
     def start(self):
         return self.reset()
