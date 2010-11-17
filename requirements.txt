@@ -6,5 +6,5 @@ python-Levenshtein
 simplejson
 lindypy
 python-nmap
-
+cyrusbus
 bzr+http://launchpad.net/txjsonrpc/trunk#egg=txjsonrpc
