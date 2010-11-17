@@ -120,12 +120,12 @@ class AutonomyMixin:
 class PerspectiveMixin:
     """
     """
-    def ground(self):
-        """ placeholder: run filters on the ground here, ie
-              + grab only some particular named subspace, or
-              + pre-processing, post-processing, misc. mutation
-        """
-        return universe.ground
+    #def ground(self):
+    #    """ placeholder: run filters on the ground here, ie
+    #          + grab only some particular named subspace, or
+    #          + pre-processing, post-processing, misc. mutation
+    #    """
+    #    return self.universe.ground
 
     def darkly(self):
         """ if this host refers to a local version, obtain an image of
