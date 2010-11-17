@@ -35,15 +35,34 @@ class PersistenceMixin:
         ___f.close()
         report('persisted memory to', fname)
 
+def is_persistent(obj):
+    """ dumb helper.. """
+    return PersistenceMixin in obj.__class__.__bases__
+
 class AutonomyMixin:
     """ """
+    def harikari(self):
+        """ Convention:
+              + <stop> self,
+              + <stop> children, and
+              + ensure-garbage-collection
+        """
+        pass
+
     def sleep(self):
-        """ Convention: <sleep> is <stop> & <persist> & <exit>
+        """ Convention: <sleep> is
+             + <stop>,
+             + <persist>,
+             + <exit>
         """
         report("sleep for "+self.name)
         self.stop()
-        if PersistenceMixin in self.__class__.__bases__:
-           self.persist()
+
+        if is_persistent(self): self.persist()
+        else:
+            # warn: sleep without persist!
+            pass
+
         self.exit()
         return "Wakeup-Handle Placeholder"
 
@@ -52,6 +71,8 @@ class AutonomyMixin:
               <start> is an invoker, or a mainloop
         """
         report("starting")
+        self.started     = True
+        self.is_stopped  = False
 
     def stop(self):
         """ Convention:
@@ -63,7 +84,11 @@ class AutonomyMixin:
 
     def play(self):
         """ Convention:
-             runs <start>, but maybe not right away
+             Responsibilities:
+               + invoke <start>, but maybe not right away.
+               + never block, and
+               + always return "self"
+
         """
         report("play for "+self.name)
         self.started = True
@@ -73,35 +98,33 @@ class AutonomyMixin:
         """ Convention:
              <resume> re-enters <start>
         """
+        self.started = True
         report("resume for "+self.name)
 
     def pause(self):
         """ Convention:
               <pause> exits <start>
         """
-        report("pause for "+self.name)
+        self.started = False
+        report("pause for " + self.name)
 
     def freeze(self):
-        """ Convention:
-              <freeze> is <stop> & <persists>
+        """ Convention: <freeze> is
+              + <stop>
+              + <persist>
         """
         report("freeze for "+self.name)
         self.stop()
-        if PersistenceMixin in self.__class__.__bases__:
-            self.persist()
-
-    def boot(self):
-        """ """
-        raise Exception,'niy'
-        report("boot for "+self.name)
-        if self.is_local:
-            Universe.launch_instance(self)
-        else:
-            raise NodeError,"Only node-local's can be booted at this time."
+        if is_persistent(self): self.persist()
 
 class PerspectiveMixin:
+    """
+    """
     def ground(self):
-        """ run filters on the ground here """
+        """ placeholder: run filters on the ground here, ie
+              + grab only some particular named subspace, or
+              + pre-processing, post-processing, misc. mutation
+        """
         return universe.ground
 
     def darkly(self):
@@ -109,3 +132,4 @@ class PerspectiveMixin:
             self suitable for acurate transmission/storage elsewhere
         """
         report("darkly for "+self.name)
+    shadow = shadowed = darkly
