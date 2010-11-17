@@ -19,17 +19,18 @@ class MobileCodeMixin(object):
 class Node(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
     """
-    def __init__(self, host=None, instance=None, universe=None,
-                 name=None, resource_description=None):
+    def __init__(self, host=None, universe=None,
+                 name=None, resource_description=None, **kargs):
         """
         """
         self.universe = universe
         self.host = host or DEFAULT_HOST
         self.name = name
-        #self.instance = instance
         self.resource_description = resource_description
+
+        # pass the remainder of the kargs to _post_init for subclassers
         if hasattr(self,'_post_init'):
-            self._post_init()
+            self._post_init(**kargs)
 
     @property
     def cortex_instance(self):
