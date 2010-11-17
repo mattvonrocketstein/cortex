@@ -15,42 +15,23 @@ from cortex.core.util import report, console
 from cortex.core.data import SERVICES_DOTPATH
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
-from cortex.core.peer import PeerManager,PEERS #,ServiceManager
+from cortex.core.peer import PeerManager, PEERS
 from cortex.core.service import Service
 from cortex.core.service import ServiceManager
 
-from cortex.core.mixins import EventMixin, NoticeMixin, PIDMixin
-
-class OSMixin(object):
-    """ For things that really should be in the os module """
-
-    def has_bin(self, cmd):
-        """ use POSIX "command" tool to see if a binary
-            exists on the system """
-        return 0 == os.system('command -v '+cmd)
+from cortex.core.mixins import OSMixin, PIDMixin
+from cortex.core.mixins import EventMixin, NoticeMixin
 
 class __Universe__(AutoReloader, PIDMixin,
-                   NoticeMixin, AutonomyMixin, PerspectiveMixin,
-                   PersistenceMixin):
+                   NoticeMixin, AutonomyMixin,
+                   PerspectiveMixin, PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
     """
     node_list = []
     _services = []
-    _procs    = []
     reactor   = reactor
     peers     = PEERS
-
-    @property
-    def ip(self):
-        """ """
-        pass
-
-    @property
-    def hostname(self):
-        """ TODO: memoize """
-        import socket
-        return socket.gethostname()
 
     def sleep(self):
         """ """
@@ -62,7 +43,6 @@ class __Universe__(AutoReloader, PIDMixin,
         try: sys.exit()
         except SystemExit:
             pass
-
 
     def tmpfile(self):
         """ return a new temporary file """
@@ -108,17 +88,6 @@ class __Universe__(AutoReloader, PIDMixin,
     def Nodes(self):
         """ nodes: static definition """
         return self.read_nodeconf()
-
-    @property
-    def procs(self):
-        """ """
-        return self._procs
-
-    @property
-    def threads(self):
-        """ """
-        import threading
-        return threading.enumerate()
 
     @property
     def nodes(self):
@@ -220,7 +189,7 @@ class __Universe__(AutoReloader, PIDMixin,
             return ret
 
     @property
-    @Memoize
+    #@Memoize
     def services(self):
         """ services: dynamic definition
 
@@ -233,6 +202,7 @@ class __Universe__(AutoReloader, PIDMixin,
                          service_obj=s)
             #dict([[s.__class__.__name__.lower(),s] for s in self._services])
         return out
+
     @property
     def Services(self):
         """ services: static definition
@@ -248,8 +218,7 @@ class __Universe__(AutoReloader, PIDMixin,
         from cortex.services.beacon import Beacon
         from cortex.services._linda import Linda
         _Services = [Linda, Terminal]
-        # _Services.append(Beacon)
-        #_Services.append(self.stdoutbeacon_service)
+        # _Services.append(Beacon); _Services.append(self.stdoutbeacon_service)
         #_Services.append(self.filercvr)
         return _Services
 
