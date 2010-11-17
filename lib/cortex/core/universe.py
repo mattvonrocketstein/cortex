@@ -24,7 +24,8 @@ from cortex.core.mixins import EventMixin, NoticeMixin
 
 class __Universe__(AutoReloader, PIDMixin,
                    NoticeMixin, AutonomyMixin,
-                   PerspectiveMixin, PersistenceMixin):
+                   OSMixin, PerspectiveMixin,
+                   PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
     """
