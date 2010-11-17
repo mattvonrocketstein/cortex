@@ -122,8 +122,6 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.read_nodeconf():
                 original = node
-                #node.reverse()
-                #instruction = node.pop()
                 instruction,node=node[0],node[1:]
                 if len(node)==1:
                     arguments = node
@@ -225,7 +223,7 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         from cortex.services.terminal import Terminal
         from cortex.services.beacon import Beacon
         from cortex.services._linda import Linda
-        _Services = [Linda, Terminal]
+        _Services = []
         # _Services.append(Beacon); _Services.append(self.stdoutbeacon_service)
         #_Services.append(self.filercvr)
         return _Services
