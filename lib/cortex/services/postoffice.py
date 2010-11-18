@@ -3,6 +3,8 @@
       a simple service that exposes a message bus
 """
 
+import simplejson
+
 from cortex.core.util import report
 from cortex.core.ground import Keyspace
 from cortex.services import Service
@@ -30,6 +32,11 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         keyspace_owner = self
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
         SelfHostingTupleBus.__init__(self) # will call self.reset()
+
+    def introduce(self, data):
+        """ announce peer discovery """
+        from cortex.core.data import PEER_T
+        self.publish(PEER_T, simplejson.dumps(data))
 
     def msg(self, *args, **kargs):
         """ TODO: determine caller function and dispatch to publish

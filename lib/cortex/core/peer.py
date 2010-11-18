@@ -5,14 +5,14 @@ from cortex.core.node import Node
 from cortex.core.manager import Manager
 from cortex.core.hds import HDS
 from cortex.core.util import report
+
 class Peer(HDS):
     """ """
 
-    def __str__(self):
+    def __repr__(self):
             port = str(getattr(self,'port','00'))
-            addr = getattr(self,'address','0')
-            return 'Peer@' + addr + ':' + port
-    __repr__ = __str__
+            addr = getattr(self,'addr','0')
+            return 'Peer@' + str(addr) + ':' + str(port)
 
     def api(self, name, *args):
             """ a jsonrpc client, to a remote jsonrpc server

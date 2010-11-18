@@ -8,6 +8,7 @@ import datetime
 from cortex.core.hds import HierarchicalData
 from cortex.core.util import report
 
+default_asset_class = HierarchicalData
 class Manager(object):
     """ Managers are inspired by django's managers.  Think of
         this class as a collection of patterns in tracking,
@@ -38,11 +39,11 @@ class Manager(object):
     def __init__(self, *args, **kargs):
         """ """
         self.registry      = {}
-        self.generic_store = HierarchicalData()
+        self.generic_store = HierarchicalData() #generic storage for the actual manager itself.
 
-    def __getattr__(self,name):
+    def __getattr__(self, name):
         out = None
-        if name!='asset_class':
+        if name != 'asset_class':
             try:
                 return object.__getattribute__(self, '__getitem__')(name)
             except self.NotFound:
@@ -67,7 +68,7 @@ class Manager(object):
         """ register object <name> with namespace <item_metadata>
         """
         name = str(name)
-        self.registry[name] = getattr(self, 'asset_class', HierarchicalData)()
+        self.registry[name] = getattr(self, 'asset_class', default_asset_class)()
         for key,value in item_metadata.items():
             setattr( self.registry[name], key, value)
         self.stamp(name)

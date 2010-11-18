@@ -59,10 +59,11 @@ class console:
         return highlight(string, plex, Terminal256Formatter())
 
     @staticmethod
-    def draw_line(length=80):
+    def draw_line(length=80,display=True):
         #out = style.ERROR('-' * length)
-        out = TermColor.Red+ '-' * length + TermColor.Normal
-        print out
+        out = TermColors.Red+ '-' * length + TermColors.Normal
+        if display:
+            print out
         return out
 console=console()
 
@@ -82,7 +83,7 @@ def whosdaddy():
         header = flocals['self'].__class__.__name__
     else:
         header = '<??>'
-    header = header + '.' + func_name
+    header = ' '+header + '.' + func_name
     print ' + ', fname, '\n  ', header, '--'
 
 def report(*args, **kargs):
@@ -95,7 +96,7 @@ def report(*args, **kargs):
     whosdaddy()
     print '\targs=',
     print console.color(str(args)),
-    print '\tkargs=',
+    print '\tkargs='
 
     flush = kargs.pop('flush',False)
     console.color(str(kargs))

@@ -1,10 +1,11 @@
+#!/usr/bin/env python
 """ cortex.core.hds: hierarchical data structure
 
       adapted from:  Recipe 286150: Hierarchical data objects (Python) by Uwe Schmitt
                      ActiveState Code (http://code.activestate.com/recipes/286150/)
 
 """
-#!/usr/bin/env python
+
 
 import pickle
 
