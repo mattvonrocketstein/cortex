@@ -29,7 +29,7 @@ def api_wrapper(name="ApiWrapper", bases=(object,), _dict= lambda: publish()):
     #  just maps to a different name if item is callable
     wrapped = dict([['jsonrpc_' + k, _dict[k]] for k in _dict if test(k)])
 
-    return type(name,bases,wrapped)
+    return type(name, bases, wrapped)
 
 #Dynamically build one of the subclasses from the core API definitions
 ApiWrapper = api_wrapper(bases=(jsonrpc.JSONRPC,object),)

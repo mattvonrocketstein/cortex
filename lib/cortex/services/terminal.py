@@ -49,7 +49,7 @@ class Terminal(Service, LocalQueue):
         self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
         self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name) + ' [\\#] '
         self.shell.IP.set_hook('pre_prompt_hook', pre_prompt_hook)
-        #self.shell.IP.BANNER = "Eat a sandwich.  see if i care."
+        self.shell.IP.BANNER = console.draw_line(display=False)# "Eat a sandwich.  see if i care."
         self.universe.terminal = self
 
     def start(self):
