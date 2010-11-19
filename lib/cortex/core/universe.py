@@ -114,7 +114,11 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
                 self.node_list = [ <list of active nodes> ]
         """
         report("Universe.play!")
-        self.name    = 'Universe-' + str(id(self)) + '@' + self.hostname
+#        self.name    = 'Universe-' + str(id(self)) + '@' + self.hostname
+        import uuid
+        self.name    = 'Universe-{_id}-{uid}@{hostname}'.format(_id=str(id(self)),
+                                                                uid=str(uuid.uuid4()),
+                                                                hostname=self.hostname)
         self.started = True
         def get_handler(instruction):
             from cortex.core.api import publish
