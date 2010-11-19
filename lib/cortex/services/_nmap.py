@@ -11,7 +11,9 @@ from cortex.core.peer import Peer
 from cortex.core.data import PEER_T
 from cortex.core.data import CORTEX_PORT_RANGE
 
+NOT_FOUND_T = 'NOTFound'
 port_range = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
+
 def scan2port(scan):
     """ """
     report('scan2', **scan)
@@ -50,7 +52,7 @@ class Mapper(Service):
                                             scan_data[addr]['tcp'].keys()[0],
                             }
             else:
-              port_aspect = {}
+              port_aspect = {'port':NOT_FOUND_T}
 
             peer_metadata.update(port_aspect)
             peer = peer_metadata
@@ -66,8 +68,6 @@ class Mapper(Service):
         Service.start(self)
         host = '127.0.0.1'
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
-        #nma_kargs = dict(hosts='10.0.2.15', arguments='--system-dns', callback=foo)
-        #self.universe.reactor.callLater(1, lambda: nma.scan(**nma_kargs))
 
     def play(self):
         """ stubbed out although services should override
