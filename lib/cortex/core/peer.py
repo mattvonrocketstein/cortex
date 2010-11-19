@@ -38,8 +38,11 @@ class Peer(HDS):
             return proxy.callRemote(name, *args).addCallbacks(report,self.report_err)
 
     def report_err(self,failure):
-        #failure.raiseException()
-        failure.printTraceback()
+        """ """
+        report('report failure',dict(type=failure.type, value=failure.value, tb=failure.tb))
+
+
+        #failure.printTraceback()
 class PeerManager(Manager):
     """
         Example usage:
