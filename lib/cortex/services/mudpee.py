@@ -33,9 +33,6 @@ class Consumer(DatagramProtocol):
         advert.update({'host': host})
         (self.universe|'postoffice').publish_json(PEER_T, advert)
 
-        #report("received %s from %s:%d" % (advert, host, port))
-
-
 class Advertiser(DatagramProtocol):
     def __init__(self, universe, group=GROUP, port=PORT):
         self.universe = universe
@@ -88,7 +85,7 @@ class MudPee(Service):
         """ """
         Service.stop(self)
         report('Stopping MudPee', self)
-        self.advertiser.stopListening().addCallback(report)
+        self.advertiser.stopListening()
 
     def discovery(self, postoffice, pickled_data, **kwargs):
         data = json.loads(pickled_data)
