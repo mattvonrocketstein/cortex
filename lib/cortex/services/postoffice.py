@@ -1,6 +1,9 @@
 """ cortex.services.postoffice
 
-      a simple service that exposes a message bus
+      a simple service that exposes a message bus.
+
+      TODO: (for json, pickles) annotate messages with data necessary to decode them?
+
 """
 
 import simplejson
@@ -12,6 +15,7 @@ from cortex.core.bus import SelfHostingTupleBus
 
 class PostOffice(Service, Keyspace, SelfHostingTupleBus):
     """ PostOffice Service:
+
           A wrapper over cyrusbus's basic layout that uses a
           key-value api to access the tuple-space described in
           cortex.core.ground.
@@ -33,10 +37,13 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
         SelfHostingTupleBus.__init__(self) # will call self.reset()
 
-    def introduce(self, data):
-        """ announce peer discovery """
-        from cortex.core.data import PEER_T
-        self.publish(PEER_T, simplejson.dumps(data))
+    def publish_json(self, label, data):
+        """ publish as json """
+        self.publish(label, simplejson.dumps(data))
+
+    def publish_pickle(self, label, data):
+        """ publish as pickle """
+        self.publish(label, pickle.dumps(data))
 
     def msg(self, *args, **kargs):
         """ TODO: determine caller function and dispatch to publish

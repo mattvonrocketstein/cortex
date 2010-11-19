@@ -152,6 +152,7 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
 
                     try: namespace = get_mod(mod_name)
                     except ImportError, e:
+                        raise e
                         report("Failed to get module {mod} to load service.".format(mod=mod_name))
                     else:
                         if class_name in namespace:

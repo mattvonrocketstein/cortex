@@ -36,7 +36,6 @@ class PeerManager(Manager):
     """
 
     asset_class = Peer
-
     def printValue(self, value): report("Result:", str(value))
     def printError(self, error): report('error', error)
     def __iter__(self):
