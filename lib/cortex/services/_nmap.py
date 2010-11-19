@@ -11,7 +11,12 @@ from cortex.core.peer import Peer
 from cortex.core.data import PEER_T
 from cortex.core.data import CORTEX_PORT_RANGE
 
+NOT_FOUND_T = 'NOTFound'
 port_range = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
+
+def scan2port(scan):
+    """ """
+    report('scan2', **scan)
 
 class Mapper(Service):
     """ Stub Service:
@@ -20,10 +25,11 @@ class Mapper(Service):
     """
 
     def discovery(self, postoffice, pickled_data, **kargs):
-        """ """
+        """ will be called by the postoffice, with type PEER_T
+        """
         data = simplejson.loads(pickled_data)
         name = data['addr']
-        report('registering peer', name)
+        report('registering peer', name,data)
         self.universe.peers.register(name, **data)
 
     def iterate(self, host):
@@ -33,8 +39,22 @@ class Mapper(Service):
         self.last_scan = scan_data
         for addr in scan_data:
             peer_metadata = { 'is_alive'  : scan_data[addr]['status']['state'],
+                              'raw_scan'  : scan_data,
+                              #'port'      : scan2port(scan_data[addr]),
                               'host'      : scan_data[addr]['hostname'],
-                              'addr'      : addr }
+                              'addr'      : addr
+                            }
+            if 'tcp' in scan_data[addr]:
+              port_aspect = {
+                              'raw_ports' : scan_data[addr]['tcp'],
+                              'ports'     : scan_data[addr]['tcp'].keys(),
+                              'port'      : scan_data[addr]['tcp'].keys() and \
+                                            scan_data[addr]['tcp'].keys()[0],
+                            }
+            else:
+              port_aspect = {'port':NOT_FOUND_T}
+
+            peer_metadata.update(port_aspect)
             peer = peer_metadata
             (self.universe|'postoffice').publish_json(PEER_T, peer)
 
@@ -48,8 +68,6 @@ class Mapper(Service):
         Service.start(self)
         host = '127.0.0.1'
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
-        #nma_kargs = dict(hosts='10.0.2.15', arguments='--system-dns', callback=foo)
-        #self.universe.reactor.callLater(1, lambda: nma.scan(**nma_kargs))
 
     def play(self):
         """ stubbed out although services should override

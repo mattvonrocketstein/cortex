@@ -14,21 +14,21 @@ from peak.util.imports import lazyModule
 
 from cortex.core.api import publish
 
-DEFAULT_PORT=7080
+DEFAULT_PORT=1337
 
-def api_wrapper(name="ApiWrapper", bases=(object,), _dict= lambda: publish()):
+def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lambda: publish()):
 
     # if _dict is not a dict then it should be a callable that returns one.
     if hasattr(_dict,'__call__'):
         _dict=_dict()
 
     # build a test for whether the given name is callable
-    test    = lambda k: hasattr(_dict[k], '__call__')
+    test    = lambda k: hasattr(_dict[k], '__call__') and not k.startswith('_')
 
     # wrap the whole namespace we were passed in..
     #  just maps to a different name if item is callable
     wrapped = dict([['jsonrpc_' + k, _dict[k]] for k in _dict if test(k)])
-
+    report('publishing',_dict.keys())
     return type(name, bases, wrapped)
 
 #Dynamically build one of the subclasses from the core API definitions
@@ -61,4 +61,4 @@ class API(Service, ApiWrapper):
         """ """
         factory = jsonrpc.RPCFactory(API)
         factory.addIntrospection()
-        self.universe.reactor.listenTCP(self.port, factory)
+        self.universe.reactor.listenTCP(1337, factory)

@@ -36,8 +36,11 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
 
     def __or__(self, other):
         """ syntactic sugar for grabbing a service by name """
-        out = self.services[other]
-        return out and out.service_obj
+        try:
+            out = self.services[other]
+            return out and out.service_obj
+        except self.services.NotFound:
+            report('no such service found', other)
 
     def sleep(self):
         """ """

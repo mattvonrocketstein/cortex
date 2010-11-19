@@ -4,7 +4,7 @@ import os
 from cortex.util.namespaces import NamespacePartition
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
-
+from cortex.core.hds import HDS
 fileerror = "No such file"
 
 def publish():
@@ -36,17 +36,21 @@ def ping(*args, **kargs):
     print "answering ping"
     return 'pong', args, kargs
 
+ctx = HDS()
+s   = HDS()
+s.api = 'api'
+#c.api          = (universe|s.api)
+
 # Shortcuts into the Universe
 load_service = universe.loadService
 sleep        = universe.sleep
 
 # Managers and shortcuts into the managers
 services     = lambda: list(universe.services)
+resolve      = lambda name: universe.reactor.resolve(name).addCallbacks(report,report)
 peers        = universe.peers
-register_service = universe.services.register
-register_peer = universe.peers.register
 
-def last_peer():
-    return peers[peers[0]]
-def show_last_peer():
-    print last_peer()
+register_service = universe.services.register
+register_peer    = universe.peers.register
+last_peer        = lambda: peers[0]
+show_last_peer   = lambda: report('most recent peer',last_peer())

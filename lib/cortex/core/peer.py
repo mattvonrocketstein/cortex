@@ -4,6 +4,7 @@
 from cortex.core.node import Node
 from cortex.core.manager import Manager
 from cortex.core.hds import HDS
+from cortex.core.data import API_PORT
 from cortex.core.util import report
 
 class Peer(HDS):
@@ -21,10 +22,16 @@ class Peer(HDS):
             """
             from twisted.internet import reactor
             from txjsonrpc.netstring.jsonrpc import Proxy
-            proxy = Proxy(self.address, 1337)
-            return proxy.callRemote(name, *args).addCallbacks(PeerManager.printValue,
-                                                              PeerManager.printError)
+            report('dialing peer', self.addr, API_PORT)
+            report('using', name, args)
+            #raise Exception,self.addr
+            proxy = Proxy(self.addr, API_PORT)
+            #return proxy
+            return proxy.callRemote(name, *args).addCallbacks(report,self.report_err)
 
+    def report_err(self,failure):
+        #failure.raiseException()
+        failure.printTraceback()
 class PeerManager(Manager):
     """
         Example usage:
