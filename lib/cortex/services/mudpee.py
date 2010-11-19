@@ -6,6 +6,7 @@ from twisted.internet.protocol import DatagramProtocol
 from cortex.services import Service
 from cortex.core.util import report, console
 from cortex.core.universe import Universe
+from cortex.core.data import PEER_T
 
 GROUP = '227.3.3.7'
 PORT = 31337
@@ -29,7 +30,10 @@ class Consumer(DatagramProtocol):
         if advert['universe'] == self.universe.name:
             return
 
-        report("received %s from %s:%d" % (advert, host, port))
+        advert.update({'host': host})
+        (self.universe|'postoffice').publish_json(PEER_T, advert)
+
+        #report("received %s from %s:%d" % (advert, host, port))
 
 
 class Advertiser(DatagramProtocol):
@@ -86,6 +90,10 @@ class MudPee(Service):
         report('Stopping MudPee', self)
         self.advertiser.stopListening().addCallback(report)
 
+    def discovery(self, postoffice, pickled_data, **kwargs):
+        data = json.loads(pickled_data)
+        self.universe.peers.register(data['universe'], **data)
+
     def start(self):
         """
         """
@@ -95,4 +103,5 @@ class MudPee(Service):
         self.consumer = Universe.reactor.listenMulticast(PORT, consumer, listenMultiple=True)
         report('Starting MudPee', self, advertiser=self.advertiser,
                                         consumer=self.consumer)
-        
+
+        (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
