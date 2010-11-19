@@ -86,6 +86,7 @@ class MudPee(Service):
         Service.stop(self)
         report('Stopping MudPee', self)
         self.advertiser.stopListening()
+        (self.universe|'postoffice').unsubscribe(PEER_T, self.discovery)
 
     def discovery(self, postoffice, pickled_data, **kwargs):
         data = json.loads(pickled_data)
