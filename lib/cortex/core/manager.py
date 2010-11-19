@@ -35,7 +35,8 @@ class Manager(object):
     """
 
     class NotFound(Exception): pass
-
+    def __len__(self):
+        return len(self.registry)
     def __init__(self, *args, **kargs):
         """ """
         self.registry      = {}
