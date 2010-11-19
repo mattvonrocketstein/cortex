@@ -17,7 +17,7 @@ from cortex.core.data import SERVICES_DOTPATH
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.atoms import PersistenceMixin
 from cortex.core.peer import PeerManager, PEERS
-from cortex.core.service import Service
+from cortex.core.service import Service, SERVICES
 from cortex.core.service import ServiceManager
 
 from cortex.core.mixins import OSMixin, PIDMixin
@@ -32,6 +32,7 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
     node_list = []
     _services = []
     reactor   = reactor
+    skervices = SERVICES
     peers     = PEERS
 
     def __or__(self, other):
@@ -196,12 +197,13 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         else:
             ret = service_obj(universe=self, **kargs).play()
             self._services.append(ret)
+            self.skervices.register(service_obj.__class__.__name__.lower(), serverice_obj=service_obj)
             return ret
 
     @property
     #@Memoize
     def services(self):
-        """ services: dynamic definition
+        """         services: dynamic definition
 
             this represents services that have already been
             successfully started.
