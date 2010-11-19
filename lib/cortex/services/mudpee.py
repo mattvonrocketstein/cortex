@@ -10,6 +10,25 @@ from twisted.internet.protocol import DatagramProtocol
 GROUP = '227.3.3.7'
 PORT = 31337
 
+class Consumer(DatagramProtocol):
+    def __init__(self, universe):
+        self.universe = universe
+
+    def startProtocol(self):
+        "Called when transport is connected"
+        self.transport.joinGroup(GROUP)
+        pass
+
+    def stopProtocol(self):
+        "Called after all transport is teared down"
+
+    def datagramReceived(self, data, (host, port)):
+        import time
+        now = time.localtime(time.time())  
+        timeStr = str(time.strftime("%y/%m/%d %H:%M:%S",now)) 
+        report("received %r from %s:%d at %s" % (data, host, port, timeStr))
+
+
 class Advertiser(DatagramProtocol):
     def __init__(self, universe, group=GROUP, port=PORT):
         self.universe = universe
@@ -68,4 +87,7 @@ class MudPee(Service):
         report('Starting MudPee', self)
         advert = Advertiser(Universe)
         self.advertiser = Universe.reactor.listenMulticast(PORT, advert, listenMultiple=True)
+        consumer = Consumer(Universe)
+        self.consumer = Universe.reactor.listenMulticast(PORT, consumer, listenMultiple=True)
         report("Advertiser:", self.advertiser)
+        report("Consumer:", self.consumer)
