@@ -23,11 +23,14 @@ class Consumer(DatagramProtocol):
         "Called after all transport is teared down"
 
     def datagramReceived(self, data, (host, port)):
-        import time
-        now = time.localtime(time.time())  
-        timeStr = str(time.strftime("%y/%m/%d %H:%M:%S",now))
-        #json.decoder.JSONDecodeError <- error
-        report("received %r from %s:%d at %s" % (data, host, port, timeStr))
+        try: advert = json.loads(data)
+        except json.decoder.JSONDecodeError, e:
+            return #Write it off as nouse
+        if advert['universe'] == self.universe.name:
+            report("Self-advert ignored")
+            return
+
+        report("received %s from %s:%d" % (advert, host, port))
 
 
 class Advertiser(DatagramProtocol):
