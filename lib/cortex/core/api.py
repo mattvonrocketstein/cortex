@@ -42,11 +42,10 @@ sleep        = universe.sleep
 
 # Managers and shortcuts into the managers
 services     = lambda: list(universe.services)
+resolve      = lambda name: universe.reactor.resolve(name).addCallbacks(report,report)
 peers        = universe.peers
-register_service = universe.services.register
-register_peer = universe.peers.register
 
-def last_peer():
-    return peers[peers[0]]
-def show_last_peer():
-    print last_peer()
+register_service = universe.services.register
+register_peer    = universe.peers.register
+last_peer        = lambda: peers[0]
+show_last_peer   = lambda: report('most recent peer',last_peer())
