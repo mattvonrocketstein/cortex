@@ -1,11 +1,11 @@
 """ cortex.services.beacon
 """
+import simplejson as json
+from twisted.internet.protocol import DatagramProtocol
 
 from cortex.services import Service
 from cortex.core.util import report, console
 from cortex.core.universe import Universe
-
-from twisted.internet.protocol import DatagramProtocol
 
 GROUP = '227.3.3.7'
 PORT = 31337
@@ -25,7 +25,8 @@ class Consumer(DatagramProtocol):
     def datagramReceived(self, data, (host, port)):
         import time
         now = time.localtime(time.time())  
-        timeStr = str(time.strftime("%y/%m/%d %H:%M:%S",now)) 
+        timeStr = str(time.strftime("%y/%m/%d %H:%M:%S",now))
+        #json.decoder.JSONDecodeError <- error
         report("received %r from %s:%d at %s" % (data, host, port, timeStr))
 
 
@@ -41,7 +42,10 @@ class Advertiser(DatagramProtocol):
             report("WARNING", "Trying to advertise while not running")
             return
         report("TODO: Advertising!")
-        print "Writing: %d to %s %s" % (self.transport.write("Hello world", (self.group, self.port)), self.group, self.port)
+        advert = json.dumps({'universe': self.universe.name,
+                             'services': {}
+                             })
+        print "Writing: %d to %s %s" % (self.transport.write(advert, (self.group, self.port)), self.group, self.port)
 
         if self.running:
             self.universe.reactor.callLater(3, self.advertise)
@@ -61,7 +65,7 @@ class MudPee(Service):
     MUlticastDnsPeerdiscovery service
       Will broadcast JSON dicts in the form of
       {
-          "name": "universe_name",
+          "universe": "universe_name",
 
           services: {
               "name": True || {"option1": "value1" ...}
