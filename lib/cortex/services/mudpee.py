@@ -93,7 +93,7 @@ class MudPee(Service):
         """
         report('Starting MudPee', self)
         advert = Advertiser(Universe)
-        self.advertiser = Universe.reactor.listenMulticast(PORT, advert, listenMultiple=True)
+        self.advertiser = Universe.reactor.listenMulticast(0, advert, listenMultiple=True)
         consumer = Consumer(Universe)
         self.consumer = Universe.reactor.listenMulticast(PORT, consumer, listenMultiple=True)
         report("Advertiser:", self.advertiser)
