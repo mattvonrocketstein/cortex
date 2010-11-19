@@ -6,6 +6,50 @@ from cortex.core.manager import Manager
 from cortex.core.util import report, console
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 
+
+def resolve_boot_order(universe,**kargs):
+    """ """
+    services = universe.services
+    from cortex.contrib.aima.csp import CSP, min_conflicts
+
+    def service_constraint(s1, boot_order1, s2, boot_order2):
+        """ returns True iff if services s1, s2 satisfy the
+            constraint when they have boot-order
+
+               s1 := boot_order1,
+               s2 := boot_order2
+        """
+
+        if boot_order1 <= boot_order2:
+            first, second = s1, s2
+        else:
+            first, second = s2, s1
+
+        if second in (universe|first)._boot_first:
+            return False
+        else:
+            return True
+
+    # vars: variables to solve over,
+    # domains: every service could potentially be booted in any order
+    # neighbors: every service participates in the constraints of the other services except itself
+    # service_constraint(A,a,B,b) := True when A=a;B=b is legal
+    csp_definition = dict( vars       = [service for service in services],
+                           domains     = dict([ [service, range(len(services))] for service in services]),
+                           neighbors   = dict([ [service, [service2 for service2 in services if \
+                                                                service2!=service]] for service in services]),
+                           constraint = service_constraint)
+    csp_problem    = CSP(csp_definition['vars'],
+                         csp_definition['domains'],
+                         csp_definition['neighbors'],
+                         csp_definition['constraint'])
+    csp_algorithm  = min_conflicts
+    ans            = csp_algorithm(csp_problem, **kargs)
+    for (var, val) in ans.items():
+        print '\t',var,val
+    return csp_problem.nassigns, ans
+
+
 class ServiceManager(Manager):
     """ ServiceManager exists mainly to make universe.services obey list
         and dictionary api simultaneously.  Additionally, it provides a
@@ -25,12 +69,18 @@ class ServiceManager(Manager):
 class Service(Node):
     """
     """
+
     def __init__(self, *args, **kargs):
         """ """
+
+        # a list of items that have to be play()'ed before this service
+        self._boot_first = []
+
         if 'name' in kargs:
             raise Exception,'services specify their own names'
         else:
             kargs.update( { 'name' : self.__class__.__name__ } )
+
         super(Service,self).__init__(*args, **kargs)
 
     @property
