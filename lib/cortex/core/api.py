@@ -34,7 +34,7 @@ def load_file(fname, adl=False, python=True):
 def ping(*args, **kargs):
     """ """
     print "answering ping"
-    return 'pong', args, kargs
+    return 'pong'
 
 ctx = HDS()
 s   = HDS()
