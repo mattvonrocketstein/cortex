@@ -65,7 +65,7 @@ class Advertiser(DatagramProtocol):
 
 class MudPee(Service):
     """
-    MUlticastDnsPeerdiscovery service
+    MUlticastuDpPEErdiscovery service
       Will broadcast JSON dicts in the form of
       {
           "universe": "universe_name",
