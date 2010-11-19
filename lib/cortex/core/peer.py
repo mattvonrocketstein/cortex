@@ -15,7 +15,17 @@ class Peer(HDS):
             addr = getattr(self,'addr','0')
             return 'Peer@' + str(addr) + ':' + str(port)
 
-    def api(self, name, *args):
+    @property
+    def api(self):
+        class DynamicApiProxy(object):
+            def __getattr__(dap,var):
+                def fxn(*args):
+                    return self.real_api(var,*args)
+                return fxn
+
+        return DynamicApiProxy()
+
+    def real_api(self, name, *args):
             """ a jsonrpc client, to a remote jsonrpc server
 
                   TODO: make this return an HDS that coerces values JIT
@@ -24,9 +34,7 @@ class Peer(HDS):
             from txjsonrpc.netstring.jsonrpc import Proxy
             report('dialing peer', self.addr, API_PORT)
             report('using', name, args)
-            #raise Exception,self.addr
             proxy = Proxy(self.addr, API_PORT)
-            #return proxy
             return proxy.callRemote(name, *args).addCallbacks(report,self.report_err)
 
     def report_err(self,failure):
