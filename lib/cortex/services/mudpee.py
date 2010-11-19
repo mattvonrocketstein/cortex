@@ -27,7 +27,6 @@ class Consumer(DatagramProtocol):
         except json.decoder.JSONDecodeError, e:
             return #Write it off as nouse
         if advert['universe'] == self.universe.name:
-            report("Self-advert ignored")
             return
 
         report("received %s from %s:%d" % (advert, host, port))
@@ -44,23 +43,22 @@ class Advertiser(DatagramProtocol):
         if not self.running:
             report("WARNING", "Trying to advertise while not running")
             return
-        report("TODO: Advertising!")
         advert = json.dumps({'universe': self.universe.name,
                              'services': {}
                              })
-        print "Writing: %d to %s %s" % (self.transport.write(advert, (self.group, self.port)), self.group, self.port)
+        self.transport.write(advert, (self.group, self.port))
 
         if self.running:
             self.universe.reactor.callLater(3, self.advertise)
 
     def startProtocol(self):
         self.running = True
-        self.transport.joinGroup(self.group).addBoth(lambda *args, **kwargs: report("Join: ", *args, **kwargs))
+        self.transport.joinGroup(self.group)
         self.advertise()
 
     def stopProtocol(self):
         self.running = False
-        self.transport.leaveGroup(self.group).addBoth(lambda *args, **kwargs: report("Join: ", *args, **kwargs))
+        self.transport.leaveGroup(self.group)
 
 
 class MudPee(Service):
@@ -91,10 +89,10 @@ class MudPee(Service):
     def start(self):
         """
         """
-        report('Starting MudPee', self)
         advert = Advertiser(Universe)
         self.advertiser = Universe.reactor.listenMulticast(0, advert, listenMultiple=True)
         consumer = Consumer(Universe)
         self.consumer = Universe.reactor.listenMulticast(PORT, consumer, listenMultiple=True)
-        report("Advertiser:", self.advertiser)
-        report("Consumer:", self.consumer)
+        report('Starting MudPee', self, advertiser=self.advertiser,
+                                        consumer=self.consumer)
+        
