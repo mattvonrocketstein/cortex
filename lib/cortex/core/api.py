@@ -4,7 +4,7 @@ import os
 from cortex.util.namespaces import NamespacePartition
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
-
+from cortex.core.hds import HDS
 fileerror = "No such file"
 
 def publish():
@@ -35,6 +35,11 @@ def ping(*args, **kargs):
     """ """
     print "answering ping"
     return 'pong', args, kargs
+
+ctx = HDS()
+s   = HDS()
+s.api = 'api'
+#c.api          = (universe|s.api)
 
 # Shortcuts into the Universe
 load_service = universe.loadService
