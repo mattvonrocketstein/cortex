@@ -6,7 +6,7 @@ from cortex.core.manager import Manager
 from cortex.core.hds import HDS
 from cortex.core.data import API_PORT
 from cortex.core.util import report
-
+import datetime
 class Peer(HDS):
     """ """
 
@@ -15,31 +15,56 @@ class Peer(HDS):
             addr = getattr(self,'addr','0')
             return 'Peer@' + str(addr) + ':' + str(port)
 
-    @property
-    def api(self):
+
+    def lazy_api(self):
+        """ just in time! """
         class DynamicApiProxy(object):
+            """ DynamicApiProxy: lazy access to the api"""
             def __getattr__(dap,var):
-                def fxn(*args):
-                    return self.real_api(var,*args)
+                """ DynamicApiProxy: lazy access to the api"""
+                def fxn(*args, **kargs):
+                    """ return a handle on the real function,
+                         now that we've been given it's name."""
+                    self.eager_api(var, *args, **kargs)
                 return fxn
 
         return DynamicApiProxy()
 
-    def real_api(self, name, *args):
-            """ a jsonrpc client, to a remote jsonrpc server
+    api=property(lazy_api)
 
-                  TODO: make this return an HDS that coerces values JIT
+    @property
+    def _proxy(self):
+        """ obtain proxy for this peer: a handle on a remote api """
+        from txjsonrpc.netstring.jsonrpc import Proxy
+        report('dialing peer={addr}::{port}'.format(addr=self.addr,port=API_PORT))
+        proxy = Proxy(self.addr, API_PORT)
+        return proxy
+
+    @property
+    def age(self):
+        """ time since last successful connection """
+        if hasattr(self,'_last_connection'):
+            return datetime.datetime.now() - self._last_connection
+        else:
+            return datetime.datetime(1800,1,1)
+
+    def _log_last_connection(self, result):
+        """ the most basic success callback, last_connection is the minimum
+            that will be registered when the api is called.
+        """
+        self._last_result     = result
+        self._last_connection = datetime.datetime.now()
+
+    def eager_api(self, name, *args, **kargs):
+            """ the real api, spoken thru a jsonrpc client,
+                 to a remote jsonrpc server
             """
-            from twisted.internet import reactor
-            from txjsonrpc.netstring.jsonrpc import Proxy
-            report('dialing peer', self.addr, API_PORT)
-            report('using', name, args)
-            proxy = Proxy(self.addr, API_PORT)
-            return proxy.callRemote(name, *args).addCallbacks(report,self.report_err)
+            report('dialing@{name}'.format(name=name), args)
+            return self._proxy.callRemote(name, *args, **kargs).addCallbacks(self._log_last_connection, self._report_err)
 
-    def report_err(self,failure):
+    def _report_err(self, failure):
         """ """
-        report('report failure',dict(type=failure.type, value=failure.value, tb=failure.tb))
+        report('failure in peer',dict(self=self, type=failure.type, value=failure.value, tb=failure.tb))
 
 
         #failure.printTraceback()

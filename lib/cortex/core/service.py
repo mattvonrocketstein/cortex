@@ -61,3 +61,4 @@ class Service(Node):
         """
         self.universe.reactor.callLater(1, self.start)
         return self
+SERVICES = ServiceManager()
