@@ -29,7 +29,7 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         NOTE: this should effectively be a singleton
     """
     node_list = []
-    _services = []
+    services = SERVICES #[]
     reactor   = reactor
     skervices = SERVICES
     peers     = PEERS
@@ -203,25 +203,12 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
                       yesAction=service_obj(universe=self, **kargs).play)
             return service_obj # TODO: return service_obj.play()
         else:
-            ret = service_obj(universe=self, **kargs).play()
-            self._services.append(ret)
-            #self.skervices.register(service_obj.__class__.__name__.lower(), serverice_obj=service_obj)
+            sob = service_obj(universe=self, **kargs)
+            ret = sob.play()
+            self.services.register(sob.__class__.__name__.lower(),
+                                   service_obj=sob,
+                                   kargs=kargs)
             return ret
-
-    @property
-    #@Memoize
-    def services(self):
-        """         services: dynamic definition
-
-            this represents services that have already been
-            successfully started.
-        """
-        out = ServiceManager()
-        for s in self._services:
-            out.register(s.__class__.__name__.lower(),
-                         service_obj=s)
-            #dict([[s.__class__.__name__.lower(),s] for s in self._services])
-        return out
 
     @property
     def Services(self):
@@ -230,17 +217,9 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
             computes services from defaults,
              command line arguments, and
               node definition files.
-
-            TODO: move this stuff into nodeconf
         """
-
-        from cortex.services.terminal import Terminal
-        from cortex.services.beacon import Beacon
-        from cortex.services._linda import Linda
-        _Services = []
-        # _Services.append(Beacon); _Services.append(self.stdoutbeacon_service)
-        #_Services.append(self.filercvr)
-        return _Services
+        default_services = []
+        return default_services
 
     def launch_instance(self, **kargs):
         """ """
