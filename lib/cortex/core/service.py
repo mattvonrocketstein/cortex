@@ -14,37 +14,35 @@ class ServiceManager(Manager):
     """
     asset_class = HierarchicalData
 
+    def items(self):
+        """ dictionary compatability """
+        return [[var, val] for var,val in Manager.items(self)]
+
     def __init__(self, *args, **kargs):
         """ """
         self.registry      = {}
-        self.generic_store = HierarchicalWrapper('server_obj') #generic storage for the actual manager itself.
+
+        # TODO: when in doubt, autoproxy to..
+        self.generic_store = HierarchicalWrapper('server_obj')
 
     def stop_all(self):
-        """ """
+        """ stop all services this manager knows about """
         [ s.stop() for s in self ]
 
+    #@finished_successfully_event('new_manager__{name}'.format(name=name))
     def register(self, name, **service_metadata):
         """ """
         Manager.register(self, name, **service_metadata)
-        self[name].constraints = {'boot_before': service_metadata['service_obj']._boot_first}
+        #print '*'*99, getattr(service_metadata['service_obj'].start,'summary_annotations',lambda: 'empty')()
+        #self[name].constraints = {'boot_before': service_metadata['service_obj']._boot_first}
 
-    def resolve_boot_order(self, **kargs):
-        """ it looks like with some (inconsistent) initial conditions, and using min-conflicts
-            this can run for a num_steps:=very_large_number before proving the system is inconsistent
-            and giving up?
-
-            kargs will be passed to the CSP-solving-algorithm that is chosen.
-        """
-
-        services = self
-        def service_constraint(s1, boot_order1, s2, boot_order2):
-            """ returns True iff if services s1, s2 satisfy the
+    def _boot_order_constraint(self, s1, boot_order1, s2, boot_order2):
+            """ returns True iff if self s1, s2 satisfy the
                 constraint when they have boot-order
 
                    s1 := boot_order1,
                    s2 := boot_order2
             """
-
             if boot_order1 <= boot_order2:
                 first, second = s1, s2
             else:
@@ -54,26 +52,36 @@ class ServiceManager(Manager):
                 return False
             else: return True
 
-        # vars: variables to solve over,
-        # domains: every service could potentially be booted in any order
-        # neighbors: every service participates in the constraints of the other services except itself
-        # service_constraint(A,a,B,b) := True when A=a;B=b is legal
-        csp_definition = dict( vars       = [service for service in services],
-                               domains     = dict([ [service, range(len(services))] for service in services]),
-                               neighbors   = dict([ [service, [service2 for service2 in services if \
-                                                                    service2!=service]] for service in services]),
-                               constraint = service_constraint)
+    def resolve_boot_order(self, **kargs):
+        """ TODO: try a different underlying CSP algorithm? it looks like
+                  with some (inconsistent) initial conditions, and using
+                  min-conflicts this can run for a num_steps:=very_large_number
+                  before *proving* the system is inconsistent and giving up?
 
-        csp_problem    = CSP(csp_definition['vars'],
-                             csp_definition['domains'],
-                             csp_definition['neighbors'],
-                             csp_definition['constraint'])
+            NOTE: kargs will be passed on to the CSP-solving-algorithm that is chosen.
+        """
+
+        # neighbors: every service participates in the constraints of the other self except itself
+        neighbors = dict([ [service, [service2 for service2 in self if \
+                                      service2!=service]] for service in self])
+
+        # vars: variables to solve over
+        vars       = [service for service in self],
+
+        # domains: every service could potentially be booted in any order
+        domains     = dict([ [service, range(len(self))] for service in self])
+
+        # the totality of the problem.  nothing to do with this now, but here it is.
+        csp_definition = dict( vars = vars, domains = domains, neighbors = neighbors,
+                               constraint = self._boot_order_constraint )
+        # compute solution
+        csp_problem    = CSP(vars, domains, neighbors, constraint)
         csp_algorithm  = min_conflicts
         answer         = csp_algorithm(csp_problem, **kargs)
+        nassigns       = csp_problem.nassigns
 
-        # csp_problem.nassigns is..
-        # NOTE: answer will be a dictionary of {service_name:boot_order}, but boot_orders may be duplicated
-        #       and it will not be in order.
+        # clean up the answer: it will be a dictionary of {service_name:boot_order},
+        #  but boot_orders may be duplicated and it may not be in order.
         answer = answer.items()
         answer.sort(lambda x,y: cmp(x[1], y[1]))
         return [ x[0] for x in answer ]
