@@ -61,12 +61,12 @@ TODO: NamespaceTests(StaticMethodsOnly)
 class NamespacePartition(object):
     """ NamespacePartion: introspective operations over dictionary-like objects
 
-NOTE: By default, all operations return dictionaries. Set
-dictionaries to False and you can get back another
-Partion object.
+          NOTE: By default, all operations return dictionaries. Set
+                dictionaries to False and you can get back another
+                partion object.
 
-NOTE: This does not work in-place. (see the copy import up there?)
-"""
+          NOTE: This does not work in-place. (see the copy import up there?)
+    """
     def __init__(self, namespace,dictionaries=True):
         """ """
         if not NamespaceTests.dictionaryish(namespace):
@@ -83,7 +83,7 @@ NOTE: This does not work in-place. (see the copy import up there?)
 
     def doit(self):
         """ useful after you've invoked this with "dictionaries=False" to chain
-        queries, but, at the end you want a dictionary again.
+            queries, but, at the end you want a dictionary again.
         """
         return self.namespace
 
@@ -118,9 +118,9 @@ NOTE: This does not work in-place. (see the copy import up there?)
 
     def clean(self, pattern='_'):
         """ For dictionary-like objects we'll clean out names that start with
-pattern.. for generic objects, we'll turn them into namespace
-dictionaries and proceed.
-"""
+            pattern.. for generic objects, we'll turn them into namespace
+            dictionaries and proceed.
+        """
         namespace = copy(self.namespace)
         bad_names = [x for x in namespace.keys() if x.startswith(pattern)]
         [ namespace.pop(name) for name in bad_names ]
@@ -128,14 +128,14 @@ dictionaries and proceed.
 
     def startswith(self, string):
         """
-"""
+        """
         test = NamespaceTests.name_startswith
         partial = lambda obj: test(obj,string)
         return self.generic(partial)
 
     def copy(self):
         """ This can fail for a variety of reasons involving thread safety,
-etc.. hopefully this approach is reasonable. """
+            etc.. hopefully this approach is reasonable. """
         try:
             return copy(self.namespace)
         except TypeError:
@@ -143,10 +143,10 @@ etc.. hopefully this approach is reasonable. """
 
     def generic(self, test):
         """ This is the main work-horse everyone else will chain back to. Given
-a test, this partitions the namespace around it.
+            a test, this partitions the namespace around it.
 
-TODO: refactor this around inspect.getmemebers()
-"""
+              TODO: refactor this around inspect.getmemebers()
+        """
         namespace = self.copy()
 
         for key, val in namespace.items():
