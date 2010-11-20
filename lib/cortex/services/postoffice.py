@@ -50,6 +50,8 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         """
         NIY
 
+    #@constraint(boot_first=['mapper'])
+    #    ---> self._boot_first = ['mapper'] # testing service bootorder csp
     def start(self):
         """ """
         super(Service,self).start()

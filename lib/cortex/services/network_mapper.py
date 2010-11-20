@@ -66,6 +66,7 @@ class Mapper(Service):
               PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.
         """
         Service.start(self)
+        self._boot_first = ['terminal'] # testing service bootorder csp
         host = '127.0.0.1'
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
 
