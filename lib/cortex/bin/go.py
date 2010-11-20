@@ -32,6 +32,8 @@ def build_parser():
     universeHelp = "Use universe@FILE"
     commandHelp = "same as python -c"
     parser = OptionParser()
+    parser.add_option("-x",  '--xterm', dest="xterm", action="store_true", default=False,
+                      help=commandHelp,  metavar="XTERM")
     parser.add_option("-c",  dest="command", default="", help=commandHelp,  metavar="COMMAND")
     parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
     parser.add_option('--conf', dest="conf", default=os.path.join(
@@ -43,11 +45,10 @@ def build_parser():
                       )
     return parser
 
-def main(options, args):
+def main(nodeconf_file, options, args):
     """ """
     # Set node configuration file in universe
     instance_dir = os.path.split(__file__)[0]
-    nodeconf_file = NODE_CONF or options.conf
     Universe.instance_dir = instance_dir
     if not os.path.exists(nodeconf_file):
         report("Expected node.conf @ "+nodeconf_file+', None found.')
@@ -61,6 +62,7 @@ from cortex.core.reloading_helpers import run as RUN
 def entry():
     parser = build_parser()
     (options, args) = parser.parse_args()
+    nodeconf_file = NODE_CONF or options.conf
     if args and len(args)==1:
         fname = args[0]
         if os.path.exists(fname):
@@ -68,6 +70,18 @@ def entry():
             execfile(fname)
     elif options.command:
         exec(options.command)
+    elif options.xterm:
+        # HACK
+        xterm = Universe.has_command('xterm')
+        if xterm:
+            ncf  = Universe.nodeconf_file
+            tmp  = ' '.join(sys.argv)
+            tmp  = tmp.replace(' --xterm', ' ').replace(' --x',' ').replace(' -x',' ')
+            line = xterm+' -fg green -bg black -e "' + tmp + '"&'
+            print 'running:'
+            print '\t'+line
+            os.system(line)
+
     elif options.universe:
         if not os.path.exists(options.universe):
             print "Path does not exist."
@@ -76,7 +90,7 @@ def entry():
             U = pickle.loads(open(options.universe).read())
             U.play() # Invoke the Universe
     else:
-        main(options, args)
+        main(nodeconf_file, options, args)
         RUN() # Invoke the Universe
         s=Universe.play()
 
