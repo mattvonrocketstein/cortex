@@ -23,9 +23,9 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
           start: brief description of service start-up here
           stop:  brief description service shutdown here
 
-        TODO: either wrap TupleBus.publish up in something asynchronous,
-              or guarantee that subscriber-callbacks are themselves
-              non-blocking.
+          TODO: either wrap TupleBus.publish up in something asynchronous,
+                or guarantee that subscriber-callbacks are themselves
+                non-blocking.
     """
 
     def __init__(self, *args, **kargs):
@@ -44,6 +44,10 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
     def publish_pickle(self, label, data):
         """ publish as pickle """
         self.publish(label, pickle.dumps(data))
+
+    def event(self, msg):
+        """ shortcut for publishing events """
+        return self.publish(EVENT_T, msg)
 
     def msg(self, *args, **kargs):
         """ TODO: determine caller function and dispatch to publish
