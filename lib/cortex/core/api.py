@@ -1,17 +1,23 @@
 """ cortex.core.api
 """
+
 import os
 from cortex.util.namespaces import NamespacePartition
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
+
 fileerror = "No such file"
 
-def publish():
+def publish(publish_services=True):
     """ return a dictionary of the namespace for this module """
     from cortex.core import api
-    return NamespacePartition(api.__dict__).cleaned
-
+    base_api = NamespacePartition(api.__dict__, dictionaries=False)
+    extra    = NamespacePartition({}, dictionaries=False)
+    if publish_services:
+        services  = dict(universe.services.items())
+        extra    += services
+    return base_api.cleaned + extra
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
@@ -23,9 +29,15 @@ def load_file(fname, adl=False, python=True):
     """
     assert os.path.exists(fname), filerror
 
+    # handler for agent description language
     if adl:
         raise Exception, "NIY"
 
+    # handler for problem description language
+    if pdl:
+        raise Exception, "NIY"
+
+    # handler for python file
     if python:
         universe = {}
         execfile(fname, universe)
