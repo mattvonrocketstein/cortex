@@ -28,8 +28,11 @@ class ServiceManager(Manager):
     def stop_all(self):
         """ stop all services this manager knows about """
         [ s.stop() for s in self ]
+
+    # registering services can happen all the time..
+    #  we don't want to do anything noisy here like write an event
     post_registration = NOOP
-    #@finished_successfully_event('new_manager__{name}'.format(name=name))
+
     def register(self, name, **service_metadata):
         """ """
         Manager.register(self, name, **service_metadata)

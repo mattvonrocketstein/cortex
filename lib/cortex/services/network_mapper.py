@@ -1,9 +1,8 @@
 """ cortex.services.nmap
 """
 
-import time
-import nmap
-import simplejson
+import time, copy
+import nmap, simplejson
 
 from cortex.core.util import report
 from cortex.services import Service
@@ -25,8 +24,7 @@ class Mapper(Service):
         """ will be called by the postoffice, with type PEER_T
         """
         data = simplejson.loads(pickled_data)
-        name = data['addr']
-        #report('registering peer', name,data)
+        name = data['addr']+':'+str(data['port'])
         self.universe.peers.register(name, **data)
 
     def iterate(self, host):
@@ -42,20 +40,26 @@ class Mapper(Service):
                               'addr'      : addr
                             }
             if 'tcp' in scan_data[addr]:
-              port_aspect = {
-                              'raw_ports' : scan_data[addr]['tcp'],
-                              'ports'     : scan_data[addr]['tcp'].keys(),
-                              'port'      : scan_data[addr]['tcp'].keys() and \
-                                            scan_data[addr]['tcp'].keys()[0],
-                            }
-            else:
-              port_aspect = {'port':NOT_FOUND_T}
+                port_aspect = {
+                    'raw_ports' : scan_data[addr]['tcp'],
+                    'ports'     : scan_data[addr]['tcp'].keys(),
+                    }
+                # one peer per port
+                for port in port_aspect['ports']:
+                    metadata  = copy.copy(peer_metadata)
+                    port_data = copy.copy(port_aspect)
+                    port_data.update({'port':port})
+                    metadata.update(port_data)
+                    (self.universe|'postoffice').publish_json(PEER_T, metadata)
 
-            peer_metadata.update(port_aspect)
-            peer = peer_metadata
-            (self.universe|'postoffice').publish_json(PEER_T, peer)
+            else:
+                port_aspect = {'port':NOT_FOUND_T}
+                peer_metadata.update(port_aspect)
+                peer = peer_metadata
+                (self.universe|'postoffice').publish_json(PEER_T, peer)
 
     @constraint(boot_first='postoffice')
+    @constraint(boot_first='api')
     def start(self):
         """ i'd like to use the asynchronous portscanner but this
               scan_data = nmap.PortScannerAsync().scan('127.0.0.1','10-100','--system-dns',callback=foo)
@@ -63,6 +67,8 @@ class Mapper(Service):
             fails with:
               PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.
         """
+        #assert (self.universe|'api').port, 'postoffice isnt started'
+        #assert (self.universe|'api').started, 'postoffice isnt started'
         Service.start(self)
         #self._boot_first = ['terminal'] # testing service bootorder csp
         host = '127.0.0.1'
