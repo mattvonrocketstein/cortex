@@ -35,6 +35,8 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
     skervices = SERVICES
     peers     = PEERS
 
+    nodeconf_file = ''
+
     def __or__(self, other):
         """ syntactic sugar for grabbing a service by name """
         try:
