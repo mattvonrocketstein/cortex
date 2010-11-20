@@ -9,6 +9,7 @@
 import simplejson
 
 from cortex.core.util import report
+from cortex.core.data import EVENT_T
 from cortex.core.ground import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus

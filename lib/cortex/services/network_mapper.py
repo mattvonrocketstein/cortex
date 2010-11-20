@@ -10,13 +10,10 @@ from cortex.services import Service
 from cortex.core.peer import Peer
 from cortex.core.data import PEER_T
 from cortex.core.data import CORTEX_PORT_RANGE
+from cortex.util.decorators import constraint
 
 NOT_FOUND_T = 'NOTFound'
 port_range = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
-
-def scan2port(scan):
-    """ """
-    report('scan2', **scan)
 
 class Mapper(Service):
     """ Stub Service:
@@ -29,18 +26,18 @@ class Mapper(Service):
         """
         data = simplejson.loads(pickled_data)
         name = data['addr']
-        report('registering peer', name,data)
+        #report('registering peer', name,data)
         self.universe.peers.register(name, **data)
 
     def iterate(self, host):
         """ """
         (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
-        scan_data = nmap.PortScanner().scan(host, port_range,'--system-dns')['scan']
+        self.port_range = port_range
+        scan_data = nmap.PortScanner().scan(host, port_range, '--system-dns')['scan']
         self.last_scan = scan_data
         for addr in scan_data:
             peer_metadata = { 'is_alive'  : scan_data[addr]['status']['state'],
                               'raw_scan'  : scan_data,
-                              #'port'      : scan2port(scan_data[addr]),
                               'host'      : scan_data[addr]['hostname'],
                               'addr'      : addr
                             }
@@ -58,6 +55,7 @@ class Mapper(Service):
             peer = peer_metadata
             (self.universe|'postoffice').publish_json(PEER_T, peer)
 
+    @constraint(boot_first='postoffice')
     def start(self):
         """ i'd like to use the asynchronous portscanner but this
               scan_data = nmap.PortScannerAsync().scan('127.0.0.1','10-100','--system-dns',callback=foo)
@@ -66,7 +64,7 @@ class Mapper(Service):
               PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.
         """
         Service.start(self)
-        self._boot_first = ['terminal'] # testing service bootorder csp
+        #self._boot_first = ['terminal'] # testing service bootorder csp
         host = '127.0.0.1'
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
 

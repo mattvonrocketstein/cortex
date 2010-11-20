@@ -33,8 +33,8 @@ def classname(thing):
 ################################################################################
 class NamespaceTests:
     """ Various boolean tests over objects, packaged thus to be resuable
-TODO: NamespaceTests(StaticMethodsOnly)
-"""
+          TODO: NamespaceTests(StaticMethodsOnly)
+    """
     @staticmethod
     def name_startswith(obj, pattern):
             """ """
@@ -71,11 +71,33 @@ class NamespacePartition(object):
         """ """
         if not NamespaceTests.dictionaryish(namespace):
             if not hasattr(namespace,'__dict__'):
-                err = "Namespace Partitioner really expects something like a dictionary."
+                err = "Namespace Partitioner really expects something like a dictionary, got {type}".format(type=type(namespace).__name__)
                 raise TypeError, err
             namespace = namespace.__dict__
         self.namespace = namespace
         self.dictionaries = dictionaries
+
+    def __add__(self, other):
+        """ Update this namespace with another.
+
+            works for all combinations of dict+namespace,
+            namespace+dict, namespace+namespace.  if any of the
+            constituents are or want to return dictionaries,
+            return type will be dictionaries.
+        """
+        out = copy(self.namespace)
+        if isinstance(other, NamespacePartition):
+            out.update(other.namespace)
+        elif isinstance(other,dict):
+            out.update(other)
+            return out
+
+        if self.dictionaries or other.dictionaries:
+            return out
+
+        return NamespacePartition(out, dictionaries=False)
+
+
 
     def __iter__(self):
         """ dictionary compat """
@@ -124,7 +146,10 @@ class NamespacePartition(object):
         namespace = copy(self.namespace)
         bad_names = [x for x in namespace.keys() if x.startswith(pattern)]
         [ namespace.pop(name) for name in bad_names ]
-        return namespace
+        if self.dictionaries:
+            return namespace
+        else:
+            return NamespacePartition(namespace)
 
     def startswith(self, string):
         """

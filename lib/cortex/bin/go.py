@@ -70,13 +70,14 @@ def entry():
             execfile(fname)
     elif options.command:
         exec(options.command)
+
     elif options.xterm:
         # HACK
         xterm = Universe.has_command('xterm')
         if xterm:
             ncf  = Universe.nodeconf_file
-            tmp  = ' '.join(sys.argv)
-            tmp  = tmp.replace(' --xterm', ' ').replace(' --x',' ').replace(' -x',' ')
+            clo  = Universe.command_line_invocation
+            tmp  = clo.replace(' --xterm', ' ').replace(' --x',' ').replace(' -x',' ')
             line = xterm+' -fg green -bg black -e "' + tmp + '"&'
             print 'running:'
             print '\t'+line

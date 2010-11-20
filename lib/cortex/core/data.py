@@ -1,12 +1,15 @@
 """ cortex.core.data
 """
 
+def NOOP(*args, **kargs): pass
+
 # pseudo-types for message-passing.. mainly used in conjunction with postoffice
 ################################################################################
 NOTICE_T = "NOTICE_T"
 EVENT_T  = "EVENT_T"
 PEER_T   = "PEER_T"
 WARN_T   = "WARN_T"
+ERROR_T="ERROR_T"
 
 # reflections on cortex codebase
 ################################################################################

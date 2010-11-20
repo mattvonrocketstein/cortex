@@ -4,7 +4,6 @@
 def function_annotator(prefix, **function_metadata):
     """ loads function up with key-values
     """
-
     def decorator(fxn):
         """ """
         for label,val in function_metadata.items():
@@ -12,7 +11,7 @@ def function_annotator(prefix, **function_metadata):
 
         # store an inversion and summary function
         fxn.remove_annotations  = lambda: [ delattr(fxn, '_'+prefix+'_', val) for val in function_metadata ]
-        fxn.summary_annotations = lambda: [ '_'+prefix+'_' for val in function_metadata ]
+        fxn.summary_annotations = lambda: [ '_'+prefix+'_'+val for val in function_metadata ]
 
         return fxn
     return decorator
@@ -27,3 +26,4 @@ def constraint(**labels_and_constraints):
             >>>
     """
     return function_annotator('constraint', **labels_and_constraints)
+

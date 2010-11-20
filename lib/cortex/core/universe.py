@@ -21,7 +21,6 @@ from cortex.core.service import Service, SERVICES
 from cortex.core.service import ServiceManager
 
 from cortex.core.mixins import OSMixin, PIDMixin
-#from cortex.core.mixins import EventMixin, NoticeMixin
 
 class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
                    OSMixin, PerspectiveMixin,
@@ -36,6 +35,13 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
     peers     = PEERS
 
     nodeconf_file = ''
+
+    def __xor__(self, other):
+        """ syntactic sugar for 'make another one line this' """
+        if isinstance(other,int) and other<10:
+            sh = getattr(self, 'system_shell', 'xterm -fg green -bg black -e ')
+            new_command_line_invocation = sh + '"' + self.command_line_invocation + '"&'
+            os.system(new_command_line_invocation)
 
     def __or__(self, other):
         """ syntactic sugar for grabbing a service by name """
@@ -246,7 +252,8 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         node.play()
         return node
 
-Universe = __Universe__()
+Universe       = __Universe__()
+PEERS.universe = Universe
 def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
     """ stupid helper to snag modules from inside the services root """
     out = {}

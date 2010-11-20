@@ -1,6 +1,7 @@
 """ cortex.core.mixins
 """
 import os
+import sys
 
 class MobileCodeMixin(object):
     """ """
@@ -16,10 +17,12 @@ class OSMixin(object):
 
     @property
     def isposix(self):
-        import sys
         return 'posix' in sys.builtin_module_names
     is_posix = isposix
     posix = is_posix
+    @property
+    def command_line_invocation(self):
+        return ' '.join(sys.argv)
 
     @property
     def procs(self):

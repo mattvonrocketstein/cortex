@@ -13,8 +13,8 @@ from txjsonrpc.netstring import jsonrpc
 from peak.util.imports import lazyModule
 
 from cortex.core.api import publish
-
-DEFAULT_PORT=1337
+from cortex.core.data import CORTEX_PORT_RANGE
+PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
 def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lambda: publish()):
 
@@ -42,9 +42,8 @@ class API(Service, ApiWrapper):
            stop:
     """
     def __init__(self, *args, **kargs):
-        self.port = kargs.pop('port', DEFAULT_PORT)
+        self.port = kargs.pop('port', None)
         Service.__init__(self, *args, **kargs)
-        #jsonrpc.JSONRPC
         ApiWrapper.__init__(self)
         from cortex.core import api
 
@@ -59,6 +58,17 @@ class API(Service, ApiWrapper):
 
     def start(self):
         """ """
+        from twisted.internet.error import CannotListenError
         factory = jsonrpc.RPCFactory(API)
-        factory.addIntrospection()
-        self.universe.reactor.listenTCP(1337, factory)
+
+        count   = self.port or PORT_START
+        while count!= PORT_FINISH:
+            try:
+                factory.addIntrospection()
+                self.universe.reactor.listenTCP(count, factory)
+            except CannotListenError:
+                count += 1
+            else:
+                self.port=count
+                return self
+        return ERROR_T

@@ -6,7 +6,7 @@ from cortex.core.manager import Manager
 from cortex.core.util import report, console
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 from cortex.contrib.aima.csp import CSP, min_conflicts
-
+from cortex.core.data import NOOP
 class ServiceManager(Manager):
     """ ServiceManager exists mainly to make universe.services obey list
         and dictionary api simultaneously.  Additionally, it provides a
@@ -16,7 +16,7 @@ class ServiceManager(Manager):
 
     def items(self):
         """ dictionary compatability """
-        return [[var, val] for var,val in Manager.items(self)]
+        return [[var, val.service_obj] for var,val in Manager.items(self)]
 
     def __init__(self, *args, **kargs):
         """ """
@@ -28,7 +28,7 @@ class ServiceManager(Manager):
     def stop_all(self):
         """ stop all services this manager knows about """
         [ s.stop() for s in self ]
-
+    post_registration = NOOP
     #@finished_successfully_event('new_manager__{name}'.format(name=name))
     def register(self, name, **service_metadata):
         """ """
