@@ -197,7 +197,7 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         else:
             ret = service_obj(universe=self, **kargs).play()
             self._services.append(ret)
-            self.skervices.register(service_obj.__class__.__name__.lower(), serverice_obj=service_obj)
+            #self.skervices.register(service_obj.__class__.__name__.lower(), serverice_obj=service_obj)
             return ret
 
     @property
