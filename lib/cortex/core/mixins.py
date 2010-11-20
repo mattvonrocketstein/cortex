@@ -2,12 +2,24 @@
 """
 import os
 
-NOTICE_T = 'system_notice'
+class MobileCodeMixin(object):
+    """ """
+    @property
+    def is_local(self):
+        """ """
+        return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]
 
 class OSMixin(object):
     """ For things that really should be in the os module """
 
     _procs    = []
+
+    @property
+    def isposix(self):
+        import sys
+        return 'posix' in sys.builtin_module_names
+    is_posix = isposix
+    posix = is_posix
 
     @property
     def procs(self):
@@ -22,8 +34,14 @@ class OSMixin(object):
 
     def has_bin(self, cmd):
         """ use POSIX "command" tool to see if a binary
-            exists on the system """
-        return 0 == os.system('command -v '+cmd)
+            exists on the system
+            """
+        if self.is_posix:
+            return os.popen('command -v '+cmd).read().strip()
+            #return 0 == os.system('command -v ' + cmd)
+        else:
+            return NIY
+    has_command=has_bin
 
     @property
     def ip(self):
@@ -32,9 +50,11 @@ class OSMixin(object):
 
     @property
     def hostname(self):
-        """ TODO: memoize """
+        """
+             TODO: memoize """
+        import platform
         import socket
-        return socket.gethostname()
+        return socket.gethostname()#, platform.node
 
 class PIDMixin:
     """ os pid properties """
