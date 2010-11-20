@@ -9,19 +9,23 @@ from cortex.core.hds import HDS
 
 fileerror = "No such file"
 
-def publish(publish_services=True):
+def publish(**kargs):
     """ return a dictionary of the namespace for this module """
+
+
+    publish_services = kargs.pop('publish_services', True)
+    # import this module and inspect it
     from cortex.core import api
     base_api = NamespacePartition(api.__dict__, dictionaries=False)
     extra    = NamespacePartition({}, dictionaries=False)
     if publish_services:
-        services  = dict(universe.services.items())
+        services  = dict(universe.services.items(),
+                         publish_kargs=kargs)
         extra    += services
     return base_api.cleaned + extra
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
-
           known formats:
             python code
             agent description language
@@ -45,8 +49,8 @@ def load_file(fname, adl=False, python=True):
 
 def ping(*args, **kargs):
     """ """
-    print "answering ping"
-    return 'pong'
+    report(" .. answering ping")
+    return 'pong!'
 
 ctx = HDS()
 s   = HDS()
