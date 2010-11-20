@@ -35,6 +35,9 @@ class Manager(object):
     """
 
     class NotFound(Exception): pass
+    def items(self):
+        """ dictionary compatability """
+        return self.registry.items()
     def __len__(self):
         return len(self.registry)
     def __init__(self, *args, **kargs):
