@@ -35,6 +35,11 @@ class Manager(object):
     """
 
     class NotFound(Exception): pass
+
+    def keys(self):
+        """ dictionary compatability """
+        return [x for x in self]
+
     def items(self):
         """ dictionary compatability """
         return self.registry.items()
@@ -46,13 +51,17 @@ class Manager(object):
         self.generic_store = HierarchicalData() #generic storage for the actual manager itself.
 
     def __getattr__(self, name):
+        """ by default attributes are lazy
+        """
+        if name.startswith('_') or name == 'asset_class':
+            raise AttributeError, name
+
         out = None
-        if name != 'asset_class':
-            try:
+
+        try:
                 return object.__getattribute__(self, '__getitem__')(name)
-            except self.NotFound:
+        except self.NotFound:
                 return getattr(object.__getattribute__(self, 'generic_store'), name)
-        raise AttributeError,'nonesuch'
 
     @property
     def last(self):
@@ -67,17 +76,20 @@ class Manager(object):
     def stamp(self, name):
         """ timestamp element with name <name> """
         self.registry[name].stamp = datetime.datetime.now()
-
+    def post_registration(self, asset):
+        """ """
+        NIY
     def register(self, name, **item_metadata):
         """ register object <name> with namespace <item_metadata>
         """
         name = str(name)
         self.registry[name] = getattr(self, 'asset_class', default_asset_class)()
-        for key,value in item_metadata.items():
+        for key, value in item_metadata.items():
             setattr( self.registry[name], key, value)
         self.stamp(name)
-        #report('saving name', name)
-        return self[name]
+        new_asset = self[name]
+        self.post_registration(new_asset)
+        return new_asset
 
     def __str__(self):
         """ """
@@ -108,11 +120,15 @@ class Manager(object):
             raise self.NotFound('No such service: ' + name)
 
     @property
+    def as_dict(self):
+        return dict(self.items())
+
+    @property
     def as_list(self):
         """ """
         out = [ x for x in self ]
         out.sort(lambda x, y: cmp(self.registry[x].stamp,
-                                 self.registry[y].stamp))
+                                  self.registry[y].stamp))
         return out
 
     aslist=as_list
