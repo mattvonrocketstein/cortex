@@ -95,7 +95,7 @@ class PeerManager(Manager):
         mgetattr = Manager.__getattribute__
         for key in ogetattr(self,'keys')():
             peer = ogetattr(self, '__getitem__')(key)
-            if name == peer.host == name:
+            if name == peer.host:
                 return peer
         return mgetattr(self,name)
 

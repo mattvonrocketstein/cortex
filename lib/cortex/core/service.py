@@ -39,6 +39,33 @@ class ServiceManager(Manager):
         #print '*'*99, getattr(service_metadata['service_obj'].start,'summary_annotations',lambda: 'empty')()
         #self[name].constraints = {'boot_before': service_metadata['service_obj']._boot_first}
 
+    def manage(self, name=None,fxn=None, fxn_kargs=None):
+        """ queue up a pile of future-assets
+        """
+        if not hasattr(self, '_pending'):
+            self._pending = []
+        self._pending.append([name, fxn, fxn_kargs])
+
+    def load(self):
+        """ if managed is used, should be called after
+            all calls to manage are finished
+
+            TODO: refactor
+        """
+        self.table = {}
+        for item in self._pending:
+                name, fxn, kargs = item
+                self.table[name] = getattr(fxn.start, '_boot_first', [])
+        ordering = self.resolve_boot_order()
+        self.boot_order = ordering
+        report('determined boot order:',ordering)
+        for name in ordering:
+            for item in self._pending:
+                name2, fxn, fxn_kargs = item
+                if name2==name:
+                        self.register(name, service_obj=fxn(**kargs).play(),
+                                      boot_order=ordering.index(name),  kargs=kargs)
+
     def _boot_order_constraint(self, s1, boot_order1, s2, boot_order2):
             """ returns True iff if self s1, s2 satisfy the
                 constraint when they have boot-order
@@ -51,7 +78,8 @@ class ServiceManager(Manager):
             else:
                 first, second = s2, s1
 
-            if second in self[first].service_obj._boot_first:
+            if second in self.table[first]:
+            #if second in self[first].service_obj._boot_first:
                 return False
             else: return True
 
@@ -63,22 +91,22 @@ class ServiceManager(Manager):
 
             NOTE: kargs will be passed on to the CSP-solving-algorithm that is chosen.
         """
-
+        names = [x[0] for x in self._pending]
         # neighbors: every service participates in the constraints of the other self except itself
-        neighbors = dict([ [service, [service2 for service2 in self if \
-                                      service2!=service]] for service in self])
+        neighbors = dict([ [service, [service2 for service2 in names if \
+                                      service2!=service]] for service in names ])
 
         # vars: variables to solve over
-        vars       = [service for service in self],
+        vars       = [ name for name in names ]
 
         # domains: every service could potentially be booted in any order
-        domains     = dict([ [service, range(len(self))] for service in self])
+        domains     = dict([ [service, range(len(names))] for service in names])
 
         # the totality of the problem.  nothing to do with this now, but here it is.
         csp_definition = dict( vars = vars, domains = domains, neighbors = neighbors,
                                constraint = self._boot_order_constraint )
         # compute solution
-        csp_problem    = CSP(vars, domains, neighbors, constraint)
+        csp_problem    = CSP(vars, domains, neighbors, self._boot_order_constraint)
         csp_algorithm  = min_conflicts
         answer         = csp_algorithm(csp_problem, **kargs)
         nassigns       = csp_problem.nassigns

@@ -77,12 +77,14 @@ def ipaddr_hosts():
          ('cormac', ['localhost', 'testserver'], ['127.0.0.1'])
     """
     name, aliaslist, addresslist = socket.gethostbyname_ex(socket.gethostname())
-    return     name, aliaslist, addresslist
+    return name, aliaslist, addresslist
 
 def ipaddr_basic():
     """ two different approaches just for reference purposes..
         these results are always the same for me, but ymmv depending
         on setup and platform..
     """
-    print socket.gethostbyname(socket.gethostname())
-    print socket.gethostbyname(socket.getfqdn())
+    x = []
+    x.append(socket.gethostbyname(socket.gethostname()))
+    x.append(socket.gethostbyname(socket.getfqdn()))
+    return set(map(str, x))

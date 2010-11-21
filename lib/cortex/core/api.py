@@ -1,28 +1,29 @@
 """ cortex.core.api
 """
 
-import os
-from cortex.util.namespaces import NamespacePartition
+import os, sys
+
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
 
-fileerror = "No such file"
-
 def publish(**kargs):
     """ return a dictionary of the namespace for this module """
 
+    from cortex.util.namespaces import NamespacePartition
 
-    publish_services = kargs.pop('publish_services', True)
+
     # import this module and inspect it
     from cortex.core import api
     base_api = NamespacePartition(api.__dict__, dictionaries=False)
-    extra    = NamespacePartition({}, dictionaries=False)
+    extra    = NamespacePartition(dict(publish_kargs=kargs), dictionaries=False)
+
+    publish_services = kargs.get('publish_services', True)
     if publish_services:
-        services  = dict(universe.services.items(),
-                         publish_kargs=kargs)
+        services  = dict(universe.services.items())
         extra    += services
-    return base_api.cleaned + extra
+    out=base_api.cleaned + extra
+    return out
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
@@ -31,6 +32,8 @@ def load_file(fname, adl=False, python=True):
             agent description language
             node configuration file format
     """
+    from cortex.util.namespaces import NamespacePartition
+    fileerror = "No such file"
     assert os.path.exists(fname), filerror
 
     # handler for agent description language
@@ -46,9 +49,12 @@ def load_file(fname, adl=False, python=True):
         universe = {}
         execfile(fname, universe)
         return NamespacePartition(universe).cleaned
+def resolve(name):
+    """ resolve dns names via reactor """
+    return universe.reactor.resolve(name).addCallbacks(report,report)
 
 def ping(*args, **kargs):
-    """ """
+    """ simple command, but very useful for testing remote apis """
     report(" .. answering ping")
     return 'pong!'
 
@@ -63,7 +69,6 @@ sleep        = universe.sleep
 
 # Managers and shortcuts into the managers
 services     = lambda: list(universe.services)
-resolve      = lambda name: universe.reactor.resolve(name).addCallbacks(report,report)
 peers        = universe.peers
 
 register_service = universe.services.register
