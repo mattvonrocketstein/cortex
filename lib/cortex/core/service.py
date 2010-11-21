@@ -13,7 +13,7 @@ class ServiceManager(Manager):
         commonly used Exception.
     """
     asset_class = HierarchicalData
-
+    #_pending=[]
     def items(self):
         """ dictionary compatability """
         return [[var, val.service_obj] for var,val in Manager.items(self)]
@@ -21,6 +21,7 @@ class ServiceManager(Manager):
     def __init__(self, *args, **kargs):
         """ """
         self.registry      = {}
+        self._pending = []
 
         # TODO: when in doubt, autoproxy to..
         self.generic_store = HierarchicalWrapper('server_obj')
@@ -34,21 +35,23 @@ class ServiceManager(Manager):
     post_registration = NOOP
 
     def register(self, name, **service_metadata):
-        """ """
-        Manager.register(self, name, **service_metadata)
+        """
+        """
+        return Manager.register(self, name, **service_metadata)
         #print '*'*99, getattr(service_metadata['service_obj'].start,'summary_annotations',lambda: 'empty')()
         #self[name].constraints = {'boot_before': service_metadata['service_obj']._boot_first}
 
     def manage(self, name=None,fxn=None, fxn_kargs=None):
-        """ queue up a pile of future-assets
+        """ queue up a pile of future assets and the arguments to
+            initialize them with.  this pile will be dealt with when
+            <load> is called.
         """
-        if not hasattr(self, '_pending'):
-            self._pending = []
         self._pending.append([name, fxn, fxn_kargs])
+        return name
 
     def load(self):
-        """ if managed is used, should be called after
-            all calls to manage are finished
+        """ if <manage> is used, this should be called after
+            all calls to it are finished
 
             TODO: refactor
         """
@@ -79,7 +82,6 @@ class ServiceManager(Manager):
                 first, second = s2, s1
 
             if second in self.table[first]:
-            #if second in self[first].service_obj._boot_first:
                 return False
             else: return True
 
