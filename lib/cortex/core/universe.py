@@ -150,6 +150,7 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
             report('launching service', service)
             self.loadService(service)
 
+        self.services.load()
         # Main loop
         reactor.run()
 
@@ -203,12 +204,14 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
                       yesAction=service_obj(universe=self, **kargs).play)
             return service_obj # TODO: return service_obj.play()
         else:
-            sob = service_obj(universe=self, **kargs)
-            ret = sob.play()
-            self.services.register(sob.__class__.__name__.lower(),
-                                   service_obj=sob,
-                                   kargs=kargs)
-            return ret
+            #sob = service_obj(universe=self, **kargs)
+            kargs.update(dict(universe=self))
+            #ret = sob.play()
+            name=service_obj.__name__.lower()
+            self.services.manage(fxn=service_obj, fxn_kargs=kargs,
+                                 name=name)
+            return name
+            #return ret
 
     @property
     def Services(self):

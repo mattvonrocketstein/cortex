@@ -24,11 +24,12 @@ class Mapper(Service):
         """ will be called by the postoffice, with type PEER_T
         """
         data = simplejson.loads(pickled_data)
-        name = data['addr']+':'+str(data['port'])
+        name = data['host']+':'+str(data['port'])
         self.universe.peers.register(name, **data)
 
     def iterate(self, host):
         """ """
+        local_api_port = (self.universe|'api').port
         (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
         self.port_range = port_range
         scan_data = nmap.PortScanner().scan(host, port_range, '--system-dns')['scan']
@@ -44,19 +45,27 @@ class Mapper(Service):
                     'raw_ports' : scan_data[addr]['tcp'],
                     'ports'     : scan_data[addr]['tcp'].keys(),
                     }
+
                 # one peer per port
                 for port in port_aspect['ports']:
                     metadata  = copy.copy(peer_metadata)
                     port_data = copy.copy(port_aspect)
                     port_data.update({'port':port})
+
+                    # if this peer has the port which is used by the API service in *this*
+                    #  universe, and if the address is the same as this universe, then
+                    #   this host is us!  it gets a special name: "self" accessible as ie
+                    #    universe.peers.self from console
+                    if (port == local_api_port) and (addr in self.universe.ips):
+                        metadata.update({'host':'self'})
+
                     metadata.update(port_data)
                     (self.universe|'postoffice').publish_json(PEER_T, metadata)
 
             else:
-                port_aspect = {'port':NOT_FOUND_T}
+                port_aspect = { 'port' : NOT_FOUND_T }
                 peer_metadata.update(port_aspect)
-                peer = peer_metadata
-                (self.universe|'postoffice').publish_json(PEER_T, peer)
+                (self.universe|'postoffice').publish_json(PEER_T, peer_metadata)
 
     @constraint(boot_first='postoffice')
     @constraint(boot_first='api')
@@ -67,7 +76,7 @@ class Mapper(Service):
             fails with:
               PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.
         """
-        #assert (self.universe|'api').port, 'postoffice isnt started'
+
         #assert (self.universe|'api').started, 'postoffice isnt started'
         Service.start(self)
         #self._boot_first = ['terminal'] # testing service bootorder csp

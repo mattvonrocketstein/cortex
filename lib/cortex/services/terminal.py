@@ -23,6 +23,7 @@ from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
 from cortex.core.terminal import IPShellTwisted, IPY_ARGS
 from cortex.core.mixins import LocalQueue
+from cortex.util.decorators import constraint
 
 class Terminal(Service, LocalQueue):
     """ Terminal Service:
@@ -66,9 +67,11 @@ class Terminal(Service, LocalQueue):
         self.shell.IP.BANNER = console.draw_line(display=False)# "Eat a sandwich.  see if i care."
         self.universe.terminal = self
 
+    @constraint(boot_first='postoffice')
     def start(self):
         """  TODO: defer to universe.command_line_options for whether to magic_pdb
         """
+
         # Set IPython "autocall" to "Full"
         self.shell.IP.magic_autocall(2)
         from twisted.internet.error import ReactorAlreadyRunning

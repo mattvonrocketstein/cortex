@@ -20,6 +20,7 @@ class OSMixin(object):
         return 'posix' in sys.builtin_module_names
     is_posix = isposix
     posix = is_posix
+
     @property
     def command_line_invocation(self):
         return ' '.join(sys.argv)
@@ -47,9 +48,16 @@ class OSMixin(object):
     has_command=has_bin
 
     @property
-    def ip(self):
+    def ips(self):
         """ """
-        pass
+        from cortex.util.net import ipaddr_basic
+        return ipaddr_basic()
+
+    @property
+    def hosts(self):
+        from cortex.util.net import ipaddr_hosts
+        x=ipaddr_hosts()
+        return x[1]+[x[0]]
 
     @property
     def hostname(self):
