@@ -22,7 +22,7 @@ from cortex.core.service import ServiceManager
 
 from cortex.core.mixins import OSMixin, PIDMixin
 
-class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
+class __Universe__(AutoReloader, AutonomyMixin,
                    OSMixin, PerspectiveMixin,
                    PersistenceMixin):
     """
@@ -197,21 +197,19 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
 
 
     def start_service(self, service_obj, ask=False, **kargs):
-        """ """
+        """ service_obj is actually a service_kls?
+        """
         if ask:
             raise Exception,'niy'
             getAnswer('launch service@'+str([name, val]),
                       yesAction=service_obj(universe=self, **kargs).play)
             return service_obj # TODO: return service_obj.play()
         else:
-            #sob = service_obj(universe=self, **kargs)
             kargs.update(dict(universe=self))
-            #ret = sob.play()
-            name=service_obj.__name__.lower()
-            self.services.manage(fxn=service_obj, fxn_kargs=kargs,
-                                 name=name)
-            return name
-            #return ret
+            return self.services.manage(fxn = service_obj,
+                                 fxn_kargs = kargs,
+                                 name=service_obj.__name__.lower())
+
 
     @property
     def Services(self):
@@ -225,14 +223,14 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         return default_services
 
     def launch_instance(self, **kargs):
-        """ """
+        """ OBSOLETE?
         from cortex.core.node import Node
         report(**kargs)
         node = Node(**kargs)
         report(node)
         console.draw_line()
         node.play()
-        return node
+        return node """
 
 Universe       = __Universe__()
 PEERS.universe = Universe
