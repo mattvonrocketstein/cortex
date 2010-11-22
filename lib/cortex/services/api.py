@@ -14,6 +14,7 @@ from peak.util.imports import lazyModule
 
 from cortex.core.api import publish
 from cortex.core.data import CORTEX_PORT_RANGE
+
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
 def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lambda: publish()):
@@ -64,11 +65,13 @@ class API(Service, ApiWrapper):
         count   = self.port or PORT_START
         while count!= PORT_FINISH:
             try:
+                # enables system.listMethods method, etc
                 factory.addIntrospection()
                 self.universe.reactor.listenTCP(count, factory)
             except CannotListenError:
                 count += 1
             else:
-                self.port=count
+                self.port = count
+                self.universe.charlie = str(self.port)
                 return self
         return ERROR_T
