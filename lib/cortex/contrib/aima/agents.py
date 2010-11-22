@@ -11,7 +11,7 @@ Object ## A physical object that can exist in an environment
     Dirt
     Wall
     ...
-    
+
 Environment ## An environment holds objects, runs simulations
     XYEnvironment
         VacuumEnvironment
@@ -64,7 +64,7 @@ class Agent (Object):
     """An Agent is a subclass of Object with one required slot,
     .program, which should hold a function that takes one argument, the
     percept, and returns an action. (What counts as a percept or action
-    will depend on the specific environment in which the agent exists.) 
+    will depend on the specific environment in which the agent exists.)
     Note that 'program' is a slot, not a method.  If it were a method,
     then the program could 'cheat' and look at aspects of the agent.
     It's not supposed to do that: the program can only look at the
@@ -79,7 +79,7 @@ class Agent (Object):
         self.bump = False
 
     def make_agent_program (self):
-        
+
         def program(percept):
             return raw_input('Percept=%s; action? ' % percept)
         return program
@@ -88,7 +88,7 @@ class Agent (Object):
         """Returns True if this agent can grab this object.
         Override for appropriate subclasses of Agent and Object."""
         return False
-    
+
 def TraceAgent(agent):
     """Wrap the agent's program to print its input and output. This will let
     you see what the agent is doing in the environment."""
@@ -106,7 +106,7 @@ class TableDrivenAgent (Agent):
     """This agent selects an action based on the percept sequence.
     It is practical only for tiny domains.
     To customize it you provide a table to the constructor. [Fig. 2.7]"""
-    
+
     def __init__(self, table):
         "Supply as table a dictionary of all {percept_sequence:action} pairs."
         ## The agent program could in principle be a function, but because
@@ -214,7 +214,7 @@ class Environment (object):
         return [] ## List of classes that can go into environment
 
     def percept(self, agent):
-	"Return the percept that the agent sees at this point. Override this."
+        "Return the percept that the agent sees at this point. Override this."
         abstract
 
     def execute_action(self, agent, action):
@@ -222,12 +222,12 @@ class Environment (object):
         abstract
 
     def default_location(self, object):
-	"Default location to place a new object with unspecified location."
+        "Default location to place a new object with unspecified location."
         return None
 
     def exogenous_change(self):
-	"If there is spontaneous change in the world, override this."
-	pass
+        "If there is spontaneous change in the world, override this."
+        pass
 
     def is_done(self):
         "By default, we're done when we can't find a live agent."
@@ -236,20 +236,20 @@ class Environment (object):
         return True
 
     def step(self):
-	"""Run the environment for one time step. If the
-	actions and exogenous changes are independent, this method will
-	do.  If there are interactions between them, you'll need to
-	override this method."""
-	if not self.is_done():
+        """Run the environment for one time step. If the
+        actions and exogenous changes are independent, this method will
+        do.  If there are interactions between them, you'll need to
+        override this method."""
+        if not self.is_done():
             actions = [agent.program(self.percept(agent))
                        for agent in self.agents]
             for (agent, action) in zip(self.agents, actions):
-		self.execute_action(agent, action)
+                self.execute_action(agent, action)
             self.exogenous_change()
 
     def run(self, steps=1000):
-	"""Run the Environment for given number of time steps."""
-	for step in range(steps):
+        """Run the Environment for given number of time steps."""
+        for step in range(steps):
             if self.is_done(): return
             self.step()
 
@@ -257,7 +257,7 @@ class Environment (object):
         "Return all objects exactly at a given location."
         return [obj for obj in self.objects
                 if obj.location == location and isinstance(obj, oclass)]
-    
+
     def some_objects_at (self, location, oclass=Object):
         """Return true if at least one of the objects at location
         is an instance of class oclass.
@@ -268,15 +268,15 @@ class Environment (object):
         return self.list_objects_at(location, oclass) != []
 
     def add_object(self, obj, location=None):
-	"""Add an object to the environment, setting its location. Also keep
-	track of objects that are agents.  Shouldn't need to override this."""
+        """Add an object to the environment, setting its location. Also keep
+        track of objects that are agents.  Shouldn't need to override this."""
 
-	obj.location = location or self.default_location(obj)
-	self.objects.append(obj)
-	if isinstance(obj, Agent):
+        obj.location = location or self.default_location(obj)
+        self.objects.append(obj)
+        if isinstance(obj, Agent):
             obj.performance = 0
             self.agents.append(obj)
-	return self
+        return self
 
     def delete_object (self, obj):
         """Remove an object from the environment."""
@@ -310,7 +310,7 @@ class XYEnvironment (Environment):
         self.height = height
         #update(self, objects=[], agents=[], width=width, height=height)
         self.observers = []
-        
+
     def objects_near(self, location, radius):
         "Return all objects within radius of location."
         radius2 = radius * radius
@@ -358,7 +358,7 @@ class XYEnvironment (Environment):
             obj.location = destination
             for o in self.observers:
                 o.object_moved(obj)
-        
+
     def add_object(self, obj, location=(1, 1)):
         super(XYEnvironment, self).add_object(obj, location)
         obj.holding = []
@@ -373,7 +373,7 @@ class XYEnvironment (Environment):
         # Any more to do?  Object holding anything or being held?
         for obs in self.observers:
             obs.object_deleted(obj)
-    
+
     def add_walls(self):
         "Put walls around the entire perimeter of the grid."
         for x in range(self.width):
@@ -384,18 +384,18 @@ class XYEnvironment (Environment):
             self.add_object(Wall(), (self.width-1, y))
 
     def add_observer (self, observer):
-        """Adds an observer to the list of observers.  
+        """Adds an observer to the list of observers.
         An observer is typically an EnvGUI.
-        
+
         Each observer is notified of changes in move_to and add_object,
         by calling the observer's methods object_moved(obj, old_loc, new_loc)
         and object_added(obj, loc)."""
         self.observers.append(observer)
-        
+
     def turn_heading(self, heading, inc,
                      headings=[(1, 0), (0, 1), (-1, 0), (0, -1)]):
         "Return the heading to the left (inc=+1) or right (inc=-1) in headings."
-        return headings[(headings.index(heading) + inc) % len(headings)]  
+        return headings[(headings.index(heading) + inc) % len(headings)]
 
 class Obstacle (Object):
     """Something that can cause a bump, preventing an agent from
@@ -406,11 +406,11 @@ class Wall (Obstacle):
     pass
 
 #______________________________________________________________________________
-## Vacuum environment 
+## Vacuum environment
 
 class Dirt (Object):
     pass
-    
+
 class VacuumEnvironment (XYEnvironment):
     """The environment of [Ex. 2.12]. Agent perceives dirty or clean,
     and bump (into obstacle) or not; 2D discrete world of unknown size;
@@ -459,9 +459,9 @@ class TrivialVacuumEnvironment (Environment):
                        loc_B:random.choice(['Clean', 'Dirty'])}
 
     def object_classes (self):
-        return [Wall, Dirt, ReflexVacuumAgent, RandomVacuumAgent, 
+        return [Wall, Dirt, ReflexVacuumAgent, RandomVacuumAgent,
                 TableDrivenVacuumAgent, ModelBasedVacuumAgent]
-    
+
     def percept(self, agent):
         "Returns the agent's location, and the location status (Dirty/Clean)."
         return (agent.location, self.status[agent.location])
@@ -544,16 +544,16 @@ class WumpusEnvironment(XYEnvironment):
 
     ## Needs a lot of work ...
 
-    
+
 #______________________________________________________________________________
 
 def compare_agents(EnvFactory, AgentFactories, n=10, steps=1000):
     """See how well each of several agents do in n instances of an environment.
     Pass in a factory (constructor) for environments, and several for agents.
-    Create n instances of the environment, and run each agent in copies of 
+    Create n instances of the environment, and run each agent in copies of
     each one for steps. Return a list of (agent, average-score) tuples."""
     envs = [EnvFactory() for i in range(n)]
-    return [(A, test_agent(A, steps, copy.deepcopy(envs))) 
+    return [(A, test_agent(A, steps, copy.deepcopy(envs)))
             for A in AgentFactories]
 
 def test_agent(AgentFactory, steps, envs):
@@ -584,7 +584,7 @@ e.run(5)
 ## give is a range of expected scores.  If this test fails, it does
 ## not necessarily mean something is wrong.
 envs = [TrivialVacuumEnvironment() for i in range(100)]
-def testv(A): return test_agent(A, 4, copy.deepcopy(envs)) 
+def testv(A): return test_agent(A, 4, copy.deepcopy(envs))
 testv(ModelBasedVacuumAgent)
 (7 < _ < 11) ==> True
 testv(ReflexVacuumAgent)
@@ -608,12 +608,12 @@ class EnvGUI (tk.Tk, object):
     def __init__ (self, env, title = 'AIMA GUI', cellwidth=50, n=10):
 
         # Initialize window
-        
+
         super(EnvGUI, self).__init__()
         self.title(title)
 
         # Create components
-        
+
         canvas = EnvCanvas(self, env, cellwidth, n)
         toolbar = EnvToolbar(self, env, canvas)
         for w in [canvas, toolbar]:
@@ -626,14 +626,14 @@ class EnvToolbar (tk.Frame, object):
         super(EnvToolbar, self).__init__(parent, relief='raised', bd=2)
 
         # Initialize instance variables
-        
+
         self.env = env
         self.canvas = canvas
         self.running = False
         self.speed = 1.0
 
         # Create buttons and other controls
-        
+
         for txt, cmd in [('Step >', self.env.step), ('Run >>', self.run),
                          ('Stop [ ]', self.stop),
                          ('List objects', self.list_objects),
@@ -664,7 +664,7 @@ class EnvToolbar (tk.Frame, object):
             delay_sec = 1.0 / max(self.speed, 1.0) # avoid division by zero
             ms = int(1000.0 * delay_sec)  # seconds to milliseconds
             self.after(ms, self.background_run)
-        
+
     def list_objects (self):
         print "Objects in the environment:"
         for obj in self.env.objects:
@@ -677,4 +677,3 @@ class EnvToolbar (tk.Frame, object):
 
     def set_speed (self, speed):
         self.speed = float(speed)
-    

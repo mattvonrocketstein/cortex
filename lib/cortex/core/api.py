@@ -12,7 +12,6 @@ def publish(**kargs):
 
     from cortex.util.namespaces import NamespacePartition
 
-
     # import this module and inspect it
     from cortex.core import api
     base_api = NamespacePartition(api.__dict__, dictionaries=False)
@@ -24,6 +23,10 @@ def publish(**kargs):
         extra    += services
     out=base_api.cleaned + extra
     return out
+
+def clone():
+    """ syntax will change soon """
+    return universe^1
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
