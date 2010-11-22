@@ -23,7 +23,8 @@
 
 some references:
  + modularity and programming in-the-large: http://portal.acm.org/citation.cfm?id=808431
- +traits as an alternative to multiple inheritance: http://scg.unibe.ch/research/traits/
+ + traits as an alternative to multiple inheritance: http://scg.unibe.ch/research/traits/
+ + ai/logic/probability in python http://www.ainewsletter.com/newsletters/aix_0508.htm#python_ai
 
 code being evaluated for toolbox
  + logilab -- switch to this for CSP instead the AIMA code?
@@ -38,6 +39,6 @@ code being evaluated for toolbox
  + strait -- traits for python (perfect abstraction for componentizing behaviours)
  + python-graph or networkx for working with graphs/trees?
  + good examples of ast hacks for sugar:
-     http://pypi.python.org/pypi/pseudosugar/2010.01.01.README
+     http://pypi.python.org/pypi/pseudosugar/2010.01.01.READMEn
      see also: pseudomethods
  + combinatorics/munkres "assignment problem" http://pypi.python.org/pypi/munkres/1.0.5.4
