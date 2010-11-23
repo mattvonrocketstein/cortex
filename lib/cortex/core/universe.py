@@ -22,20 +22,23 @@ from cortex.core.service import ServiceManager
 
 from cortex.core.mixins import OSMixin, PIDMixin
 
-class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
+class __Universe__(AutoReloader, AutonomyMixin,
                    OSMixin, PerspectiveMixin,
                    PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
     """
-    node_list = []
-    services = SERVICES #[]
+
     reactor   = reactor
-    skervices = SERVICES
+    services  = SERVICES
     peers     = PEERS
 
     nodeconf_file = ''
 
+    @property
+    def tumbler(self):
+        from xanalogica.tumbler import Tumbler
+        return
     def __xor__(self, other):
         """ syntactic sugar for 'make another one line this' """
         if isinstance(other,int) and other<10:
@@ -101,7 +104,7 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
     @property
     def nodes(self):
         """ nodes: dynamic definition """
-        return self.node_list
+
 
     def stop(self):
         """ """
@@ -117,15 +120,26 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
             thr._Thread__stop()
         self.reactor.stop()
 
+    def decide_name(self):
+        """ """
+        name_args = dict( alfa    = str(id(self)),
+                          bravo   = getattr(self,'bravo', ''),
+                          charlie = getattr(self,'charlie',''),
+                          delta   = self.hostname,)
+        name = 'Universe({alfa})[{bravo}:{charlie}]@{delta}'.format(**name_args)
+        self.name    = name
+        return name
+
     def play(self):
         """
             Post-conditions:
-                self.node_list = [ <list of active nodes> ]
         """
         report("Universe.play!")
-        self.name    = 'Universe-' + str(id(self)) + '@' + self.hostname
+        self.decide_name()
         self.started = True
+
         def get_handler(instruction):
+            """ grab an item named "instruction" from the api """
             from cortex.core.api import publish
             _api = publish()
             return _api.get(instruction)
@@ -197,21 +211,19 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
 
 
     def start_service(self, service_obj, ask=False, **kargs):
-        """ """
+        """ service_obj is actually a service_kls?
+        """
         if ask:
             raise Exception,'niy'
             getAnswer('launch service@'+str([name, val]),
                       yesAction=service_obj(universe=self, **kargs).play)
             return service_obj # TODO: return service_obj.play()
         else:
-            #sob = service_obj(universe=self, **kargs)
             kargs.update(dict(universe=self))
-            #ret = sob.play()
-            name=service_obj.__name__.lower()
-            self.services.manage(fxn=service_obj, fxn_kargs=kargs,
-                                 name=name)
-            return name
-            #return ret
+            return self.services.manage(fxn = service_obj,
+                                 fxn_kargs = kargs,
+                                 name=service_obj.__name__.lower())
+
 
     @property
     def Services(self):
@@ -224,18 +236,10 @@ class __Universe__(AutoReloader, PIDMixin, AutonomyMixin,
         default_services = []
         return default_services
 
-    def launch_instance(self, **kargs):
-        """ """
-        from cortex.core.node import Node
-        report(**kargs)
-        node = Node(**kargs)
-        report(node)
-        console.draw_line()
-        node.play()
-        return node
 
 Universe       = __Universe__()
 PEERS.universe = Universe
+
 def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
     """ stupid helper to snag modules from inside the services root """
     out = {}

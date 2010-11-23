@@ -20,3 +20,25 @@
   $ . node.mine/bin/activate # Enter the built virtual env
 
   (node.mine)$ go # Launch
+
+* References:
+ modularity and programming in-the-large: http://portal.acm.org/citation.cfm?id=808431
+ traits as an alternative to multiple inheritance: http://scg.unibe.ch/research/traits/
+ ai/logic/probability in python http://www.ainewsletter.com/newsletters/aix_0508.htm#python_ai
+
+* Code being evaluated for toolbox
+ + logilab -- switch to this for CSP instead the AIMA code?
+ + pyke    -- python meets prolog, great for dealing with the "knapsack problem"
+ + python-snakes -- petri nets using arbitrary python objects as tokens
+ + baker 1.1 -- easier command line scripts (perfect for cli version ofsudo  cortex.core.api)
+ + xanalogica.tumblers -- transfinite addressing scheme (evaluating for usage as cortex URI backend)
+   see also: http://pypi.python.org/pypi/DescribedRoutes/0.2.2
+ + cogen -- coroutine flavored concurrency to complement threads/multiprocessing/reactor models
+ + py.test and pylib --  rapid testing and development utils.
+ + enthought contexts --  can fire events from inside normal functions on assignment, deletion, etc
+ + strait -- traits for python (perfect abstraction for componentizing behaviours)
+ + python-graph or networkx for working with graphs/trees?
+ + good examples of ast hacks for sugar:
+     http://pypi.python.org/pypi/pseudosugar/2010.01.01.READMEn
+     see also: pseudomethods
+ + combinatorics/munkres "assignment problem" http://pypi.python.org/pypi/munkres/1.0.5.4
