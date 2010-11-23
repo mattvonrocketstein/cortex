@@ -1,6 +1,8 @@
 """ cortex.core.notation
 """
 
+import os
+
 class UniverseNotation:
     """ """
     def __xor__(self, other):
