@@ -22,9 +22,8 @@ from cortex.core.service import ServiceManager
 
 from cortex.core.mixins import OSMixin, PIDMixin
 
-class __Universe__(AutoReloader, AutonomyMixin,
-                   OSMixin, PerspectiveMixin,
-                   PersistenceMixin):
+class __Universe__(AutoReloader, OSMixin,
+                   AutonomyMixin, PerspectiveMixin, PersistenceMixin):
     """
         NOTE: this should effectively be a singleton
     """
@@ -39,6 +38,7 @@ class __Universe__(AutoReloader, AutonomyMixin,
     def tumbler(self):
         from xanalogica.tumbler import Tumbler
         return
+
     def __xor__(self, other):
         """ syntactic sugar for 'make another one line this' """
         if isinstance(other,int) and other<10:
