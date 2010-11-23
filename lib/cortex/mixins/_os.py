@@ -1,15 +1,8 @@
-""" cortex.core.mixins
+""" cortex.mixins._os
 """
-import os
-import sys
 
-class MobileCodeMixin(object):
-    """ """
-    @property
-    def is_local(self):
-        """ """
-        return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]
-
+import os, sys, platform
+from tempfile import NamedTemporaryFile
 
 class PIDMixin(object):
     """ os pid properties """
@@ -52,7 +45,9 @@ class OSMixin(PIDMixin):
     @property
     def command_line_invocation(self):
         return ' '.join(sys.argv)
-
+    @property
+    def command_line_prog(self):
+        return self.command_line_invocation.split()[0]
     @property
     def procs(self):
         """ """
@@ -95,25 +90,19 @@ class OSMixin(PIDMixin):
         import socket
         return socket.gethostname()#, platform.node
 
-
-import Queue
-from Queue import Empty as QueueEmpty
-class LocalQueue:
-    """ """
-    def __len__(self):
-        return self.event_q.qsize()
-
-    def init_q(self):
+    @property
+    def tmpdir(self):
         """ """
-        self.event_q = Queue.Queue()
+        #assert is_cortex_venv(sys.prefix), 'Expected sys.prefix would be a cortex venv'
+        tmpdir = os.path.join(sys.prefix, 'tmp')
+        if not os.path.exists(tmpdir):
+            report('making temporary directory:',tmpdir)
+            os.mkdir(tmpdir)
+        return tmpdir
 
-    def push_q(self, *args, **kargs):
-        """ """
-        return self.event_q.put([args, kargs])
+    def tmpfile(self):
+        """ return a new temporary file """
+        tmpdir = self.tmpdir
+        return NamedTemporaryFile(delete=False, dir=tmpdir)
 
-    def pop_q(self):
-        """ """
-        try:
-            return self.event_q.get(block=False)
-        except QueueEmpty:
-            pass
+

@@ -1,4 +1,5 @@
 """ cortex.services.terminal
+
       see also: http://ipython.scipy.org/moin/Cookbook/JobControl
 
         import sys
@@ -22,7 +23,7 @@ from cortex.services import Service
 from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
 from cortex.core.terminal import IPShellTwisted, IPY_ARGS
-from cortex.core.mixins import LocalQueue
+from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 
 class Terminal(Service, LocalQueue):

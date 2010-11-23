@@ -1,4 +1,9 @@
 """ cortex.core.universe
+
+      The universe is an abstraction intended to unify the representation
+      of aspects of the interpretter, the operating system, the "mainloop",
+      and the cortex runtime.  It should (probably) effectively be a singleton--
+      one per process.
 """
 
 import os, sys
@@ -12,6 +17,7 @@ from twisted.internet import reactor
 
 from cortex.util import Memoize
 from cortex.core.reloading import AutoReloader
+from cortex.core.parsing import Nodeconf
 from cortex.core.util import report, console
 from cortex.core.data import SERVICES_DOTPATH
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
@@ -19,19 +25,17 @@ from cortex.core.atoms import PersistenceMixin
 from cortex.core.peer import PeerManager, PEERS
 from cortex.core.service import Service, SERVICES
 from cortex.core.service import ServiceManager
+#from cortex.core.mixins import OSMixin, PIDMixin
+from cortex.mixins import OSMixin, PIDMixin
+from cortex.core.notation import UniverseNotation
 
-from cortex.core.mixins import OSMixin, PIDMixin
-
-class __Universe__(AutoReloader, OSMixin,
+class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                    AutonomyMixin, PerspectiveMixin, PersistenceMixin):
-    """
-        NOTE: this should effectively be a singleton
-    """
-
-    reactor   = reactor
-    services  = SERVICES
-    peers     = PEERS
-
+    """ """
+    system_shell  = 'xterm -fg green -bg black -e '
+    reactor       = reactor
+    services      = SERVICES
+    peers         = PEERS
     nodeconf_file = ''
 
     @property
@@ -39,67 +43,33 @@ class __Universe__(AutoReloader, OSMixin,
         from xanalogica.tumbler import Tumbler
         return
 
-    def __xor__(self, other):
-        """ syntactic sugar for 'make another one line this' """
-        if isinstance(other,int) and other<10:
-            sh = getattr(self, 'system_shell', 'xterm -fg green -bg black -e ')
-            new_command_line_invocation = sh + '"' + self.command_line_invocation + '"&'
-            os.system(new_command_line_invocation)
-
-    def __or__(self, other):
-        """ syntactic sugar for grabbing a service by name """
-        try:
-            out = self.services[other]
-            return out and out.service_obj
-        except self.services.NotFound:
-            report('no such service found', other)
-
     def sleep(self):
         """ """
         self.stop()
         for pid in self.pids['children']:
             os.system('kill -KILL '+str(pid))
             #proc.terminate()
+
         # hack for terminal to exit cleanly
         try: sys.exit()
         except SystemExit:
             pass
 
-    def tmpfile(self):
-        """ return a new temporary file """
-        tmpdir = os.path.join(self.instance_dir, 'tmp')
-        if not os.path.exists(tmpdir):
-            os.mkdir(tmpdir)
-        f = NamedTemporaryFile(delete=False, dir=tmpdir)
-        return f
-
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
         """
-        assert hasattr(self, 'nodeconf_file') and self.nodeconf_file, 'Universe.nodeconf_file tests false or is not set.'
-        #report("Universe.nodeconf: decoding")
-        x = open(self.nodeconf_file).readlines()
-        x = [z.strip() for z in x]
-        nodes = []
-        for line in x:
-            # Respect comments and disregard empties
-            if not line or line.startswith('#'):
-
-                continue
-            #report('got line', line)
-            try:
-                nodedef = simplejson.loads(line)
-            except:
-                report("error decoding..", line)
-            else:
-                #report('encoded..', nodedef)
-                nodes.append(nodedef)
-        return nodes
+        nodeconf_err = 'Universe.nodeconf_file tests false or is not set.'
+        assert hasattr(self, 'nodeconf_file') and self.nodeconf_file, nodeconf_err
+        jsons = Nodeconf(self.nodeconf_file).parse()
+        #raise Exception,jsons
+        return jsons
 
     @property
     def Nodes(self):
         """ nodes: static definition """
-        return self.read_nodeconf()
+        blammo = getattr(self, '_use_nodeconf', self.read_nodeconf)
+        #, self.read_nodeconf()
+        return blammo()
 
     @property
     def nodes(self):
@@ -146,18 +116,21 @@ class __Universe__(AutoReloader, OSMixin,
 
         # Interprets all the instructions in the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
-            for node in self.read_nodeconf():
+            for node in self.Nodes:
+            #for node in self.read_nodeconf():
                 original = node
-                instruction,node=node[0],node[1:]
-                if len(node)==1:
-                    arguments = node
-                    kargs={}
+                instruction, args = node[0], node[1:]
+
+                #print "parsing node",node
+                if len(args)==1:
+                    kargs = {}
                 else:
-                    arguments = node[:-1]
-                    kargs = node[-1]
+                    args = args[:-1]
+                    kargs = (args and args[-1]) or {}
                 #raw_input([arguments,kargs])
+
                 handler = get_handler(instruction)
-                handler(*arguments, **kargs)
+                handler(*args, **kargs)
 
         # Start special services provided by the universe
         for service in self.Services:

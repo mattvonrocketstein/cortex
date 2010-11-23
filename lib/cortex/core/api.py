@@ -3,6 +3,7 @@
 
 import os, sys
 
+from cortex.core.parsing import Nodeconf
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
@@ -25,8 +26,19 @@ def publish(**kargs):
     return out
 
 def clone():
-    """ syntax will change soon """
-    return universe^1
+    """ """
+
+
+    # to avoid infinite recursion, compute the nodeconf file
+    #  that booted this universe, subtracting the "clone" instruction
+    nodeconf = Nodeconf(universe.nodeconf_file).parse(ignore=['clone'])
+
+    # put an updated version back together and write it down
+    tmp = Nodeconf(None, list=nodeconf)
+    x=universe.tmpfile(); tmp.write(x.name); x.close()
+
+    # tell the universe to clone itself using the new nodedef
+    return universe^x.name
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
