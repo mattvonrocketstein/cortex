@@ -4,6 +4,9 @@
 import pickle
 from cortex.core.util import report
 from cortex.core.util import report, console
+class AddressMixin:
+    """ """
+
 
 class PersistenceMixin:
     """ """
@@ -70,7 +73,7 @@ class AutonomyMixin:
         """ Convention:
               <start> is an invoker, or a mainloop
         """
-        report("starting")
+        #report("starting")
         self.started     = True
         self.is_stopped  = False
 
@@ -78,7 +81,7 @@ class AutonomyMixin:
         """ Convention:
               <stop> is a halter
         """
-        report("stopping")
+        #report("stopping")
         self.is_stopped = True
         self.started    = False
 

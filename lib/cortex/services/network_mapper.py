@@ -12,7 +12,7 @@ from cortex.core.data import CORTEX_PORT_RANGE
 from cortex.util.decorators import constraint
 
 NOT_FOUND_T = 'NOTFound'
-port_range = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
+port_range  = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
 
 class Mapper(Service):
     """ Stub Service:

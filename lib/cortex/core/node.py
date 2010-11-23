@@ -12,6 +12,7 @@ from cortex.core.mixins import MobileCodeMixin
 
 class Node(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
+        TODO: move selfhostingtuplebus and FOL-KB into node proper
     """
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
