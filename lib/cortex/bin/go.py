@@ -45,7 +45,7 @@ def build_parser():
                       )
     return parser
 
-def main(nodeconf_file, options, args):
+def install_nodeconf(nodeconf_file, options, args):
     """ """
     # Set node configuration file in universe
     instance_dir = os.path.split(__file__)[0]
@@ -60,19 +60,8 @@ def main(nodeconf_file, options, args):
 from cortex.core.reloading_helpers import run as RUN
 
 def entry():
-    parser = build_parser()
-    (options, args) = parser.parse_args()
-    nodeconf_file = NODE_CONF or options.conf
-    if args and len(args)==1:
-        fname = args[0]
-        if os.path.exists(fname):
-            print "cortex: assuming this is a file.."
-            execfile(fname)
-    elif options.command:
-        exec(options.command)
-
+    """
     elif options.xterm:
-        # HACK
         xterm = Universe.has_command('xterm')
         if xterm:
             ncf  = Universe.nodeconf_file
@@ -82,6 +71,21 @@ def entry():
             print 'running:'
             print '\t'+line
             os.system(line)
+    """
+
+    parser = build_parser()
+    (options, args) = parser.parse_args()
+    nodeconf_file = NODE_CONF or options.conf
+    if args and len(args)==1:
+        fname = args[0]
+        if os.path.exists(fname):
+            print "cortex: assuming this is a file.."
+            __file__ = fname
+            execfile(fname)
+            #Universe.play()
+
+    elif options.command:
+        exec(options.command)
 
     elif options.universe:
         if not os.path.exists(options.universe):
@@ -91,7 +95,7 @@ def entry():
             U = pickle.loads(open(options.universe).read())
             U.play() # Invoke the Universe
     else:
-        main(nodeconf_file, options, args)
+        install_nodeconf(nodeconf_file, options, args)
         RUN() # Invoke the Universe
         s=Universe.play()
 

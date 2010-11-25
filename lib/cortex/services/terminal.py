@@ -33,38 +33,50 @@ class Terminal(Service, LocalQueue):
             <start>: a few words about starting
             <stop>:  a few words about stopping
     """
+    def get_input_processor(self):
+        return self.shell.IP.runsource
 
+    def replace_input_processor(self, new_proc):
+        """ replaces the core ipython input processor
+            with new_proc, returns the old version
+            to caller """
+        old = self.get_input_processor() #self.shell.IP.runsource
+        self.shell.IP.runsource=new_proc
+        return old
+
+    def pre_prompt_hook(self, ip):
+            """ IPython-hook to display system notices """
+            if self.syndicate_events:
+                # extra setup for the postoffice integration..
+                #  this stuff is in here because the requires_service() functionality
+                #   isn't build yet, so it can't go in start() due to dependancy issues
+                if not hasattr(self,'subscribed'):
+                    try:
+                        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
+                    except self.universe.services.NotFound:
+                        pass # this service may be ready before the post office
+                             #  is, so this might not work the first time around
+                    else:
+                        self.subscribed = True
+
+                event = self.pop_q()
+                if event:
+                    print console.blue('Events:'), console.color(str(event))
+
+    #sig def runsource(self, source, filename="<input>", symbol="single"):
     def _post_init(self):
         """
             TODO: self.requires_service('postoffice')
         """
+        self.syndicate_events = True
         self.init_q() #initialize for LocalQueue
         universe = {'__name__' : '__cortex_shell__',}
         universe.update(api.publish())
 
-        def pre_prompt_hook(ip):
-            """ IPython-hook to display system notices """
-
-            # extra setup for the postoffice integration..
-            #  this stuff is in here because the requires_service() functionality
-            #   isn't build yet, so it can't go in start() due to dependancy issues
-            if not hasattr(self,'subscribed'):
-                try:
-                    (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
-                except self.universe.services.NotFound:
-                    pass # this service may be ready before the post office
-                         #  is, so this might not work the first time around
-                else:
-                    self.subscribed = True
-
-            event = self.pop_q()
-            if event:
-                print console.blue('Events:'), console.color(str(event))
-
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe, controller=self)
         self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
         self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name) + ' [\\#] '
-        self.shell.IP.set_hook('pre_prompt_hook', pre_prompt_hook)
+        self.shell.IP.set_hook('pre_prompt_hook', self.pre_prompt_hook)
         self.shell.IP.BANNER = console.draw_line(display=False)# "Eat a sandwich.  see if i care."
         self.universe.terminal = self
 

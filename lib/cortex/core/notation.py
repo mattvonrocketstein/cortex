@@ -2,17 +2,22 @@
 """
 
 import os
+import types
+
+from cortex.core.util import report
 
 class UniverseNotation:
     """ """
+
     def __xor__(self, other):
         """ syntactic sugar launching another universe with given
             nodeconf file. example usage follows.
 
                (universe ^ '~cortex/etc/master.conf')
         """
-        new_command_line_invocation = self.system_shell + '"' + self.command_line_prog + ' --conf='+other + '"&'
-        os.system(new_command_line_invocation)
+        #new_command_line_invocation = self.system_shell + '"' + self.command_line_prog + ' --conf='+other + '"&'
+        #os.system(new_command_line_invocation)
+        print other #os.system(other)
 
     def __or__(self, other):
         """ syntactic sugar for grabbing a service by name,
@@ -26,11 +31,10 @@ class UniverseNotation:
               "postoffice"
 
         """
-        import types
         if type(other) in types.StringTypes:
             try:
                 out = self.services[other]
-                return out and out.service_obj
+                return out and out.obj
             except self.services.NotFound:
                 report('no such service found', other)
                 return None

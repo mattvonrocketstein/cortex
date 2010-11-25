@@ -45,9 +45,11 @@ class OSMixin(PIDMixin):
     @property
     def command_line_invocation(self):
         return ' '.join(sys.argv)
+
     @property
     def command_line_prog(self):
         return self.command_line_invocation.split()[0]
+
     @property
     def procs(self):
         """ """

@@ -1,5 +1,18 @@
 """ cortex.core.util
 """
+from cortex.core.data import SERVICES_DOTPATH
+def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
+    """ stupid helper for universe to snag modules
+        from inside the services root """
+    out = {}
+    ns  = {}
+    exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
+    mod = ns['mod']
+
+    for name in dir(mod):
+        val = getattr(mod, name)
+        out[name] = val
+    return out
 
 # Patterns in reporting
 ####################################################################
@@ -12,10 +25,10 @@ from pygments.formatters import HtmlFormatter,Terminal256Formatter
 from IPython.ColorANSI import TermColors
 
 # Pygments data
-plex = PythonLexer()
-hfom = HtmlFormatter()
+plex  = PythonLexer()
+hfom  = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
-colorize = lambda code: highlight(code, plex, hfom)
+colorize  = lambda code: highlight(code, plex, hfom)
 colorize2 = lambda code: highlight(code, plex, hfom2)
 
 

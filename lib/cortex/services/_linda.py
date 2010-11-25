@@ -31,7 +31,7 @@ class Linda(Service):
             for now we just use the underlying datastructures.
         """
         Service.start(self)
-        report("Starting linda tuplespace")
+        #report("Starting linda tuplespace")
         self.universe.reactor.callLater(1, self.monitor)
 
     def stop(self):
