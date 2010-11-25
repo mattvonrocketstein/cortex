@@ -9,7 +9,7 @@
 import simplejson
 
 from cortex.core.util import report
-from cortex.core.data import EVENT_T
+from cortex.core.data import EVENT_T, ERROR_T
 from cortex.core.ground import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus
@@ -46,20 +46,26 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         """ publish as pickle """
         self.publish(label, pickle.dumps(data))
 
+    def error(self, msg):
+        """ shortcut for publishing errors """
+        self.publish(ERROR_T, msg)
+
+    def notice(self, msg):
+        """ shortcut for publishing errors """
+        self.publish(ERROR_T, msg)
+
     def event(self, msg):
         """ shortcut for publishing events """
         return self.publish(EVENT_T, msg)
 
     def msg(self, *args, **kargs):
-        """ TODO: determine caller function and dispatch to publish
-        """
-        NIY
+        """ determine caller function and dispatch to publish """
+        caller = whosdaddy()
+        self.publish(caller['name'],(args, kargs))
 
-    #@constraint(boot_first=['mapper'])
-    #    ---> self._boot_first = ['mapper'] # testing service bootorder csp
     def start(self):
         """ """
-        super(Service,self).start()
+        super(Service, self).start()
         self.reset()
 
 class ParanoidPostOffice(PostOffice):

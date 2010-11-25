@@ -42,6 +42,15 @@ class API(Service, ApiWrapper):
            start:
            stop:
     """
+    def augment_with(self, **namespace):
+        """ dynamically increase the published api
+            using <namespace> """
+        for name,value in namespace.items():
+            assert hasattr(value, '__call__'), "value added to api must be callable"
+            name = 'jsonrpc_' + name
+            setattr(self, name, value)
+        return namespace
+
     def __init__(self, *args, **kargs):
         self.port = kargs.pop('port', None)
         Service.__init__(self, *args, **kargs)
@@ -72,6 +81,11 @@ class API(Service, ApiWrapper):
                 count += 1
             else:
                 self.port = count
+
+                # stimulate the universe to update it's name
                 self.universe.charlie = str(self.port)
+                self.universe.decide_name()
+
                 return self
+
         return ERROR_T

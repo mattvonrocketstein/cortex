@@ -1,12 +1,12 @@
 """ cortex.core.atoms
+
 """
 
 import pickle
-from cortex.core.util import report
 from cortex.core.util import report, console
+
 class AddressMixin:
     """ """
-
 
 class PersistenceMixin:
     """ """
@@ -87,15 +87,13 @@ class AutonomyMixin:
 
     def play(self):
         """ Convention:
-             Responsibilities:
-               + invoke <start>, but maybe not right away.
-               + never block, and
-               + always return "self"
-
+              Responsibilities:
+                + invoke <start>, but maybe not right away.
+                + never block, and
+                + always return "self"
         """
-        report("play for "+self.name)
-        self.started = True
-        self.is_stopped = False
+        report("play for " + getattr(self, 'name', 'DEFAULT-NAME'))
+        self.start()
 
     def resume(self):
         """ Convention:

@@ -67,6 +67,8 @@ class Mapper(Service):
                 peer_metadata.update(port_aspect)
                 (self.universe|'postoffice').publish_json(PEER_T, peer_metadata)
 
+    scan = iterate
+
     @constraint(boot_first='postoffice')
     @constraint(boot_first='api')
     def start(self):

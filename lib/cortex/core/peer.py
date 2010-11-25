@@ -56,7 +56,7 @@ class CortexPeer(Peer):
     def _proxy(self):
         """ obtain proxy for this peer: a handle on a remote api """
         from txjsonrpc.netstring.jsonrpc import Proxy
-        report('dialing peer={addr}::{port}'.format(addr=self.addr,port=API_PORT))
+        #report('dialing peer={addr}::{port}'.format(addr=self.addr,port=API_PORT))
         proxy = Proxy(self.addr, API_PORT)
         return proxy
 
@@ -64,7 +64,7 @@ class CortexPeer(Peer):
         """ the real api, spoken thru a jsonrpc client,
             to a remote jsonrpc server
         """
-        report('dialing@{name}'.format(name=name), args)
+        #report('dialing@{name}'.format(name=name), args)
         return self._proxy.callRemote(name, *args,
                                       **kargs).addCallbacks(self._log_last_connection,
                                                                          self._report_err)
@@ -88,6 +88,15 @@ class PeerManager(Manager):
 
     """
     asset_class = CortexPeer
+    def update(self, host='localhost'):
+        """ (potentially) update peer list by (re)scanning <host>
+
+             .. it feels kind of weird putting this method here, but
+             being able to type peers.update() feels so right..
+
+             Assumptions: "mapper" service is enabled
+        """
+        self.universe.services['mapper'].obj.scan(host)
 
     def __getattr__(self,name):
         """ allows for doing peers.localhost """
