@@ -1,5 +1,5 @@
 """ cortex.core.common
 """
 
-class NodeError(AssertionError):
+class AgentError(AssertionError):
     """ nothing to see here, move along """
