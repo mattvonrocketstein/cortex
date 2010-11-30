@@ -1,11 +1,11 @@
 """ cortex.core.service
 """
 
-from cortex.core.node import Node, AgentManager
+from cortex.core.node import Agent, AgentManager, Manager
 from cortex.core.util import report, console
 
 from cortex.contrib.aima.csp import CSP, AC3, min_conflicts, backtracking_search
-from cortex.core.data import NOOP
+from cortex.core.data import NOOP, IDENTITY
 
 
 class ServiceManager(AgentManager):
@@ -18,32 +18,36 @@ class ServiceManager(AgentManager):
     #  we don't want to do anything noisy here like write an event
     post_registration = NOOP
 
-    def preprocess_kargs(self, **kls_kargs):
-        """ """
-        return kls_kargs
+    # TODO: might need an abstractagentmanager..
+    pre_load_obj      = Manager.pre_load_obj
+
+    def pre_manage(self, name=None, kls=None, **kls_kargs):
+        """ undo agentmanager's hook for pre_manager..
+        """
+        return name, kls, kls_kargs
 
     def _boot_order_constraint(self, s1, boot_order1, s2, boot_order2):
-            """ returns True iff if s1, s2 satisfy the
+        """ returns True iff if s1, s2 satisfy the
                 constraint when they have boot-order
 
                    s1 := boot_order1,
                    s2 := boot_order2
-            """
+        """
 
-            # all boot orders should be unique.
-            if boot_order1==boot_order2:
-                return False
+        # all boot orders should be unique.
+        if boot_order1==boot_order2:
+            return False
 
-            # figure out which service is first
-            if boot_order1 < boot_order2:
-                first, second = s1, s2
-            else:
-               first, second = s2, s1
+        # figure out which service is first
+        if boot_order1 < boot_order2:
+            first, second = s1, s2
+        else:
+            first, second = s2, s1
 
-            # ensure the second isn't in the first's
-            #  table of dependancies
-            if second in self.table[first]: return False
-            else:                           return True
+        # ensure the second isn't in the first's
+        #  table of dependancies
+        if second in self.table[first]: return False
+        else:                           return True
 
     def build_constraint_table(self):
         """ """
@@ -61,6 +65,7 @@ class ServiceManager(AgentManager):
 
             NOTE: kargs will be passed on to the CSP-solving-algorithm that is chosen.
         """
+
         # Build table of start._boot_first constraints
         self.build_constraint_table()
 
@@ -87,24 +92,29 @@ class ServiceManager(AgentManager):
         # clean up the answer: it will be a dictionary of {service_name:boot_order},
         #  but boot_order's may be duplicated, and it may not be in order.
         answer = answer.items()
-        #raise Exception,answer
         answer.sort(lambda x,y: cmp(x[1], y[1]))
-        #raise Exception, [x[0] for x in answer]
         return [ x[0] for x in answer ]
 
 
-class Service(Node):
-    """ abstractions representing a cortex service
+class Service(Agent):
+    """ Abstractions representing a cortex service
     """
+    class ServiceError(Exception):
+        """ Move along, nothing to see here """
+
+    def _raise_error(self, msg):
+        """ helper for informative exceptions """
+        formatting = dict(msg=msg, service_name=self.__class__.__name__)
+        msg = 'Problem with Service@"{service_name}": {msg}'.format(**formatting)
+        raise Service.ServiceError(msg)
 
     def __init__(self, *args, **kargs):
         """ """
-
         # a list of items that have to be play()'ed before this service
         self._boot_first = []
 
         if 'name' in kargs:
-            raise Exception,'services specify their own names'
+            self._raise_error('Services specify their own names!')
         else:
             kargs.update( { 'name' : self.__class__.__name__ } )
 
@@ -113,32 +123,32 @@ class Service(Node):
     @property
     def status(self):
         """ placeholder """
-        return self.is_stopped,self.started
+        return self.is_stopped, self.started
 
     def __repr__(self):
         """ """
-        return '<{name}-Service {_id}>'.format(_id=str(id(self)),
-                                               name=self.__class__.__name__)
-
-    def _post_init(self, **kargs):
-        """ """
-        pass
-        #self.is_stopped = False
+        formatting = dict(_id  = str(id(self)),
+                          name = self.__class__.__name__)
+        return '<{name}-Service {_id}>'.format(**formatting)
 
     def stop(self):
-        """ """
+        """ Convention:
+              <stop> for services differs from your typical
+              agent because ..
+        """
         report("service::stopping")
         self.is_stopped = True
         self.started    = False
-        super(Service,self).stop()
+        super(Service, self).stop()
 
     def play(self):
         """
-            Convention: services *must* define start() and stop(), therefore
-                        the functionality of <play> is implied.
+            Convention:
+              services *must* define <start> and <stop>,
+              therefore the functionality of <play> is implied.
         """
         self.universe.reactor.callLater(1, self.start)
         return self
 
-# cheap singleton
+# A cheap singleton
 SERVICES = ServiceManager()

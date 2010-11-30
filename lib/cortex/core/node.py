@@ -3,25 +3,33 @@
 
 import os
 
-from cortex.core.common import NodeError
+from cortex.core.common import AgentError
 from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 from cortex.core.data import DEFAULT_HOST
-from cortex.core.mixins import MobileCodeMixin
+from cortex.mixins import MobileCodeMixin
 from cortex.core.manager import Manager
 from cortex.core.util import report
 
+class AgentPrerequisiteNotMet(Exception):
+    """ Move along, nothing to see here """
+
 class AgentManager(Manager):
+    """
+    """
+
+    load_first = ['ServiceManager']     # TODO: not enforced..
 
     # Class specifying how the objects in this
     #  container will be represented
     asset_class = HierarchicalData
-    def __init__(self, *args, **kargs):
+
+    def __init__(self, universe=None, **kargs):
         """ """
+        super(AgentManager,self).__init__(**kargs)
+        self.universe   = universe
         self.registry   = {}
-        self._pending   = []
-        self.boot_order = None
 
         # TODO: when in doubt, autoproxy to..
         self.generic_store = HierarchicalWrapper('obj')
@@ -34,63 +42,59 @@ class AgentManager(Manager):
         """ stop all services this manager knows about """
         [ s.stop() for s in self ]
 
-    def preprocess_kargs(self, **kls_kargs):
-        # shot in the dark..
+    def pre_manage(self, name=None, kls=None, **kls_kargs):
+        """ make an educated guess whenever 'name' is not given
+        """
         if 'name' not in kls_kargs:
             kls_kargs['name'] = name
-        return kls_kargs
+        return name, kls, kls_kargs
 
-    def manage(self, name=None, kls=object, kls_kargs={}):
-        """ queue up a pile of future assets and the arguments to
-            initialize them with.  this pile will be dealt with when
-            <load> is called.
+    def pre_load_obj(self, kls=None, **kls_kargs):
+        """ pre_load_obj hook:
         """
-        self.preprocess_kargs(**kls_kargs)
-        self._pending.append([name, kls, kls_kargs])
-        return name
+        assert self.universe, 'universe is broken!'
 
-    def resolve_boot_order(self, **kargs):
-        """ by default, simply returns the names in
-            the order they were registered """
-        return [pending[0] for pending in self._pending ]
+        # enforce requirements (NOTE: servicemanager will want to undo this)
+        required_services = getattr(kls, 'requires_services',[])
+        for service_name in required_services:
+                if (self.universe|service_name) is None:
+                    fmt = dict(t1=kls.__name__, t2=service_name)
+                    err = 'Service-requirement not met for Agent({t1}): "{t2}"'.format(**fmt)
+                    raise AgentPrerequisiteNotMet, err
 
-    def load(self):
-        """ if <manage> is used, this should be called after
-            all calls to it are finished
+        return super(AgentManager,self).pre_load_obj(kls=kls, **kls_kargs)
 
-            TODO: refactor
+    def post_load_obj(self, obj):
+        """ post_load_obj hook:
         """
-        self.boot_order = self.resolve_boot_order()
-        report('determined boot order:', self.boot_order)
-        for name in self.boot_order:
-            for item in self._pending:
-                name2, kls, kls_kargs = item
-                kls_kargs = kls_kargs or {}
-                if name2 == name:
-                        self.register(name,
-                                      obj        = kls(**kls_kargs).play(),
-                                      boot_order = self.boot_order.index(name),
-                                      kargs      = kls_kargs)
+        return obj.play()
+
+    def pre_registration(self, name, **metadata):
+        """ pre_registration hook """
+        return name, metadata
 
     def post_registration(self, asset):
-        report(asset.obj)
+        """ pre_registration hook """
+        report( asset.obj )
 
-class Node(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
-    """
-        TODO: move selfhostingtuplebus and FOL-KB into node proper
-    """
+# A cheap singleton
+AGENTS = AgentManager()
 
-    name='default-name'
+class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
+    """
+        TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
+    """
+    name = 'default-name'
 
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
         """
         self.universe = universe
-        self.host = host or DEFAULT_HOST
-        self.name = name
+        self.host     = host or DEFAULT_HOST
+        self.name     = name
 
         # pass the remainder of the kargs to _post_init for subclassers
-        if hasattr(self,'_post_init'):
+        if hasattr(self, '_post_init'):
             self._post_init(**kargs)
 
     def stop(self):
@@ -98,14 +102,20 @@ class Node(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
               <stop> should..
         """
         #report("node::stopping")
-        super(Node, self).stop()
+        super(Agent, self).stop()
+
     def iterate(self):
-        report('hi')
+        """ Convention:
+              <iterate> is typically called by <play>, but
+              whereas <play> is (under normal circumstances)
+              only called once, <iterate> may be called several
+              times.
+        """
 
     def play(self):
         """ Convention:
               <play> should always return something similar to a deferred.
-              this is a representation of <self> where <self> has
+              This is a representation of <self> where <self> has
               fundamentally been *invoked* already and is waiting
               for the universal main loop to begin.
 
@@ -113,20 +123,8 @@ class Node(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
         """
         if hasattr(self, 'setup'):
             self.setup()
-        super(Node, self).play()
+        super(Agent, self).play()
         self.universe.reactor.callLater(1,self.iterate)
         return self
 
-Agent = Node
-
-class TaskList(Agent):
-    """ """
-    def _post_init(self, tasks=[]):
-        """ """
-        self.tasks = tasks
-
-    def start(self):
-        """ """
-        while self.tasks:
-            task = self.tasks.pop()
-            task()
+Node = Agent
