@@ -2,64 +2,53 @@
 """
 
 from cortex.core import api
-from cortex.core.util import report
+#from cortex.core.util import report
 from cortex.core.universe import Universe
-from cortex.core.node import Agent, TaskList
+from cortex.core.node import Agent
 
 
 class Chat(Agent):
-    """ """
+
+    requires_services = ['terminal']
 
     def input_proc(self, *args, **kargs):
-        """ """
-        txt=args[0]
+        """ A new input processor for the terminal.
+            It's your usual ipython prompt except that
+            lines starting with '#' will be treated as
+            chat-text.
+        """
+        txt = args[0]
         if txt.strip().startswith('#'):
-                #report('----> chatting', args, kargs)
                 for name,peer in self.universe.peers.items():
-                    if 'self' != peer.host:
+                    if 'self' != str(peer.host):
                         peer.api.chat( txt + ' -- '+self.universe.name)
 
-                ( self.universe|'postoffice' ).publish('chat', args[0])
         else:
             self.original_input_processor(*args, **kargs)
-        #return False
 
     def setup(self):
+        """ When lines start with '#',
+             treat them as a chat message. """
         terminal = (self.universe|'terminal')
-        ( self.universe|'api' ).augment_with(chat=self.rcv_chat)
-        self.original_input_processor= terminal.get_input_processor() #self.shell.IP.runsource
+        self.original_input_processor = terminal.replace_input_processor(self.input_proc)
 
-        # When lines start with '#', treat them as a chat message.
-        old_proc = terminal.replace_input_processor(self.input_proc)
 
-        # quiet down the usual terminal event messages
-        terminal.syndicate_events = False
-
-    def xmt_chat(self, msg):
-        ( self.universe|'postoffice' ).publish('chat', msg)
-
-    def rcv_chat(self, postoffice, *args, **kargs):
-        print args[0]
-        #report(postoffice, args, **kargs)
-
-    def iterate(self):
-        pass
-        #( self.universe|'postoffice' ).subscribe('chat', self.rcv_chat)
+# Parameters for the services. mostly empty and ready to override
+term_args  = {'syndicate_events_to_terminal' : False}  # Cortex-Terminal arguments: be quiet
+api_args   = {}                                        # Arguments for the API-serving daemon
+linda_args = {}                                        # Linda (tuplespace) parameters
+map_args   = {}                                        # Network-mapper parameters
+post_args  = {}                                        # Postoffice parameters
 
 # Load services
 api.do( [
-        [ "load_service", ("api",),            {} ],
-        [ "load_service", ("_linda",),         {} ],
-        [ "load_service", ("terminal",),       {} ],
-        [ "load_service", ("postoffice",),     {} ],
-        [ "load_service", ("network_mapper",), {} ],
+        [ "load_service", ("api",),            api_args   ],
+        [ "load_service", ("_linda",),         linda_args ],
+        #[ "load_service", ("terminal",),       term_args  ],  #comment to begin
+        [ "load_service", ("postoffice",),     post_args  ],
+        [ "load_service", ("network_mapper",), map_args   ],
         ])
 
-api.do([ ["build_node", ('test-node',), dict(kls=Chat, kls_kargs={'name':'chat-agent'})], ])
-
-#Universe.agents.manage(, kls=Node, kls_kargs=
-#Universe.agents.load()
-x = '{shell} "{prog} {file}"'.format(shell=Universe.system_shell,
-                                       file=__file__, prog=Universe.command_line_prog)
-api.clone(x)
-#Universe.play()
+#api.do([ ["build_agent", ('test-agent',), dict(kls=Chat, kls_kargs={})], ])
+#api.clone(file=__file__)
+Universe.play()
