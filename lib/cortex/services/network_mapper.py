@@ -66,7 +66,7 @@ class Mapper(Service):
                 port_aspect = { 'port' : NOT_FOUND_T }
                 peer_metadata.update(port_aspect)
                 (self.universe|'postoffice').publish_json(PEER_T, peer_metadata)
-
+            self.universe.reactor.callLater(10, lambda: self.iterate(host))
     scan = iterate
 
     @constraint(boot_first='postoffice')
@@ -82,7 +82,7 @@ class Mapper(Service):
         #assert (self.universe|'api').started, 'postoffice isnt started'
         Service.start(self)
         #self._boot_first = ['terminal'] # testing service bootorder csp
-        host = '127.0.0.1'
+        host = getattr(self,'scan_host','127.0.0.1')
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
 
     def play(self):
