@@ -44,11 +44,11 @@ post_args  = {}                                        # Postoffice parameters
 api.do( [
         [ "load_service", ("api",),            api_args   ],
         [ "load_service", ("_linda",),         linda_args ],
-        #[ "load_service", ("terminal",),       term_args  ],  #comment to begin
+        [ "load_service", ("terminal",),       term_args  ],  #comment to begin
         [ "load_service", ("postoffice",),     post_args  ],
         [ "load_service", ("network_mapper",), map_args   ],
         ])
 
-#api.do([ ["build_agent", ('test-agent',), dict(kls=Chat, kls_kargs={})], ])
-#api.clone(file=__file__)
+api.do([ ["build_agent", ('test-agent',), dict(kls=Chat, kls_kargs={})], ])
+api.clone(file=__file__)
 Universe.play()
