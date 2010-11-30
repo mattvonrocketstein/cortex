@@ -25,7 +25,7 @@ from cortex.core.atoms import PersistenceMixin
 from cortex.core.peer import PeerManager, PEERS
 from cortex.core.service import Service, SERVICES
 from cortex.core.service import ServiceManager
-from cortex.core.service import AgentManager
+from cortex.core.node import AGENTS #AgentManager
 from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
 
@@ -36,8 +36,14 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
     reactor       = reactor
     services      = SERVICES
     peers         = PEERS
-    agents        = AgentManager()
-    nodeconf_file = ''
+    agents        = AGENTS
+    #clones        = CloneManager()
+    #processes     = ProcessManager()
+    nodeconf_file = u''
+
+    def decide_options(self):
+        """ """
+        return "--directives=do_not_clone"
 
     @property
     def tumbler(self):
@@ -97,11 +103,14 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                 handler = get_handler(instruction)
                 handler(*args, **kargs)
 
-
-        self.services.load()
+        # is this working?
         for name, kls, kls_kargs in self.agents._pending:
-            kls_kargs.update({'universe':self})
+            kls_kargs.update( { 'universe' : self } )
+
+        # TODO: invoke managers with __call__ ?
+        self.services.load()
         self.agents.load()
+
         # Main loop
         reactor.run()
 
@@ -195,5 +204,10 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                                         kls_kargs = kargs,
                                         name=obj.__name__.lower())
 
-Universe       = __Universe__()
-PEERS.universe = Universe
+# A cheap singleton
+Universe = __Universe__()
+
+# Set all the back-refs
+AGENTS.universe   = Universe
+PEERS.universe    = Universe
+SERVICES.universe = Universe
