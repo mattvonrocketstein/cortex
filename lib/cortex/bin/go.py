@@ -30,12 +30,14 @@ NODE_CONF = None #'node.conf'
 
 def build_parser():
     universeHelp = "Use universe@FILE"
+    directiveHelp = "Directives"
     commandHelp = "same as python -c"
     parser = OptionParser()
     parser.add_option("-x",  '--xterm', dest="xterm", action="store_true", default=False,
                       help=commandHelp,  metavar="XTERM")
     parser.add_option("-c",  dest="command", default="", help=commandHelp,  metavar="COMMAND")
     parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
+    parser.add_option('--directives', dest="directives", default="", help=directiveHelp)
     parser.add_option('--conf', dest="conf", default=os.path.join(
                                                  os.path.realpath(os.getcwd()),
                                                  'etc',
@@ -73,14 +75,15 @@ def entry():
             os.system(line)
     """
 
-    parser = build_parser()
-    (options, args) = parser.parse_args()
+    parser        = build_parser()
+    options, args = parser.parse_args()
     nodeconf_file = NODE_CONF or options.conf
+    Universe.directives = options.directives.split(",")
     if args and len(args)==1:
         fname = args[0]
         if os.path.exists(fname):
             print "cortex: assuming this is a file.."
-            __file__ = fname
+            __file__ = os.path.abspath(fname)
             execfile(fname)
             #Universe.play()
 
