@@ -47,7 +47,7 @@ class CortexPeer(Peer):
                 def fxn(*args, **kargs):
                     """ return a handle on the real function,
                          now that we've been given it's name. """
-                    self._eager_api(var, *args, **kargs)
+                    return self._eager_api(var, *args, **kargs)
                 return fxn
         return DynamicApiProxy()
     api = property(_lazy_api)
@@ -57,14 +57,14 @@ class CortexPeer(Peer):
         """ obtain proxy for this peer: a handle on a remote api """
         from txjsonrpc.netstring.jsonrpc import Proxy
         #report('dialing peer={addr}::{port}'.format(addr=self.addr,port=API_PORT))
-        proxy = Proxy(self.addr, API_PORT)
+        proxy = Proxy(self.addr, self.port)
         return proxy
 
     def _eager_api(self, name, *args, **kargs):
         """ the real api, spoken thru a jsonrpc client,
             to a remote jsonrpc server
         """
-        #report('dialing@{name}'.format(name=name), args)
+        #report('dialing@{name}'.format(name=name), args, kargs)
         return self._proxy.callRemote(name, *args,
                                       **kargs).addCallbacks(self._log_last_connection,
                                                                          self._report_err)
@@ -118,4 +118,6 @@ class PeerManager(Manager):
     def __iter__(self):
         """ dumb proxy """
         return Manager.__iter__(self)
-PEERS=PeerManager()
+
+# A cheap singleton
+PEERS = PeerManager()
