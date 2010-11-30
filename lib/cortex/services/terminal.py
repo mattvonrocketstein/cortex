@@ -64,11 +64,11 @@ class Terminal(Service, LocalQueue):
                     print console.blue('Events:'), console.color(str(event))
 
     #sig def runsource(self, source, filename="<input>", symbol="single"):
-    def _post_init(self, syndicate_events=True):
+    def _post_init(self, syndicate_events_to_terminal=True):
         """
             TODO: self.requires_service('postoffice')
         """
-        self.syndicate_events = syndicate_events
+        self.syndicate_events = syndicate_events_to_terminal
         self.init_q() #initialize for LocalQueue
         universe = {'__name__' : '__cortex_shell__',}
         universe.update(api.publish())
@@ -79,6 +79,7 @@ class Terminal(Service, LocalQueue):
         self.universe.terminal = self
 
     def set_prompt(self):
+        """ """
         self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
         self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name) + ' [\\#] '
 
