@@ -2,28 +2,22 @@
 """
 
 from cortex.core import api
-#from cortex.core.util import report
-from cortex.core.universe import Universe
 from cortex.core.node import Agent
 
-
 class Chat(Agent):
-
-    requires_services = ['terminal']
-
     def comment_processor(self, source, *args, **kargs):
         """ A new input processor for the terminal.. will only
             be used when lines start with '#'
         """
         for name,peer in self.universe.peers.items():
-            if 'self' != str(peer.host):
+            if 'self' != peer.host:
                 peer.api.chat( source + ' -- '+self.universe.name)
 
     def setup(self):
         """ """
         terminal = (self.universe|'terminal')
-        comment_predicate = lambda source: source.strip().startswith('#'))
-        terminal.attach_proc(self.input_proc,comment_predicate)
+        comment_predicate = lambda source: source.strip().startswith('#')
+        terminal.attach_proc(self.comment_processor, comment_predicate)
 
 
 # Parameters for the services. mostly empty and ready to override
@@ -32,16 +26,27 @@ api_args   = {}                                        # Arguments for the API-s
 linda_args = {}                                        # Linda (tuplespace) parameters
 map_args   = {}                                        # Network-mapper parameters
 post_args  = {}                                        # Postoffice parameters
+chat_args  = dict(kls=Chat)                            # Chat-agent parameters
 
-# Load services
+# Loads the services with the given parameters.  Order does not
+# matter here because the service definitions specify (and resolve)
+# dependancies.
 api.do( [
         [ "load_service", ("api",),            api_args   ],
         [ "load_service", ("_linda",),         linda_args ],
-        [ "load_service", ("terminal",),       term_args  ],  #comment to begin
+        [ "load_service", ("terminal",),       term_args  ],
         [ "load_service", ("postoffice",),     post_args  ],
         [ "load_service", ("network_mapper",), map_args   ],
         ])
 
-api.do([ ["build_agent", ('test-agent',), dict(kls=Chat, kls_kargs={})], ])
+# Builds the chat-agent described above.
+api.do([ ["build_agent", ('test-agent',), chat_args], ])
+
+# Make another copy.. we need someone to talk to.  See how
+# __file__ is availible, just like python sans cortex?
+# If you want, <clone> is safe to call more than once.
 api.clone(file=__file__)
-Universe.play()
+
+
+# Invoke the universe (mainloop)
+api.universe.play()

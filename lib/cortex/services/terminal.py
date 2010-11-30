@@ -13,8 +13,6 @@
             ip = ipapi.get()
             def_colors = ip.options.colors
             Pdb(def_colors).set_trace(sys._getframe().f_back)
-
-
 """
 
 
@@ -77,14 +75,14 @@ class ShellAspect:
             # extra setup for the postoffice integration..
             #  this stuff is in here because the requires_service() functionality
             #   isn't build yet, so it can't go in start() due to dependancy issues
-            if not hasattr(self,'subscribed'):
-                try:
-                    (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
-                except self.universe.services.NotFound:
-                    pass # this service may be ready before the post office
-                         #  is, so this might not work the first time around
-                else:
-                    self.subscribed = True
+            if not hasattr(self, 'subscribed'):
+                #try:
+                (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
+                #except self.universe.services.NotFound:
+                #    pass # this service may be ready before the post office
+                #         #  is, so this might not work the first time around
+                #else:
+                self.subscribed = True
 
             event = self.pop_q()
             if event:
