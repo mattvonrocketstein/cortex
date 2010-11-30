@@ -92,7 +92,7 @@ class AutonomyMixin:
                 + never block, and
                 + always return "self"
         """
-        report("play for " + getattr(self, 'name', 'DEFAULT-NAME'))
+        #report("play for " + getattr(self, 'name', 'DEFAULT-NAME'))
         self.start()
 
     def resume(self):
