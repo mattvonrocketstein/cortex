@@ -106,5 +106,3 @@ class OSMixin(PIDMixin):
         """ return a new temporary file """
         tmpdir = self.tmpdir
         return NamedTemporaryFile(delete=False, dir=tmpdir)
-
-
