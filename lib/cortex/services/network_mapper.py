@@ -1,4 +1,7 @@
-""" cortex.services.nmap
+""" cortex.services.network_mapper
+
+      a wrapper around nmap for simplistic peer-discovery
+
 """
 
 import time, copy
@@ -14,8 +17,11 @@ from cortex.util.decorators import constraint
 NOT_FOUND_T = 'NOTFound'
 port_range  = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
 
-class Mapper(Service):
-    """ Stub Service:
+class AbstractMapper(Service):
+    pass
+
+class Mapper(AbstractMapper):
+    """ NMap Service:
           start: brief description of service start-up here
           stop:  brief description service shutdown here
     """
@@ -84,8 +90,3 @@ class Mapper(Service):
         #self._boot_first = ['terminal'] # testing service bootorder csp
         host = getattr(self,'scan_host','127.0.0.1')
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
-
-    def play(self):
-        """ stubbed out although services should override
-            usually override "start" and not "play" """
-        return Service.play(self)
