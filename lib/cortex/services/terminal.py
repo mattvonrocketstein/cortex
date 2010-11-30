@@ -26,13 +26,15 @@ from cortex.core.terminal import IPShellTwisted, IPY_ARGS
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 
-class Terminal(Service, LocalQueue):
-    """ Terminal Service:
-          an ipython console that uses the cortex api
+class ShellAspect:
+    def set_prompt(self):
+        """ """
+        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
+        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name)  + ' [\\#] '
+    def dispatch_input_processor(self, source):
+        """ """
+        pass
 
-            <start>: a few words about starting
-            <stop>:  a few words about stopping
-    """
     def get_input_processor(self):
         return self.shell.IP.runsource
 
@@ -45,25 +47,32 @@ class Terminal(Service, LocalQueue):
         return old
 
     def pre_prompt_hook(self, ip):
-            """ IPython-hook to display system notices """
-            if self.syndicate_events:
-                # extra setup for the postoffice integration..
-                #  this stuff is in here because the requires_service() functionality
-                #   isn't build yet, so it can't go in start() due to dependancy issues
-                if not hasattr(self,'subscribed'):
-                    try:
-                        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
-                    except self.universe.services.NotFound:
-                        pass # this service may be ready before the post office
-                             #  is, so this might not work the first time around
-                    else:
-                        self.subscribed = True
+        """ IPython-hook to display system notices """
+        if self.syndicate_events:
+            # extra setup for the postoffice integration..
+            #  this stuff is in here because the requires_service() functionality
+            #   isn't build yet, so it can't go in start() due to dependancy issues
+            if not hasattr(self,'subscribed'):
+                try:
+                    (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
+                except self.universe.services.NotFound:
+                    pass # this service may be ready before the post office
+                         #  is, so this might not work the first time around
+                else:
+                    self.subscribed = True
 
-                event = self.pop_q()
-                if event:
-                    print console.blue('Events:'), console.color(str(event))
+            event = self.pop_q()
+            if event:
+                print console.blue('Events:'), console.color(str(event))
 
-    #sig def runsource(self, source, filename="<input>", symbol="single"):
+
+class Terminal(Service, LocalQueue, ShellAspect):
+    """ Terminal Service:
+          an ipython console that uses the cortex api
+
+            <start>: a few words about starting
+            <stop>:  a few words about stopping
+    """
     def _post_init(self, syndicate_events_to_terminal=True):
         """
             TODO: self.requires_service('postoffice')
@@ -75,13 +84,10 @@ class Terminal(Service, LocalQueue):
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe, controller=self)
         self.set_prompt()
         self.shell.IP.set_hook('pre_prompt_hook', self.pre_prompt_hook)
-        self.shell.IP.BANNER = console.draw_line(display=False)# "Eat a sandwich.  see if i care."
-        self.universe.terminal = self
+        self.shell.IP.BANNER = console.draw_line(display=False)
 
-    def set_prompt(self):
-        """ """
-        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
-        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name) + ' [\\#] '
+        # install back-ref
+        self.universe.terminal = self
 
     @constraint(boot_first='postoffice')
     def start(self):
