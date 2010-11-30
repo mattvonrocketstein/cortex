@@ -11,26 +11,19 @@ class Chat(Agent):
 
     requires_services = ['terminal']
 
-    def input_proc(self, *args, **kargs):
-        """ A new input processor for the terminal.
-            It's your usual ipython prompt except that
-            lines starting with '#' will be treated as
-            chat-text.
+    def comment_processor(self, source, *args, **kargs):
+        """ A new input processor for the terminal.. will only
+            be used when lines start with '#'
         """
-        txt = args[0]
-        if txt.strip().startswith('#'):
-                for name,peer in self.universe.peers.items():
-                    if 'self' != str(peer.host):
-                        peer.api.chat( txt + ' -- '+self.universe.name)
-
-        else:
-            self.original_input_processor(*args, **kargs)
+        for name,peer in self.universe.peers.items():
+            if 'self' != str(peer.host):
+                peer.api.chat( source + ' -- '+self.universe.name)
 
     def setup(self):
-        """ When lines start with '#',
-             treat them as a chat message. """
+        """ """
         terminal = (self.universe|'terminal')
-        self.original_input_processor = terminal.replace_input_processor(self.input_proc)
+        comment_predicate = lambda source: source.strip().startswith('#'))
+        terminal.attach_proc(self.input_proc,comment_predicate)
 
 
 # Parameters for the services. mostly empty and ready to override
