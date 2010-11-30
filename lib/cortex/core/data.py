@@ -2,6 +2,11 @@
 """
 
 def NOOP(*args, **kargs): pass
+def IDENTITY(*args, **kargs):
+    """ """
+    if args and kargs:
+        return args, kargs
+    return args or kargs
 
 # pseudo-types for message-passing.. mainly used in conjunction with postoffice
 ################################################################################
