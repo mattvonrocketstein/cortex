@@ -64,21 +64,23 @@ class Terminal(Service, LocalQueue):
                     print console.blue('Events:'), console.color(str(event))
 
     #sig def runsource(self, source, filename="<input>", symbol="single"):
-    def _post_init(self):
+    def _post_init(self, syndicate_events=True):
         """
             TODO: self.requires_service('postoffice')
         """
-        self.syndicate_events = True
+        self.syndicate_events = syndicate_events
         self.init_q() #initialize for LocalQueue
         universe = {'__name__' : '__cortex_shell__',}
         universe.update(api.publish())
-
         self.shell = IPShellTwisted(argv=IPY_ARGS, user_ns=universe, controller=self)
-        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
-        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name) + ' [\\#] '
+        self.set_prompt()
         self.shell.IP.set_hook('pre_prompt_hook', self.pre_prompt_hook)
         self.shell.IP.BANNER = console.draw_line(display=False)# "Eat a sandwich.  see if i care."
         self.universe.terminal = self
+
+    def set_prompt(self):
+        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
+        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name) + ' [\\#] '
 
     @constraint(boot_first='postoffice')
     def start(self):
