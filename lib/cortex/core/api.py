@@ -4,15 +4,15 @@
 """
 
 import os, sys
-
+import subprocess
 from cortex.core.parsing import Nodeconf
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
 
-def build_node(name, kls=object, kls_kargs={}):
-    """ """
-    universe.agents.manage(name,kls,kls_kargs)
+def build_agent(name, kls=object, kls_kargs={}):
+    """ proxy to the agent manager """
+    universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
 
 def publish(**kargs):
     """ return a dictionary of the namespace for this module """
@@ -40,19 +40,21 @@ def do(instructions, _api=None):
         print [handler,args,kargs]
         handler(*args, **kargs)
 
-def clone(line):
+def clone(file=None, nodeconf=None):
     """ """
 
-    # to avoid infinite recursion, compute the nodeconf file
-    ##  that booted this universe, subtracting the "clone" instruction
-    #nodeconf = Nodeconf(universe.nodeconf_file).parse(ignore=['clone'])
-    #raise Exception,nodeconf
-    # put an updated version back together and write it down
-    #tmp = Nodeconf(None, list=nodeconf)
-    #x=universe.tmpfile(); tmp.write(x.name); x.close()
-
     # tell the universe to clone itself using the new nodedef
-    print universe^line
+    line = '{shell} "{prog} {args} {file}"&'.format(shell = universe.system_shell,
+                                                    file  = file,
+                                                    prog  = universe.command_line_prog,
+                                                    args  = universe.decide_options())
+
+    # hack to avoid infinite recursion, see also universe.decide_options
+    if "do_not_clone" in universe.directives:
+        pass
+    else:
+        p = subprocess.Popen(line, shell=True)
+        universe._procs.append(p)
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
@@ -78,6 +80,7 @@ def load_file(fname, adl=False, python=True):
         universe = {}
         execfile(fname, universe)
         return NamespacePartition(universe).cleaned
+
 def resolve(name):
     """ resolve dns names via reactor """
     return universe.reactor.resolve(name).addCallbacks(report,report)
@@ -86,6 +89,7 @@ def chat(api, msg=".. answering ping", response='pong!'):
     """ simple command, but very useful for testing remote apis """
     report(msg)
     return response
+
 ping = chat
 echo = chat
 
