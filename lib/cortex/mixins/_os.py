@@ -2,6 +2,7 @@
 """
 
 import os, sys, platform
+from cortex.core.util import report
 from tempfile import NamedTemporaryFile
 
 class PIDMixin(object):
