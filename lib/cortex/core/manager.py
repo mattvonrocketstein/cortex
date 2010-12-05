@@ -60,6 +60,11 @@ class Manager(object):
         boot_order = self.resolve_boot_order()
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
+        self.post_load()
+
+    def post_load(self):
+        """ default is a noop """
+        return
 
     def load_items(self, items):
         """ load_items """
