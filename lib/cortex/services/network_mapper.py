@@ -68,6 +68,7 @@ class Mapper(AbstractMapper):
     """
 
     def iterate(self, host=None):
+        """ """
         AbstractMapper.scan(self, host)
 
     @handles_event(PEER_T)
@@ -87,13 +88,11 @@ class Mapper(AbstractMapper):
             fails with:
               PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.
         """
-        (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
         #assert (self.universe|'api').started, 'postoffice isnt started'
         Service.start(self)
         #self._boot_first = ['terminal'] # testing service bootorder csp
         host = getattr(self,'scan_host','127.0.0.1')
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
-
 
     class Meta:
         """ TODO: build metaclass for agents
