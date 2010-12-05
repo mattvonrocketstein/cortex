@@ -38,3 +38,4 @@ class handles_event(AbstractDecorator):
 
     def post_decoration_hook(self,fxn):
         fxn.handles_event = self.event_name
+handle_event = handles_event
