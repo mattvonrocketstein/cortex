@@ -33,7 +33,7 @@ class ServiceLoader:
     def _load_service_from_dotpath(self, dotpath, **kargs):
         """ dispatched to from _load_service_from_string """
         dotpath = dotpath.split('.')
-        if len(service) == 2:
+        if len(dotpath) == 2:
             mod_name, class_name = dotpath
             try: namespace = Namespace.from_module(SERVICES_DOTPATH, mod_name, **kargs)
             except ImportError, e:
