@@ -12,7 +12,7 @@ from cortex.services import Service
 from cortex.core.peer import Peer
 from cortex.core.data import PEER_T
 from cortex.core.data import CORTEX_PORT_RANGE
-from cortex.util.decorators import constraint
+from cortex.util.decorators import constraint, handles_event
 
 NOT_FOUND_T = 'NOTFound'
 port_range  = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
@@ -21,7 +21,6 @@ class AbstractMapper(Service):
     def scan(self, host):
         """ """
         local_api_port = (self.universe|'api').port
-        (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
         self.port_range = port_range
         scan_data = nmap.PortScanner().scan(host, port_range, '--system-dns')['scan']
         self.last_scan = scan_data
@@ -68,15 +67,16 @@ class Mapper(AbstractMapper):
           stop:  brief description service shutdown here
     """
 
+    def iterate(self, host=None):
+        AbstractMapper.scan(self, host)
+
+    @handles_event(PEER_T)
     def discovery(self, postoffice, pickled_data, **kargs):
         """ will be called by the postoffice, with type PEER_T
         """
         data = simplejson.loads(pickled_data)
         name = data['host']+':'+str(data['port'])
         self.universe.peers.register(name, **data)
-
-
-    iterate = AbstractMapper.scan
 
     @constraint(boot_first='postoffice')
     @constraint(boot_first='api')
@@ -87,7 +87,7 @@ class Mapper(AbstractMapper):
             fails with:
               PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.
         """
-
+        (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
         #assert (self.universe|'api').started, 'postoffice isnt started'
         Service.start(self)
         #self._boot_first = ['terminal'] # testing service bootorder csp
