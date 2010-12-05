@@ -26,31 +26,30 @@ from cortex import core
 from cortex.core.universe import Universe
 from cortex.core.util import report
 
-NODE_CONF = None #'node.conf'
+class defaults:
+    nodeconf_file = os.path.join(os.path.realpath(os.getcwd()), 'etc', 'node.conf')
 
 def build_parser():
-    universeHelp = "Use universe@FILE"
+
+    universeHelp  = "Use universe@FILE"
+    labelHelp     = 'Label for universe (useful with "ps aux")'
     directiveHelp = "Directives"
-    commandHelp = "same as python -c"
-    parser = OptionParser()
+    commandHelp   = "same as python -c"
+    parser        = OptionParser()
     parser.add_option("-x",  '--xterm', dest="xterm", action="store_true", default=False,
                       help=commandHelp,  metavar="XTERM")
     parser.add_option("-c",  dest="command", default="", help=commandHelp,  metavar="COMMAND")
+    parser.add_option("--label",  dest="label", default="NOLABEL", help=labelHelp,  metavar="LABEL")
     parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
     parser.add_option('--directives', dest="directives", default="", help=directiveHelp)
-    parser.add_option('--conf', dest="conf", default=os.path.join(
-                                                 os.path.realpath(os.getcwd()),
-                                                 'etc',
-                                                 'node.conf'
-                                             ),
-                      help="Config to use [default: %default]"
-                      )
+    parser.add_option('--conf', dest="conf", default=defaults.nodeconf_file,
+                      help="Config to use [default: %default]")
     return parser
 
 def install_nodeconf(nodeconf_file, options, args):
     """ """
     # Set node configuration file in universe
-    instance_dir = os.path.split(__file__)[0]
+    instance_dir          = os.path.split(__file__)[0]
     Universe.instance_dir = instance_dir
     if not os.path.exists(nodeconf_file):
         report("Expected node.conf @ "+nodeconf_file+', None found.')
@@ -77,7 +76,8 @@ def entry():
 
     parser        = build_parser()
     options, args = parser.parse_args()
-    nodeconf_file = NODE_CONF or options.conf
+    nodeconf_file       = options.conf
+    Universe.label      = options.label
     Universe.directives = options.directives.split(",")
     if args and len(args)==1:
         fname = args[0]

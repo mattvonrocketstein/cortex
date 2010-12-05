@@ -115,9 +115,12 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
     from cortex.core.peer import PEERS as peers
     from cortex.core.service import SERVICES as services
     from cortex.core.node import AGENTS as agents
-    #clones        = CloneManager()
+    from cortex.core.node import CLONES as clones
     #processes     = ProcessManager()
 
+    @property
+    def default_clone_label(self):
+        return "clone-of-universe-" + str(universe.pid)
 
     def decide_options(self):
         """ """
@@ -242,3 +245,4 @@ Universe = __Universe__()
 Universe.agents.universe   = Universe
 Universe.peers.universe    = Universe
 Universe.services.universe = Universe
+Universe.clones.universe = Universe

@@ -3,9 +3,18 @@
 
 import os, sys, platform
 from tempfile import NamedTemporaryFile
-
+from subprocess import Popen, PIPE
 class PIDMixin(object):
     """ os pid properties """
+
+    def kill_pids(self, pids):
+        """ HACK """
+        if not pids: return
+        line="kill -KILL {pid_list}".format(pid_list=' '.join([str(pid) for pid in pids]))
+        print "running line"
+        print "  "+line
+
+        os.system(line)
 
     @property
     def parent_pid(self):
@@ -35,6 +44,21 @@ class OSMixin(PIDMixin):
     """ For things that really should be in the os module """
 
     _procs    = []
+    def pids_for_pattern(self, pattern):
+        return self.ps_aux(pattern)
+
+    def ps_aux(self, pattern=None, column=None, patterns=[]):
+        line = 'ps aux'
+        #if pattern: patterns.append(pattern)
+        #for p in patterns:
+        if pattern:
+            line += ' | grep ' + pattern
+        print 'running line',line
+        #out = os.popen(line).readlines()
+        out = Popen(line, shell=True, stdout=PIPE).stdout.readlines()
+        if column:
+            return [ line.split()[column] for line in out ]
+        return out
 
     @property
     def isposix(self):

@@ -11,9 +11,28 @@ from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
 from cortex.core.manager import Manager
 from cortex.core.util import report
+from cortex.mixins._os import OSMixin
 
 class AgentPrerequisiteNotMet(Exception):
     """ Move along, nothing to see here """
+
+class CloneManager(Manager):
+    from cortex.core.hds import HDS
+
+    class Clone(HDS, OSMixin):
+        def __repr__(self):
+            return self.label
+
+        @property
+        def pids(self):
+            """ HACK """
+            #universe = CloneManager.universe
+            # just the pids for this Clone
+            return self.pids_for_pattern(self.label)
+
+        def stop(self):
+            self.kill_pids(self.pids)
+    asset_class=Clone
 
 class AgentManager(Manager):
     """
@@ -79,6 +98,7 @@ class AgentManager(Manager):
 
 # A cheap singleton
 AGENTS = AgentManager()
+CLONES = CloneManager()
 
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """

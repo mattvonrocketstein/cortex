@@ -10,6 +10,9 @@ from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
 
+def label(api):
+    return universe.label
+
 def build_agent(name, kls=object, kls_kargs={}):
     """ proxy to the agent manager """
     universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
@@ -40,25 +43,39 @@ def do(instructions, _api=None):
         print [handler,args,kargs]
         handler(*args, **kargs)
 
-def clone(file=None, nodeconf=None):
+def clone(file=None, nodeconf=None, label=None, **kargs):
     """ """
-
+    import uuid
+    postfix = '-' + str(uuid.uuid1())
+    label = label or universe.default_clone_label
+    label = (label + postfix).replace(' ','_')
+    args = ["--{key} {value}".format(key=key,value=value) for key,value in kargs.items()]
+    args.append(universe.decide_options())
+    args.append('--label ' + label)
+    args = ' '.join(args)
     # tell the universe to clone itself using the new nodedef
     line = '{shell} "{prog} {args} {file}"&'.format(shell = universe.system_shell,
                                                     file  = file,
                                                     prog  = universe.command_line_prog,
-                                                    args  = universe.decide_options())
+                                                    args  = args)
 
     #raise Exception,line
     # hack to avoid infinite recursion, see also universe.decide_options
     if "do_not_clone" in universe.directives:
-        pass
+        return None
     else:
         p = subprocess.Popen(line, shell=True)
-
         # without this, the defunct shell process will stick around
         os.waitpid(p.pid, 0)[1]
+        universe.clones.register(label, label=label)
+        return label
 
+        def doit():
+            """ HACK """
+            out = os.popen('ps aux|grep ' + label).readlines()
+            out = [line.split()[1].strip() for line in out if line ]
+            report(out)
+        universe.reactor.callLater(4, doit)
 
 
 def load_file(fname, adl=False, python=True):

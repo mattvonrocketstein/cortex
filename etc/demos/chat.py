@@ -45,7 +45,7 @@ api.do([ ["build_agent", ('test-agent',), chat_args], ])
 # Make another copy.. we need someone to talk to.  See how
 # __file__ is availible, just like python sans cortex?
 # If you want, <clone> is safe to call more than once.
-api.clone(file=__file__)
+label = api.clone(file=__file__,label='slave')
 
 
 # Invoke the universe (mainloop)
