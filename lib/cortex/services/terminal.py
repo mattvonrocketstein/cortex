@@ -15,7 +15,6 @@
             Pdb(def_colors).set_trace(sys._getframe().f_back)
 """
 
-
 from cortex.core import api
 from cortex.services import Service
 from cortex.mixins import LocalQueue
@@ -30,13 +29,13 @@ class ShellAspect:
     registry = {}
 
     def set_prompt(self):
-        """ """
-        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
-        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name)  + ' [\\#] '
+        """ called for every prompt redraw """
+        outputcache = self.shell.IP.outputcache
+        outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
+        outputcache.prompt2.p_template = console.red(self.universe.name)  + ' [\\#] '
 
     def attach_proc(self, func, predicate):
-        """ use func when predicate(source)
-        """
+        """ use func when predicate(source) """
         if not self.registry:
             first_time = True
 
@@ -140,5 +139,4 @@ class Terminal(Service, LocalQueue, ShellAspect):
     def play(self):
         """ """
         self.universe.reactor.callLater(1, self.start)
-
         return self
