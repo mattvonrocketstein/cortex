@@ -1,6 +1,8 @@
 """ cortex.util.__init__
 """
 
+from cortex.util.namespaces import Namespace
+
 class Memoize:
     """
          taken from: http://snippets.dzone.com/posts/show/4840

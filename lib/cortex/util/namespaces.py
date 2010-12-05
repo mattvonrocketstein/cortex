@@ -1,5 +1,4 @@
 """ cortex.util.namespaces
-      (previously django_debugging.inspection)
 """
 
 from copy import copy
@@ -35,6 +34,35 @@ class NamespaceTests:
     """ Various boolean tests over objects, packaged thus to be resuable
           TODO: NamespaceTests(StaticMethodsOnly)
     """
+    @classmethod
+    def install_method(kls, method, name=None, aliases=[]):
+        name   = name or method.__name__
+        assert not hasattr(kls,name), "Name already taken"
+        method = staticmethod(method)
+        setattr(kls, name, method)
+        for alias in aliases:
+            setattr(kls, alias, getattr(kls, name))
+
+    @staticmethod
+    def concrete(obj):
+        return not NamespaceTests.abstract(obj)
+
+    @staticmethod
+    def abstract(obj):
+        """ stab in the dark.. probably can't hurt
+        """
+        return getattr(obj,'_abstract',  False) or \
+               getattr(obj,'__abstract', False) or \
+               (getattr(obj,'Meta',None) and getattr(obj.Meta,'abstract',False)) or \
+               (getattr(obj,'Meta',None) and getattr(obj.Meta,'_abstract',False)) or \
+               (getattr(obj,'Meta',None) and getattr(obj.Meta,'__abstract',False)) or None
+
+
+
+    @staticmethod
+    def isclass(obj):
+        return isclass(obj)
+
     @staticmethod
     def name_startswith(obj, pattern):
             """ """
@@ -67,6 +95,14 @@ class NamespacePartition(object):
 
           NOTE: This does not work in-place. (see the copy import up there?)
     """
+    @ classmethod
+    def from_module(kls, path, mod_name, **kargs):
+       ns  = {}
+       exec('from ' + path + ' import ' + mod_name + ' as mod', ns)
+       mod = ns['mod']
+       n = Namespace(mod.__dict__, **kargs)
+       return n
+
     def __init__(self, namespace,dictionaries=True):
         """ """
         if not NamespaceTests.dictionaryish(namespace):
@@ -166,10 +202,38 @@ class NamespacePartition(object):
         except TypeError:
             return dict([[name, self.namespace[name]] for name in self.namespace])
 
+    def keys(self):
+        """ dictionary compatibility """
+        return self.namespace.keys()
+
+    def __mod__(self, test):
+        return self.generic(test)
+
+    def __getitem__(self, a_slice):
+        """ iteratively partion this namespace in
+            a certain order with a tests vector
+        """
+        #raise Exception,slice
+        if True: #isinstance(a_slice,slice):
+            first,second,third = a_slice.start, a_slice.stop, a_slice.step
+            original = self.dictionaries
+            tmp     = self
+            tmp.dictionaries=False
+            for test in [first,second,third]:
+                if not test: continue
+                tmp = tmp%test
+                #tmp = tmp.generic(test)
+            self.dictionaries = original
+            tmp.dictionaries  = original
+            return tmp
+        else:
+            return self[a_slice::]
+
     def generic(self, test):
         """ This is the main work-horse everyone else will chain back to. Given
             a test, this partitions the namespace around it.
 
+              TODO: make this generic over keys too, not just values
               TODO: refactor this around inspect.getmemebers()
         """
         namespace = self.copy()
@@ -179,6 +243,8 @@ class NamespacePartition(object):
                 namespace.pop(key)
         if self.dictionaries: return namespace
         return NamespacePartition(namespace,dictionaries=self.dictionaries)
+    generic_filter = generic
+    filter=generic
 
     def type_equal(self,thing):
         """ filter by type """
@@ -195,6 +261,7 @@ class NamespacePartition(object):
 
 # Begin aliases, shortcuts
 ################################################################################
-NSPart = NamespacePartitioner = NamespacePartition
+NamespacePartition.Tests = NamespaceTests
+Namespace       = NSPart = NamespacePartitioner = NamespacePartition
 clean_namespace = lambda namespace: NamespacePartition(namespace).cleaned
-Tests = NamespaceTests
+Tests           = NamespaceTests

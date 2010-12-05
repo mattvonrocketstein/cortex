@@ -1,18 +1,7 @@
 """ cortex.core.util
 """
+from cortex.util.namespaces import Namespace
 from cortex.core.data import SERVICES_DOTPATH
-def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
-    """ stupid helper for universe to snag modules
-        from inside the services root """
-    out = {}
-    ns  = {}
-    exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
-    mod = ns['mod']
-
-    for name in dir(mod):
-        val = getattr(mod, name)
-        out[name] = val
-    return out
 
 # Patterns in reporting
 ####################################################################

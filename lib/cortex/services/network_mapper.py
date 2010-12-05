@@ -18,22 +18,7 @@ NOT_FOUND_T = 'NOTFound'
 port_range  = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
 
 class AbstractMapper(Service):
-    pass
-
-class Mapper(AbstractMapper):
-    """ NMap Service:
-          start: brief description of service start-up here
-          stop:  brief description service shutdown here
-    """
-
-    def discovery(self, postoffice, pickled_data, **kargs):
-        """ will be called by the postoffice, with type PEER_T
-        """
-        data = simplejson.loads(pickled_data)
-        name = data['host']+':'+str(data['port'])
-        self.universe.peers.register(name, **data)
-
-    def iterate(self, host):
+    def scan(self, host):
         """ """
         local_api_port = (self.universe|'api').port
         (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
@@ -73,7 +58,25 @@ class Mapper(AbstractMapper):
                 peer_metadata.update(port_aspect)
                 (self.universe|'postoffice').publish_json(PEER_T, peer_metadata)
             self.universe.reactor.callLater(10, lambda: self.iterate(host))
-    scan = iterate
+
+    class Meta:
+        abstract = True # abstract services will never be launched..
+
+class Mapper(AbstractMapper):
+    """ NMap Service:
+          start: brief description of service start-up here
+          stop:  brief description service shutdown here
+    """
+
+    def discovery(self, postoffice, pickled_data, **kargs):
+        """ will be called by the postoffice, with type PEER_T
+        """
+        data = simplejson.loads(pickled_data)
+        name = data['host']+':'+str(data['port'])
+        self.universe.peers.register(name, **data)
+
+
+    iterate = AbstractMapper.scan
 
     @constraint(boot_first='postoffice')
     @constraint(boot_first='api')
@@ -90,3 +93,9 @@ class Mapper(AbstractMapper):
         #self._boot_first = ['terminal'] # testing service bootorder csp
         host = getattr(self,'scan_host','127.0.0.1')
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
+
+
+    class Meta:
+        """ TODO: build metaclass for agents
+                  that this is already implied """
+        abstract = False

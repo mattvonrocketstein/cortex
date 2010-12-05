@@ -13,18 +13,6 @@ class shell:
         """ """
         os.system('cd "'+path+'"; '+line)
 
-def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
-    """ stupid helper to snag modules from inside the services root """
-    out = {}
-    ns  = {}
-    exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
-    mod = ns['mod']
-
-    for name in dir(mod):
-        val = getattr(mod, name)
-        out[name] = val
-    return out
-
 def getAnswer(Q, yesAction=None, noAction=None, dispatcher=None):
     """ getAnswer: ask a "yes or no" question, dispatch to an action
         (possibly the empty-action) based on user-response on stdin

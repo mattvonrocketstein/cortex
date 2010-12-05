@@ -14,8 +14,8 @@ from tempfile import NamedTemporaryFile
 import simplejson
 from twisted.internet import reactor
 
-from cortex.util import Memoize
-from cortex.core.util import get_mod
+from cortex.util import Memoize, Namespace
+
 from cortex.core.reloading import AutoReloader
 from cortex.core.parsing import Nodeconf
 from cortex.core.util import report, console
@@ -150,45 +150,57 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         self.name    = name
         return name
 
+    def load_service_from_string(self, service, **kargs):
+        """ dispatched to from loadService """
+        # handle dotpaths
+        if "." in service:
+            service = service.split('.')
+            if len(service) == 2:
+                mod_name, class_name = service
+                try: namespace = Namespace.from_module(SERVICES_DOTPATH, mod_name, **kargs)
+                except ImportError, e:
+                    #raise e
+                    report("Failed to get module {mod} to load service.".format(mod=mod_name))
+                else:
+                    namespace = namespace.only_classes()
+                    if class_name in namespace:
+                        obj = namespace[class_name]
+                        return self.start_service(obj, **kargs)
+            else:
+                raise Exception,'will not interpret that dotpath yet'
+
+        # just one word.. where/what could it be?
+        else:
+
+                # try to autodiscover  a module for it
+                mod_name = service
+                try: namespace = Namespace.from_module(SERVICES_DOTPATH, mod_name,
+                                                       dictionaries=False)
+                except ImportError, e:
+                    report("Failed to get module '{mod}' to load service.".format(mod=mod_name))
+                    namespace = Namespace({}, dictionaries=False)
+
+                # Slice up the namespace to get just
+                # the things that might be services
+                tests=Namespace.Tests
+                namespace = namespace % tests.isclass    # only classes
+                namespace = namespace % tests.isservice  # only service classes
+                namespace = namespace % tests.concrete   # only concrete service classes
+
+                ret_vals = []
+                for name, val in namespace.items():
+                    #report('discovered service in ' + mod_name)
+                    if not getattr(val, 'do_not_discover', False):
+                        ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
+                return ret_vals
 
     def loadService(self, service, **kargs):
         """ """
+        # got string?
         if isinstance(service, types.StringTypes):
-            # handle dotpaths
-            if "." in service:
-                service = service.split('.')
-                if len(service) == 2:
-                    mod_name, class_name = service
+            return self.load_service_from_string(service,**kargs)
 
-                    try: namespace = get_mod(mod_name)
-                    except ImportError, e:
-                        #raise e
-                        report("Failed to get module {mod} to load service.".format(mod=mod_name))
-                    else:
-                        if class_name in namespace:
-                            obj = namespace[class_name]
-                            return self.start_service(obj, **kargs)
-                else:
-                    raise Exception,'will not interpret that dotpath yet'
-
-            # just one word.. where/what could it be?
-            else:
-                mod_name = service
-                try: mod = get_mod(mod_name)
-                except ImportError, e:
-                    report("Failed to get module '{mod}' to load service.".format(mod=mod_name))
-                    mod = {}
-
-                ret_vals = []
-                for name, val in mod.items():
-                    if inspect.isclass(val):
-                        if not val==Service and issubclass(val, Service):
-                            #report('discovered service in ' + mod_name)
-                            if not getattr(val, 'do_not_discover', False):
-                                ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
-                return ret_vals
-
-        # Not a string? let's hope it's already a service-like thing
+        # not string? let's hope it's already a service-like thing
         else:
             return self.start_service(service, **kargs)
 

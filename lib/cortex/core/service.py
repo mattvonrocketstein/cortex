@@ -7,7 +7,6 @@ from cortex.core.util import report, console
 from cortex.contrib.aima.csp import CSP, AC3, min_conflicts, backtracking_search
 from cortex.core.data import NOOP, IDENTITY
 
-
 class ServiceManager(AgentManager):
     """ ServiceManager exists mainly to make universe.services obey list
         and dictionary api simultaneously.  Additionally, it provides a
@@ -18,7 +17,7 @@ class ServiceManager(AgentManager):
     #  we don't want to do anything noisy here like write an event
     post_registration = NOOP
 
-    # TODO: might need an abstractagentmanager..
+    # Need to undo what AgentManager has done to this particular method
     pre_load_obj      = Manager.pre_load_obj
 
     def pre_manage(self, name=None, kls=None, **kls_kargs):
@@ -152,3 +151,9 @@ class Service(Agent):
 
 # A cheap singleton
 SERVICES = ServiceManager()
+
+# patch Namespace to recognize my kind
+def isservice(obj):
+    return obj!=Service and issubclass(obj, Service)
+from cortex.util import Namespace
+Namespace.Tests.install_method(isservice,aliases=['is_service'])
