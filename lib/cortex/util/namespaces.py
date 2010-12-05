@@ -36,6 +36,7 @@ class NamespaceTests:
     """
     @classmethod
     def install_method(kls, method, name=None, aliases=[]):
+        """ installs a new test into this class """
         name   = name or method.__name__
         assert not hasattr(kls,name), "Name already taken"
         method = staticmethod(method)
@@ -58,6 +59,9 @@ class NamespaceTests:
                (getattr(obj,'Meta',None) and getattr(obj.Meta,'__abstract',False)) or None
 
 
+    @staticmethod
+    def callable(obj):
+        return hasattr(obj, '__call__')
 
     @staticmethod
     def isclass(obj):
@@ -70,7 +74,7 @@ class NamespaceTests:
 
     @staticmethod
     def dictionaryish(obj):
-            """ """
+            """ naive, but useful """
             return hasattr(obj,'keys') and hasattr(obj.keys,'__call__')
 
     @staticmethod
@@ -193,6 +197,9 @@ class NamespacePartition(object):
         test = NamespaceTests.name_startswith
         partial = lambda obj: test(obj,string)
         return self.generic(partial)
+
+    def callables(self):
+        return self % Namespace.Tests.callable
 
     def copy(self):
         """ This can fail for a variety of reasons involving thread safety,
