@@ -1,4 +1,10 @@
 """ cortex.util.decorators.abstract
+
+        # TODO: move this into an abstraction
+        #caller = inspect.stack()[2]
+        #frame  = caller[0]
+        #traceback = inspect.getframeinfo(frame)
+        #self.context = traceback.function
 """
 
 from cortex.util.decorators.data import DECORATION_ABORT_COMMAND

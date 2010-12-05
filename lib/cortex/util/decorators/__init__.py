@@ -1,11 +1,10 @@
 """ cortex.util.decorators.__init__
 """
-from cortex.util.decorators.abstract import AbstractDecorator
-from cortex.util.decorators.function_annotator import FunctionAnnotator
+import inspect
 
-class MutatingDecorator(AbstractDecorator):
-    """ """
-    pass
+from cortex.util.decorators.abstract import AbstractDecorator
+from cortex.util.decorators.abstract import MutationDecorator
+from cortex.util.decorators.function_annotator import FunctionAnnotator
 
 class constraint(FunctionAnnotator):
     """ a special case of function annotation, usage example follows.
@@ -25,21 +24,17 @@ class constraint(FunctionAnnotator):
         """ """
         constraint.table.append(fxn)
 
+
 class handles_event(AbstractDecorator):
-    """ """
+    """ TODO: change this to use the function Annotator"""
     def __init__(self, event_name):
         self.event_name = event_name
 
     def pre_decoration_hook(self, fxn):
         """ sanity checking """
-        err = "fxn@{fxn} has already been labeled as handling event called {event}"
-        format=dict(fxn=fxn, event=getattr(fxn,'handles_event',None))
+        err    = "fxn@{fxn} has already been labeled as handling event called {event}"
+        format = dict(fxn=fxn, event=getattr(fxn,'handles_event',None))
         assert not hasattr(fxn,'__handles_event'),err.format(**format)
 
-    def replacement_function(*args, **kargs):
-        pass
-
-    def decorate(self, fxn):
-        """ """
+    def post_decoration_hook(self,fxn):
         fxn.handles_event = self.event_name
-        return fxn

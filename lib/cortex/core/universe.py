@@ -208,7 +208,8 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
         for service in self.services:
             try: self.services[service].obj.stop()
             except Exception,e:
-                err_msg = 'Squashed exception stopping service "{service}".  Original Exception follows'.format(service=service)
+                err_msg = 'Squashed exception stopping service "{service}".'
+                err_msg+= '  Original Exception follows'.format(service=service)
                 report(err_msg)
                 report(str(e))
                 #IP.quitting=True
@@ -223,10 +224,12 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
 
     def decide_name(self):
         """ """
-        name_args = dict( alfa    = str(id(self)),
+        name_args = dict( alfa    = self.pid,
                           bravo   = getattr(self,'bravo', ''),
                           charlie = getattr(self,'charlie',''),
-                          delta   = self.hostname,)
+                          delta   = self.hostname,
+                          epsilon = str(id(self)),
+                         )
         name = 'Universe({alfa})[{bravo}:{charlie}]@{delta}'.format(**name_args)
         self.name    = name
         return name
