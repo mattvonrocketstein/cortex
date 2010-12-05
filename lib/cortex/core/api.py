@@ -55,9 +55,11 @@ def clone(file=None, nodeconf=None):
         pass
     else:
         p = subprocess.Popen(line, shell=True)
-        # this would only be process for the
-        universe._procs.append(p)
+
+        # without this, the defunct shell process will stick around
         os.waitpid(p.pid, 0)[1]
+
+
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
