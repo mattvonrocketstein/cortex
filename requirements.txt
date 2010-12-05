@@ -7,5 +7,6 @@ simplejson
 lindypy
 python-nmap
 cyrusbus
+psutil
 bzr+http://launchpad.net/txjsonrpc/0.3#egg=txjsonrpc
 svn+http://codespeak.net/svn/user/niemeyer/constraint/trunk/#egg=constraint

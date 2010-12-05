@@ -223,6 +223,11 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
             report('terminating ',p)
             p.terminate()
             p.wait()
+
+        for name,clone in self.clones.items():
+            report("killing clone: ",clone)
+            clone.kill()
+
         self.reactor.stop()
 
     def decide_name(self):

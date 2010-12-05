@@ -4,6 +4,9 @@
 import os, sys, platform
 from tempfile import NamedTemporaryFile
 from subprocess import Popen, PIPE
+
+import psutil
+
 class PIDMixin(object):
     """ os pid properties """
 
@@ -44,21 +47,12 @@ class OSMixin(PIDMixin):
     """ For things that really should be in the os module """
 
     _procs    = []
-    def pids_for_pattern(self, pattern):
-        return self.ps_aux(pattern)
 
-    def ps_aux(self, pattern=None, column=None, patterns=[]):
-        line = 'ps aux'
-        #if pattern: patterns.append(pattern)
-        #for p in patterns:
-        if pattern:
-            line += ' | grep ' + pattern
-        print 'running line',line
-        #out = os.popen(line).readlines()
-        out = Popen(line, shell=True, stdout=PIPE).stdout.readlines()
-        if column:
-            return [ line.split()[column] for line in out ]
-        return out
+    def procs_for_pattern(self, pattern):
+        return [ p for p in psutil.get_process_list() if any([pattern in x for x in p.cmdline])]
+
+    def pids_for_pattern(self, pattern):
+        return [ p.pid for p in self.procs_for_pattern(pattern) ]
 
     @property
     def isposix(self):

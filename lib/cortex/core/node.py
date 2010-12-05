@@ -19,19 +19,20 @@ class AgentPrerequisiteNotMet(Exception):
 class CloneManager(Manager):
     from cortex.core.hds import HDS
 
-    class Clone(HDS, OSMixin):
+    class Clone(HDS):
         def __repr__(self):
             return self.label
 
         @property
         def pids(self):
             """ HACK """
-            #universe = CloneManager.universe
-            # just the pids for this Clone
-            return self.pids_for_pattern(self.label)
+            from cortex.core.universe import Universe
+            return Universe.pids_for_pattern(self.label)
 
-        def stop(self):
-            self.kill_pids(self.pids)
+        def kill(self):
+            from cortex.core.universe import Universe
+            return [p.kill() for p in Universe.procs_for_pattern(self.label)]
+
     asset_class=Clone
 
 class AgentManager(Manager):
