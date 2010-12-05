@@ -18,11 +18,11 @@
 
 from cortex.core import api
 from cortex.services import Service
+from cortex.mixins import LocalQueue
 from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
-from cortex.core.terminal import IPShellTwisted, IPY_ARGS
-from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
+from cortex.core.terminal import IPShellTwisted, IPY_ARGS
 
 class ShellAspect:
     """ Simple mixin to hold stuff that's pretty IPython specific.
@@ -87,7 +87,7 @@ class ShellAspect:
             event = self.pop_q()
             if event:
                 print console.blue('Events:'), console.color(str(event))
-
+            self.set_prompt()
 
 class Terminal(Service, LocalQueue, ShellAspect):
     """ Terminal Service:
