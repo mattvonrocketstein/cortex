@@ -49,12 +49,15 @@ def clone(file=None, nodeconf=None):
                                                     prog  = universe.command_line_prog,
                                                     args  = universe.decide_options())
 
+    #raise Exception,line
     # hack to avoid infinite recursion, see also universe.decide_options
     if "do_not_clone" in universe.directives:
         pass
     else:
         p = subprocess.Popen(line, shell=True)
+        # this would only be process for the
         universe._procs.append(p)
+        os.waitpid(p.pid, 0)[1]
 
 def load_file(fname, adl=False, python=True):
     """ loads a local file
