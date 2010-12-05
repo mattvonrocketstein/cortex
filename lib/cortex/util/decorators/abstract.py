@@ -5,6 +5,8 @@ from cortex.util.decorators.data import DECORATION_ABORT_COMMAND
 
 class AbstractDecorator(object):
     """ Patterns in function decoration """
+    def decorate(self,fxn):
+        return fxn
 
     def __call__(self, fxn):
         """ does the actual decoration and adds hooks,
@@ -72,3 +74,17 @@ class AbstractDecorator(object):
     def handle_kargs(self, kargs):
         """ default is a noop"""
         pass
+
+
+class MutationDecorator(AbstractDecorator):
+    """ """
+
+    def decorate(self, fxn):
+        """ """
+        decoration = getattr(self,'decoration',None)
+        assert decoration, "MutatingDecorator must define decoration"
+        self.fxn = fxn
+
+        # patch it to look more like the original
+        #self.decoration.func_name = fxn.func_name
+        #self.decoration.__doc__  = fxn.__doc__
