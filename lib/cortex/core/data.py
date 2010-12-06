@@ -1,12 +1,8 @@
 """ cortex.core.data
 """
 
-def NOOP(*args, **kargs): pass
-def IDENTITY(*args, **kargs):
-    """ """
-    if args and kargs:
-        return args, kargs
-    return args or kargs
+# These functions are so simple they're practically data..
+from cortex.core.functional import NOOP, IDENTITY
 
 # pseudo-types for message-passing.. mainly used in conjunction with postoffice
 ################################################################################
