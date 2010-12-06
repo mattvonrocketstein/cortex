@@ -58,6 +58,7 @@ class Manager(object):
               TODO: refactor
         """
         boot_order = self.resolve_boot_order()
+        self.boot_order = boot_order
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
         self.post_load()

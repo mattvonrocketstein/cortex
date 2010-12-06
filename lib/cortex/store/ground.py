@@ -1,4 +1,4 @@
-""" cortex.core.ground
+""" cortex.store.ground
 
       smart datastructures for storage
 """
@@ -10,9 +10,11 @@ from lindypy.TupleSpace import TSpace
 from lindypy.TupleSpace import Client, tuplespace
 
 from cortex.core.util import report
+from cortex.core.data import NOT_FOUND_T
 from cortex.core.hds import HierarchicalData
 from cortex.core.atoms import PersistenceMixin
-from cortex.core.data import NOT_FOUND_T
+
+
 class HierarchicalWrapper(HierarchicalData):
     """ """
     def __init__(self, proxy_name):
@@ -25,6 +27,7 @@ class HierarchicalWrapper(HierarchicalData):
             return getattr(object.__getattribute__(self,'_proxy'), name)
         else:
             return super(HierarchicalWrapper,self).__getattr__(name)
+
 
 class Memory(TSpace, PersistenceMixin):
     """ A thin wrapper around lindypy's tuplespace. """
@@ -47,8 +50,7 @@ class Memory(TSpace, PersistenceMixin):
 
         TSpace.__init__(self)
 
-        self.john_hancock()
-
+        self.john_hancock() # Sign it
         if parent_space is not None:
             parent_space.install_subspace(self)
 
@@ -61,6 +63,7 @@ class Memory(TSpace, PersistenceMixin):
 
     def install_subspace(self, other):
         """ TODO: ensure type(self)==type(other)?
+            REFACTOR..
         """
 
         #sanity check
@@ -87,11 +90,13 @@ class Memory(TSpace, PersistenceMixin):
         self.add(('__stamp__', str(datetime.datetime.now())))
 
     def as_keyspace(self, name=None):
-        """
+        """ TODO: use cortex.store.transform
+
             NOTE: this is a cheap, stupid, and possibly error-prone
                   cloning operation that is running.. but the alternative
                   is very expensive
         """
+        from cortex.store.keyspace import Keyspace
         name = name or (self.name+':as:Keyspace')
         k = type('dynamicKeyspace', (Keyspace,),{})(self, name=name)
         k.__dict__ = self.__dict__ #copy.copy(self.__dict__)
@@ -101,22 +106,22 @@ class Memory(TSpace, PersistenceMixin):
         print 'mem: getattr fail', name
 
     def shutdown(self):
-        """ TODO: proxy to TSpace shutdown? """
+        """ TODO: proxy to TSpace shutdown? what does it do? """
         report("Shutting down Memory.")
 
     def serialize(self):
-        """ """
+        """ from persistenceMixin """
         _str = pickle.dumps(self.values())
         return _str
 
     def save(self):
-        """ """
+        """ from persistenceMixin """
         report('persisting memory to', self.filename)
         PersistenceMixin.save(self.filename)
         report('persisted memory to', self.filename)
 
     def get_many(self, pattern):
-        """ """
+        """ from lindypy """
         out=[]
         while True:
             try:
@@ -125,10 +130,19 @@ class Memory(TSpace, PersistenceMixin):
                 break
         return out
 
+    def get(self, *args, **kargs):
+        """ from lindypy """
+        #print 'get', args, kargs
+        return TSpace.get(self, *args, **kargs)
+
+    def add(self, *args, **kargs):
+        """ from lindypy """
+        #print 'added', args, kargs
+        return TSpace.add(self, *args, **kargs)
+
     #@cache these
     def filter(self, *tests, **kargs):
-        """
-        """
+        """ new """
         remove = kargs.pop('remove', False)
         out    = tuple()
         for item in iter(self.values(safe=True)):
@@ -144,8 +158,10 @@ class Memory(TSpace, PersistenceMixin):
         return out
 
     def values(self, safe=False):
-        """ values can be stale.. safe ensures they are
-            availible to be get'ed and not just ghosts
+        """ from lindypy
+
+            NOTE: values can be stale.. safe ensures they are
+                  availible to be get'ed and not just ghosts
         """
         out = TSpace.values(self)
         if safe:
@@ -155,86 +171,3 @@ class Memory(TSpace, PersistenceMixin):
                 except KeyError:
                     out.remove(tpl)
         return out
-
-    def get(self, *args, **kargs):
-        """ """
-        #print 'get', args, kargs
-        return TSpace.get(self, *args, **kargs)
-
-    def add(self, *args, **kargs):
-        """ """
-        #print 'added', args, kargs
-        return TSpace.add(self, *args, **kargs)
-
-class DefaultKeyMapper(object):
-    """ The trivial protocol for mapping a tuplespace to a keyspace
-    """
-    def tuple2key(self,t):
-        """ """
-        return t[0]
-
-    def tuple2value(self, t):
-        """ """
-        return t and t[1:][0]
-
-    def __setitem__(self, key, value):
-        """ dictionary compatibility """
-        if key in self.keys():
-            # enforce the rule by pruning, then add
-            old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
-        self.add( (key, value) )
-
-
-class Keyspace(Memory, DefaultKeyMapper):
-    """ Thin wrapper around <Memory> to make it look like a dictionary
-    """
-    #def __init__(self, *
-
-    def __contains__(self,other):
-        return other in self.keys()
-
-    def public_keys(self):
-        """ like self.keys(), only respects privacy for _ and __
-        """
-        FORBIDDEN_PREFIXES = '_ __'.split()
-        return [ k for k in self.keys() if not any( map(k.startswith, FORBIDDEN_PREFIXES) ) ]
-
-    def __getitem__(self, key):
-        """ TODO: is this tailored too much for the PostOffice, or is it sufficiently generic?
-            TODO: transparent encryption, serialization, perspective warping?
-        """
-        matching_tuples = self.filter(lambda tpl: self.tuple2key(tpl)==key)
-        #assert len(matching_tuples)<2,"Found duplicate matching tuples.. not really a keyspace then, is it?"
-        if matching_tuples:
-            first_match = matching_tuples[0]
-            return self.tuple2value(first_match)
-        return NOT_FOUND_T
-
-    def subspace(self, name):
-        """ return a nested keyspace with name <name> """
-        NIY
-    def asdkeys(self):
-        if self.subspace_of:
-            return self.subspace_of[self.name]
-
-    def __contains__(self,other):
-        """ dictionary compatibility """
-        return other in self.keys()
-
-    def keys(self):
-        """ dictionary compatibility: (almost)
-
-              NOTE: this list may contain duplicates.. this is intentional
-        """
-        return [ self.tuple2key(x) for x in self.values() ]
-
-    def __iter__(self):
-        """ dictionary compatibility """
-        return iter(self.keys())
-
-    def items(self):
-        """ dictionary compatibility: (almost)
-
-                NOTE: this list may contain duplicates.. this is intentional
-        """
-        return [ [ self.tuple2key(x), self.tuple2value(x) ] for x in self.values() ]

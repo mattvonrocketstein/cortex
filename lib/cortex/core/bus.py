@@ -4,9 +4,8 @@
 from cyrusbus.bus import Bus
 
 from cortex.core.util import report
-from cortex.store.ground import Keyspace
+from cortex.store.keyspace import Keyspace
 from cortex.services import Service
-
 
 class TupleBus(Bus):
     """ a wrapper over cyrusbus to use tuples

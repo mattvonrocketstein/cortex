@@ -181,15 +181,19 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
 
         # honor instance methods on services
         #  that use the "handles_event" decorator
-        for service in self.services:
-            service= ( self | service )
-            junk = Namespace(service.__class__.__dict__).callables()
-            for name,func in junk.items():
-                #raise Exception, type(junk)
-                if hasattr(func, 'handles_event'):
-                    event_type = func.handles_event
-                    handler = getattr(service, name)
-                    (self|'postoffice').subscribe(event_type, handler)
+        def honor():
+            for service in self.services:
+                service= ( self | service )
+                junk = Namespace(service.__class__.__dict__).callables()
+                for name,func in junk.items():
+                    #raise Exception, type(junk)
+                    if hasattr(func, 'handles_event'):
+                        event_type = func.handles_event
+                        handler = getattr(service, name)
+                        (self|'postoffice').subscribe(event_type, handler)
+
+        #HACK
+        reactor.callLater(6, honor)
 
         # Main loop
         reactor.run()

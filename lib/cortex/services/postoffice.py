@@ -10,7 +10,7 @@ import simplejson
 
 from cortex.core.util import report
 from cortex.core.data import EVENT_T, ERROR_T
-from cortex.store.ground import Keyspace
+from cortex.store.keyspace import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus
 from cortex.util.decorators import constraint
@@ -77,6 +77,7 @@ class ParanoidPostOffice(PostOffice):
           the <publish> operation.
     """
 
+    # TODO: update to use "class Meta:" instead of this
     do_not_discover = True
 
     def start(self):
