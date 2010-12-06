@@ -10,6 +10,7 @@ def IDENTITY(*args, **kargs):
 
 # pseudo-types for message-passing.. mainly used in conjunction with postoffice
 ################################################################################
+NOT_FOUND_T = "randomjunk NOT_FOUND_T randomjunk"
 NOTICE_T = "NOTICE_T"
 EVENT_T  = "EVENT_T"
 PEER_T   = "PEER_T"
