@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """ go.py: Second-phase init
 
+    Example usage follows:
+
+      $ go chat.py # First looks in
+
     Scratchpad:
 
 
@@ -30,15 +34,22 @@ class defaults:
     """ default configuration container, used at runtime for
         cortex bootstrap.  see also cortex.bin.go
     """
-    working_directory = os.path.realpath(os.getcwd())
-    system_prefix     = sys.prefix
-    nodeconf_file     = "UNLESS OVERRIDEN, DETERMINED JIT"
+
+    working_directory      = os.path.realpath(os.getcwd())
+    system_prefix          = sys.prefix
+    nodeconf_file          = "UNLESS OVERRIDEN, DETERMINED JIT"
+    cortex_system_etc      = os.path.join(system_prefix,"etc")
+    demo_dir               = os.path.join(cortex_system_etc,"demos")
+    default_nodeconf_file  = os.path.join('etc', 'node.conf')
 
     def decide_nodeconf_file(self):
         from cortex.util.logic import first
-        default_nodeconf_file  = os.path.join('etc', 'node.conf')
-        sys_nodeconf_file      = os.path.join(defaults.system_prefix, default_nodeconf_file)
-        relative_nodeconf_file = os.path.join(defaults.working_directory, default_nodeconf_file)
+
+        sys_nodeconf_file      = os.path.join(defaults.system_prefix,
+                                              defaults.default_nodeconf_file)
+
+        relative_nodeconf_file = os.path.join(defaults.working_directory,
+                                              defaults.default_nodeconf_file)
         # TODO: read user/site-specific config here..
         options = [relative_nodeconf_file, sys_nodeconf_file ]
         options = [option for option in options if os.path.exists(option)]
@@ -48,7 +59,7 @@ defaults = defaults()
 defaults.decide_nodeconf_file()
 
 def build_parser():
-    
+
     from optparse import OptionParser
     class Help(object):
         universeHelp     = "Use universe@FILE"
@@ -80,14 +91,45 @@ def install_nodeconf(nodeconf_file, options, args):
     # Set node configuration file in universe
     instance_dir          = os.path.split(__file__)[0]
     Universe.instance_dir = instance_dir
+
     if not os.path.exists(nodeconf_file):
-        report("Expected node.conf @ "+nodeconf_file+', None found.')
+        report("node.conf @ "+nodeconf_file+' not found.. checking in')
         Universe.nodeconf_file = None
     else:
         report("Loading with config @ %s" % nodeconf_file)
         Universe.nodeconf_file = nodeconf_file
 
 from cortex.core.reloading_helpers import run as RUN
+def run_file(fname):
+        """ is it more comfortable for user if
+            we add a "Universe.play()" here?
+        """
+        __file__ = os.path.abspath(fname)
+        execfile(fname)
+
+def handle_file(args):
+    """ search order:
+          1. if absolute, or starts with ./, then don't look anywhere else
+          2. look and see if it's a file relative
+          3. look and see if it's a demo named in <node_root>/etc/demos
+    """
+    fname                     = args[0]
+    fname_as_demo             = (not fname.startswith(os.path.sep) and \
+                                 not fname.startswith('./')) and \
+                                os.path.join(defaults.demo_dir, fname)
+    fname_as_relative_to_root = (not fname.startswith(os.path.sep) and \
+                                 not fname.startswith('./')) and \
+                                os.path.join(defaults.system_prefix, fname)
+
+    if os.path.exists(fname):                       pass
+    elif os.path.exists(fname_as_relative_to_root): fname=fname_as_demo
+    elif os.path.exists(fname_as_demo):             fname=fname_as_demo
+
+    else:
+        raise Exception,"Not sure what to do with the argument {arg}, expected a filename or something.".format(arg=fname)
+
+    print "cortex: assuming this is a file.."
+    run_file(fname)
 
 def entry():
     """
@@ -108,13 +150,10 @@ def entry():
     nodeconf_file       = options.conf
     Universe.label      = options.label
     Universe.directives = options.directives.split(",")
+
     if args and len(args)==1:
-        fname = args[0]
-        if os.path.exists(fname):
-            print "cortex: assuming this is a file.."
-            __file__ = os.path.abspath(fname)
-            execfile(fname)
-            #Universe.play()
+        handle_file(args)
+
     elif options.interactive:
         # TODO: change this to use cortex.core.terminal if not
         #       cortex.services.terminal
