@@ -230,10 +230,14 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
 
         self.reactor.stop()
 
+    @property
+    def label_summary(self):
+        return ''.join(self.label.split('-')[:2])
+
     def decide_name(self):
         """ """
         name_args = dict( alfa    = self.pid,
-                          bravo   = getattr(self,'bravo', ''),
+                          bravo   = self.label_summary, #getattr(self,'bravo', ''),
                           charlie = getattr(self,'charlie',''),
                           delta   = self.hostname,
                           epsilon = str(id(self)),
