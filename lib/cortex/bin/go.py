@@ -107,7 +107,13 @@ def run_file(fname):
     """
     scope = globals().copy()
     scope.update(dict(__file__ = os.path.abspath(fname)))
-    execfile(fname,scope)
+    try:
+        execfile(fname,scope)
+    except Exception,e:
+        scope.update(dict(__exception__=e))
+        return False, scope
+    else:
+        return True, scope
 
 def handle_file(args):
     """ search order:
@@ -131,7 +137,14 @@ def handle_file(args):
         raise Exception,"Not sure what to do with the argument {arg}, expected a filename or something.".format(arg=fname)
     print ' '.join(sys.argv)
     print "cortex: assuming this is a file.."
-    run_file(fname)
+    return fname
+
+def embed_shell(**kargs):
+    # TODO: change this to use cortex.core.terminal if not
+    #       cortex.services.terminal
+    import IPython
+    embedshell = IPython.Shell.IPShellEmbed(argv=['-noconfirm_exit'],user_ns=kargs)
+    embedshell()
 
 def entry():
     """
@@ -154,15 +167,16 @@ def entry():
     Universe.directives = options.directives.split(",")
 
     if args and len(args)==1:
-        handle_file(args)
+            success, scope = run_file(handle_file(args))
+            if not success:
+                if options.interactive:
+                    report("Caught exception while executing", args)
+                    report('  Original exception will be availible as "__exception__", details follow:',exception=scope.get('__exeption__'))
+                    embed_shell(**scope)
+                else:
+                    raise Exception, scope['__exception__']
 
-    elif options.interactive:
-        # TODO: change this to use cortex.core.terminal if not
-        #       cortex.services.terminal
-        import IPython
-        embedshell = IPython.Shell.IPShellEmbed(argv=['-noconfirm_exit'])
-        embedshell()
-
+    elif options.interactive: embed_shell()
     elif options.command:
         exec(options.command)
 

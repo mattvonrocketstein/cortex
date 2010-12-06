@@ -1,5 +1,5 @@
 """ example boot script for cortex:
-      card-game playing agents, first implementations.
+    card-game playing agents, first implementations.
 
     This version should take an approach where the problem is
     defined by the interactions between agent behaviours, ie,
@@ -8,21 +8,17 @@
 
 
 from cortex.core import api
-from cortex.core.agent import Agent
+#from cortex.core.agent import Agent
+from cortex.agents.turntaker import TurnTaker, TurnTakingGroup
 
 from cortex.core.bus import handles_and_consumes_event
 from cortex.core.bus import handles_event, event
 
 
 CUT_CARDS = event("CUT_CARDS")
+CARD_GAME = TurnTakingGroup('CardPlayers')
 
-class Player(Agent):
-    class Meta:
-        goals = [ high_score ]
-
-    def high_score(self):
-        """ defines high-score-goal: NIY """
-
+class Player(TurnTaker):
 
     @handles_and_consumes_event(CUT_CARDS)
     def cut_cards_request(self, cards):
@@ -35,6 +31,12 @@ class Player(Agent):
         first_half = cards[N:]
         second_half = cards[:N]
         return first_half + second_half
+
+    class Meta:
+        turn_taking_group = CARD_GAME
+        class Goals:
+            def high_score(self):
+                """ defines high-score-goal: NIY """
 
 
 class Dealer(Player):
@@ -50,11 +52,6 @@ class Dealer(Player):
            that all players get to help shuffle """
         NIY
 
-    def ready_to_play(self):
-        # the cards are shuffled,
-        # the cards are cut,
-        # the deal is finished
-
     class Meta:
         """ dealer inherits goals from player, but
             the most goals should be ordered by localness
@@ -62,7 +59,17 @@ class Dealer(Player):
             of organizing things implies that the universe
             itself may have goals, etc.
         """
-        goals = [ ready_to_play ]
+        turn_taking_group = CARD_GAME
+        class Goals:
+            def ready_to_play(self):
+                """
+                    the cards are shuffled,
+                    the cards are cut,
+                    the deal is finished
+                    the play-order is agreed-upon
+                """
+                NIY
+
 
 
 # Parameters for the services. mostly empty and ready to override
