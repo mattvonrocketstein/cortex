@@ -28,6 +28,7 @@ import os, sys
 from cortex import core
 from cortex.core.universe import Universe
 from cortex.core.util import report
+from cortex.core.reloading_helpers import run as RUN
 
 # TODO: make a place to unify all the "config" objects
 class defaults:
@@ -99,13 +100,13 @@ def install_nodeconf(nodeconf_file, options, args):
         report("Loading with config @ %s" % nodeconf_file)
         Universe.nodeconf_file = nodeconf_file
 
-from cortex.core.reloading_helpers import run as RUN
+
 def run_file(fname):
-        """ is it more comfortable for user if
-            we add a "Universe.play()" here?
-        """
-        __file__ = os.path.abspath(fname)
-        execfile(fname)
+    """ is it more comfortable for user if
+        we add a "Universe.play()" here?
+    """
+    __file__ = os.path.abspath(fname)
+    execfile(fname)
 
 def handle_file(args):
     """ search order:
