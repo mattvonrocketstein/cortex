@@ -2,7 +2,7 @@
 """
 
 from cortex.core import api
-from cortex.core.node import Agent
+from cortex.core.agent import Agent
 
 class Chat(Agent):
     def comment_processor(self, source, *args, **kargs):
