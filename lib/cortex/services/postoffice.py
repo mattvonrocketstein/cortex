@@ -36,8 +36,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         default_name   = 'PostOffice::{_id}::keyspace'.format(_id=str(id(self)))
         keyspace_name  = default_name
         keyspace_owner = self
-        Keyspace.__init__(self, keyspace_owner, name=keyspace_name,
-                          parent_space=kargs['universe'].ground )
+        Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
         SelfHostingTupleBus.__init__(self) # will call self.reset()
 
     def publish_json(self, label, data):
@@ -68,6 +67,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
     @constraint(boot_first='linda')
     def start(self):
         """ """
+        self._init_subspaces(parent_space=self.universe.ground )
         super(Service, self).start()
         self.reset()
 
