@@ -106,7 +106,7 @@ def run_file(fname):
         we add a "Universe.play()" here?
     """
     __file__ = os.path.abspath(fname)
-    execfile(fname)
+    execfile(fname,globals())
 
 def handle_file(args):
     """ search order:
