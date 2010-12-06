@@ -7,21 +7,23 @@
         #self.context = traceback.function
 """
 
+import types
+
 from cortex.util.decorators.data import DECORATION_ABORT_COMMAND
+from cortex.util.decorators.data import AlreadyDecorated, DecoratorSetupError
 
 class AbstractDecorator(object):
     """ Patterns in function decoration """
-    def decorate(self,fxn):
+    def decorate(self, fxn):
         return fxn
 
     def __call__(self, fxn):
         """ does the actual decoration and adds hooks,
             do not override unless you have a good reason.
         """
-
-        # precall may decide to abort, check that out
+        # pre-call may decide to abort, check that out
         command = self.pre_decoration_hook(fxn)
-        if command==DECORATION_ABORT_COMMAND:
+        if command == DECORATION_ABORT_COMMAND:
             return fxn
 
 
@@ -83,7 +85,7 @@ class AbstractDecorator(object):
 
 
 class MutationDecorator(AbstractDecorator):
-    """ """
+    """ TODO: NIY """
 
     def decorate(self, fxn):
         """ """
@@ -94,3 +96,32 @@ class MutationDecorator(AbstractDecorator):
         # patch it to look more like the original
         #self.decoration.func_name = fxn.func_name
         #self.decoration.__doc__  = fxn.__doc__
+
+class SimpleAnnotator(AbstractDecorator):
+    """
+        NOTE: by default only supports assignment with StringTypes,
+              you can override that by subclasses and defining "allowed_types"
+    """
+    def __init__(self, value_to_set):
+        allowed_types = getattr(self,'allowed_types',types.StringTypes)
+        if not isinstance(value_to_set, allowed_types):
+            err = 'To use "{kls}", you should call it with a single string that youd like to store.'
+            err = err+'\n\tInstead, got: {actual}'.format(actual=str(value_to_set)
+                                                        ,kls=self.__class__.__name__)
+            raise DecoratorSetupError,err
+        self.value_to_set = value_to_set
+    def post_decoration_hook(self,fxn):
+        setattr(fxn,self.label_name,self.value_to_set)
+
+class StrictSimpleAnnotator(SimpleAnnotator):
+    """ Same as SimpleAnnotator except that it enforces that
+         the function may not have beeen previous Annotated. """
+
+    def pre_decoration_hook(self, fxn):
+        """ sanity checking """
+        err    = "fxn@{fxn} has already been labeled at name {name} with {value}"
+        current_value = getattr(fxn, self.label_name, None)
+        format = dict(fxn=fxn, value=current_value)
+        if current_value is not None:
+            raise AlreadyDecorated, err.format(**format)
+        return fxn

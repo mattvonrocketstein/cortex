@@ -2,7 +2,7 @@
 """
 import inspect
 
-from cortex.util.decorators.abstract import AbstractDecorator
+from cortex.util.decorators.abstract import StrictSimpleAnnotator
 from cortex.util.decorators.abstract import MutationDecorator
 from cortex.util.decorators.function_annotator import FunctionAnnotator
 
@@ -24,18 +24,12 @@ class constraint(FunctionAnnotator):
         """ """
         constraint.table.append(fxn)
 
-
-class handles_event(AbstractDecorator):
-    """ TODO: change this to use the function Annotator"""
-    def __init__(self, event_name):
-        self.event_name = event_name
-
-    def pre_decoration_hook(self, fxn):
-        """ sanity checking """
-        err    = "fxn@{fxn} has already been labeled as handling event called {event}"
-        format = dict(fxn=fxn, event=getattr(fxn,'handles_event',None))
-        assert not hasattr(fxn,'__handles_event'),err.format(**format)
-
-    def post_decoration_hook(self,fxn):
-        fxn.handles_event = self.event_name
+class handles_event(StrictSimpleAnnotator):
+    label_name = 'handles_event'
 handle_event = handles_event
+handles      = handle_event
+
+class handles_and_consumes_event(StrictSimpleAnnotator):
+    label_name = 'handles_and_consumes_event'
+handle_and_consume   = handles_and_consumes_event
+handles_and_consumes = handles_and_consumes_event
