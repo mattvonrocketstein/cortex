@@ -33,9 +33,22 @@ class Memory(CortexTSpace, PersistenceMixin, TransformerMixin):
         """ """
         return '{owner} :: {name}'.format(owner=str(self.owner), name=str(id(self.owner)))
 
-    def __init_memory(self):
+    def _init_memory(self):
         """ """
-        self.john_hancock() # Sign it
+         # Sign it
+        self.john_hancock()
+
+    def _init_subspaces(self, parent_space=None):
+        """ NOTE: many times this cannot be called in __init__ because,
+                  for example, (universe|'linda').start() would have had to
+                  have been finished before cortex.services.postoffice.__init__()
+                  had even started... for this reason i suggest calling the function
+                  at the beginning of <start>
+        """
+        # request that parents install me as a subspace.
+        subspace_success = (parent_space is not None) and \
+                           (parent_space.install_subspace(self))
+        report("SubspaceCreation: ", subspace_success)
 
     def __init__(self, owner, name=None, filename=None, parent_space=None):
         """ """
@@ -45,13 +58,7 @@ class Memory(CortexTSpace, PersistenceMixin, TransformerMixin):
 
         self.__init_persistence(filename)
         self.__init_tspace()
-        self.__init_memory()
-
-
-        # request that parents install me as a subspace.
-        subspace_success = (parent_space is not None) and \
-                           (parent_space.install_subspace(self))
-        report("SubspaceCreation: ", subspace_success)
+        self._init_memory()
 
     def __repr__(self):
         """ """
