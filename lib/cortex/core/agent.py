@@ -1,4 +1,6 @@
-""" cortex.core.node
+""" cortex.core.agent
+
+      from cortex.store.ground import HierarchicalWrapper, HierarchicalData
 """
 
 import os
@@ -6,34 +8,14 @@ import os
 from cortex.core.common import AgentError
 from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
-from cortex.store.ground import HierarchicalWrapper, HierarchicalData
+from cortex.core.hds import HierarchicalData
+
 from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
 from cortex.core.manager import Manager
 from cortex.core.util import report
 from cortex.mixins._os import OSMixin
-
-class AgentPrerequisiteNotMet(Exception):
-    """ Move along, nothing to see here """
-
-class CloneManager(Manager):
-    from cortex.core.hds import HDS
-
-    class Clone(HDS):
-        def __repr__(self):
-            return self.label
-
-        @property
-        def pids(self):
-            """ HACK """
-            from cortex.core.universe import Universe
-            return Universe.pids_for_pattern(self.label)
-
-        def kill(self):
-            from cortex.core.universe import Universe
-            return [p.kill() for p in Universe.procs_for_pattern(self.label)]
-
-    asset_class=Clone
+from cortex.core.common import AgentPrerequisiteNotMet
 
 class AgentManager(Manager):
     """
@@ -52,7 +34,7 @@ class AgentManager(Manager):
         self.registry   = {}
 
         # TODO: when in doubt, autoproxy to..
-        self.generic_store = HierarchicalWrapper('obj')
+        #self.generic_store = HierarchicalWrapper('obj')
 
     def items(self):
         """ dictionary compatability """
@@ -99,7 +81,7 @@ class AgentManager(Manager):
 
 # A cheap singleton
 AGENTS = AgentManager()
-CLONES = CloneManager()
+
 
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
