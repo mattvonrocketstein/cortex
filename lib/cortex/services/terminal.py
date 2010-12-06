@@ -70,6 +70,7 @@ class ShellAspect:
 
     def pre_prompt_hook(self, ip):
         """ IPython-hook to display system notices """
+        self.set_prompt()
         if self.syndicate_events:
             # extra setup for the postoffice integration..
             #  this stuff is in here because the requires_service() functionality
@@ -86,7 +87,7 @@ class ShellAspect:
             event = self.pop_q()
             if event:
                 print console.blue('Events:'), console.color(str(event))
-            self.set_prompt()
+
 
 class Terminal(Service, LocalQueue, ShellAspect):
     """ Terminal Service:
@@ -95,7 +96,7 @@ class Terminal(Service, LocalQueue, ShellAspect):
             <start>: a few words about starting
             <stop>:  a few words about stopping
     """
-    def _post_init(self, syndicate_events_to_terminal=True):
+    def _post_init(self, syndicate_events_to_terminal=False):
         """
             TODO: self.requires_service('postoffice')
         """
