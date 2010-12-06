@@ -7,6 +7,19 @@ from cortex.core.util import report
 from cortex.store.keyspace import Keyspace
 from cortex.services import Service
 
+# Imports for convenience
+from cortex.util.decorators import handles_and_consumes_event
+from cortex.util.decorators import handles_event
+def summarize_event_system():
+    """ """
+    NIY
+
+def event(label):
+    new_event    = "EVENT_"+label.upper().replace(' ','_')
+    event.EVENTS = event.EVENTS.union(set([new_event]))
+    return new_event
+event.EVENTS = set()
+
 class TupleBus(Bus):
     """ a wrapper over cyrusbus to use tuples
          (by default it uses lists and dictionaries)
