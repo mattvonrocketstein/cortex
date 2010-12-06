@@ -58,4 +58,5 @@ class SingletonKeyspace(Keyspace):
     """
     def __getitem__(self, key):
         """ """
+        raise Exception,'NIY'
         assert len(matching_tuples)<2,"Found duplicate matching tuples.."
