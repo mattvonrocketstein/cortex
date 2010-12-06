@@ -41,7 +41,8 @@ class SubspaceMixin(object):
     subspaces = TupleSpaceFilterFactory('__subspaces__')
 
     def install_subspace(self, other):
-        """ TODO: ensure type(self)==type(other)?
+        """ called by Memory.__init ?
+            TODO: ensure type(self)==type(other)?
             REFACTOR..
         """
         report('installing subspace "{other}" into '.format(other=other.name),self)
