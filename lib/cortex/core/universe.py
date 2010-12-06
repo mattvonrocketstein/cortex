@@ -115,7 +115,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
     from cortex.core.peer import PEERS as peers
     from cortex.core.service import SERVICES as services
     from cortex.core.agent import AGENTS as agents
-    from cortex.core.agent import CLONES as clones
+    from cortex.core.clone import CLONES as clones
     #processes     = ProcessManager()
 
     @property
