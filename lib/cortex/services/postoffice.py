@@ -10,7 +10,7 @@ import simplejson
 
 from cortex.core.util import report
 from cortex.core.data import EVENT_T, ERROR_T
-from cortex.core.ground import Keyspace
+from cortex.store.ground import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus
 from cortex.util.decorators import constraint
@@ -20,7 +20,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
 
           A wrapper over cyrusbus's basic layout that uses a
           key-value api to access the tuple-space described in
-          cortex.core.ground.
+          cortex.store.ground.
 
           start: brief description of service start-up here
           stop:  brief description service shutdown here

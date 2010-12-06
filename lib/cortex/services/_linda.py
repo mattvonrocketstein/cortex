@@ -7,7 +7,7 @@ import datetime
 from socket import socket
 
 from cortex.services import Service
-from cortex.core.ground import Memory
+from cortex.store.ground import Memory
 from cortex.core.util import report, console
 from cortex.core.atoms import PersistenceMixin
 

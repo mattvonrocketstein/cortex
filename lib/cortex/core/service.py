@@ -1,7 +1,7 @@
 """ cortex.core.service
 """
 
-from cortex.core.node import Agent, AgentManager, Manager
+from cortex.core.agent import Agent, AgentManager, Manager
 from cortex.core.util import report, console
 
 from cortex.contrib.aima.csp import CSP, AC3, min_conflicts, backtracking_search
