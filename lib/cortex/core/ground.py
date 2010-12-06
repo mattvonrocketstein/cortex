@@ -12,7 +12,7 @@ from lindypy.TupleSpace import Client, tuplespace
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
 from cortex.core.atoms import PersistenceMixin
-
+from cortex.core.data import NOT_FOUND_T
 class HierarchicalWrapper(HierarchicalData):
     """ """
     def __init__(self, proxy_name):
@@ -31,9 +31,10 @@ class Memory(TSpace, PersistenceMixin):
 
     universe = None
 
-    def __init__(self, owner, name=None, filename=None):
+    def __init__(self, owner, name=None, filename=None, parent_space=None):
         """ """
         self.owner = owner
+        self.parent_space = parent_space
         self.name  = name or (str(owner) + ' :: ' + str(id(owner)))
 
         # persistence mixin
@@ -48,9 +49,41 @@ class Memory(TSpace, PersistenceMixin):
 
         self.john_hancock()
 
+        if parent_space is not None:
+            parent_space.install_subspace(self)
+
+    def __repr__(self):
+        return "<Memory@"+str(self.owner)+'>'
+
+    @property
+    def subspaces(self):
+        return self.filter(lambda tpl: tpl[0]=='__subspaces__')[0]
+
+    def install_subspace(self, other):
+        """ TODO: ensure type(self)==type(other)?
+        """
+
+        #sanity check
+        existential_test = lambda tpl: tpl[0] == other.name
+        search_results   = self.filter(existential_test)
+        err = "Already a subspace by the name of {name} in {space} !"
+        err = err.format(name=other.name, space=self.name)
+        assert not search_results, err
+
+        subspace = (other.name, other)
+        self.add(subspace)
+
+        # update subspace list
+        subspaces = self.subspaces + (other.name,)
+        self.get(self.subspaces, remove=True)
+        self.add(subspaces)
+
+        report('finished installing subspace')
+
     def john_hancock(self):
         """ Sign it. """
         self.add(('__name__',  self.name))
+        self.add(('__subspaces__',))
         self.add(('__stamp__', str(datetime.datetime.now())))
 
     def as_keyspace(self, name=None):
@@ -60,7 +93,7 @@ class Memory(TSpace, PersistenceMixin):
                   is very expensive
         """
         name = name or (self.name+':as:Keyspace')
-        k = type('dynamicKeyspace',(Keyspace,),{})(self,name=name)
+        k = type('dynamicKeyspace', (Keyspace,),{})(self, name=name)
         k.__dict__ = self.__dict__ #copy.copy(self.__dict__)
         return k
 
@@ -155,6 +188,8 @@ class DefaultKeyMapper(object):
 class Keyspace(Memory, DefaultKeyMapper):
     """ Thin wrapper around <Memory> to make it look like a dictionary
     """
+    #def __init__(self, *
+
     def __contains__(self,other):
         return other in self.keys()
 
@@ -173,18 +208,24 @@ class Keyspace(Memory, DefaultKeyMapper):
         if matching_tuples:
             first_match = matching_tuples[0]
             return self.tuple2value(first_match)
-        return "NOT FOUND"
+        return NOT_FOUND_T
 
     def subspace(self, name):
         """ return a nested keyspace with name <name> """
         NIY
+    def asdkeys(self):
+        if self.subspace_of:
+            return self.subspace_of[self.name]
 
     def __contains__(self,other):
         """ dictionary compatibility """
         return other in self.keys()
 
     def keys(self):
-        """ dictionary compatibility """
+        """ dictionary compatibility: (almost)
+
+              NOTE: this list may contain duplicates.. this is intentional
+        """
         return [ self.tuple2key(x) for x in self.values() ]
 
     def __iter__(self):
@@ -192,5 +233,8 @@ class Keyspace(Memory, DefaultKeyMapper):
         return iter(self.keys())
 
     def items(self):
-        """ dictionary compatibility """
+        """ dictionary compatibility: (almost)
+
+                NOTE: this list may contain duplicates.. this is intentional
+        """
         return [ [ self.tuple2key(x), self.tuple2value(x) ] for x in self.values() ]
