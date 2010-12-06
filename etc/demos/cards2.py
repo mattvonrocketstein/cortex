@@ -1,11 +1,10 @@
 """ example boot script for cortex:
-      card-game playing agents, first implementations.
+      card-game playing agents, second implementations.
 
-    This version should take an approach where the problem is
-    defined by the interactions between agent behaviours, ie,
-    the agents are defined and the problem is implicit.
+    This version should take an approach using a problem description
+    language, where the problem is defined and that descriptions actually
+    *generates* the agents that are needed to solve it.
 """
-
 from cortex.util.decorators import handles_event
 from cortex.core import api
 from cortex.core.node import Agent
