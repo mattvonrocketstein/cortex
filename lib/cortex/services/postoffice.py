@@ -13,6 +13,7 @@ from cortex.core.data import EVENT_T, ERROR_T
 from cortex.core.ground import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus
+from cortex.util.decorators import constraint
 
 class PostOffice(Service, Keyspace, SelfHostingTupleBus):
     """ PostOffice Service:
@@ -33,9 +34,10 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         """ """
         Service.__init__(self, *args, **kargs)
         default_name   = 'PostOffice::{_id}::keyspace'.format(_id=str(id(self)))
-        keyspace_name  = self.universe or default_name
+        keyspace_name  = default_name
         keyspace_owner = self
-        Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
+        Keyspace.__init__(self, keyspace_owner, name=keyspace_name,
+                          parent_space=kargs['universe'].ground )
         SelfHostingTupleBus.__init__(self) # will call self.reset()
 
     def publish_json(self, label, data):
@@ -63,6 +65,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         caller = whosdaddy()
         self.publish(caller['name'],(args, kargs))
 
+    @constraint(boot_first='linda')
     def start(self):
         """ """
         super(Service, self).start()
