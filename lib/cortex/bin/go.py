@@ -105,8 +105,9 @@ def run_file(fname):
     """ is it more comfortable for user if
         we add a "Universe.play()" here?
     """
-    __file__ = os.path.abspath(fname)
-    execfile(fname,globals())
+    scope = globals().copy()
+    scope.update(dict(__file__ = os.path.abspath(fname)))
+    execfile(fname,scope)
 
 def handle_file(args):
     """ search order:
@@ -128,7 +129,7 @@ def handle_file(args):
 
     else:
         raise Exception,"Not sure what to do with the argument {arg}, expected a filename or something.".format(arg=fname)
-
+    print ' '.join(sys.argv)
     print "cortex: assuming this is a file.."
     run_file(fname)
 

@@ -54,7 +54,7 @@ def clone(file=None, nodeconf=None, label=None, **kargs):
     args.append('--label ' + label)
     args = ' '.join(args)
     # tell the universe to clone itself using the new nodedef
-    line = '{shell} "{prog} {args} {file}"&'.format(shell = universe.system_shell,
+    line = '{shell} "{prog} {args} {file};cat >/dev/null"& '.format(shell = universe.system_shell,
                                                     file  = file,
                                                     prog  = universe.command_line_prog,
                                                     args  = args)
