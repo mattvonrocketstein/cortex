@@ -43,8 +43,7 @@ class ShellAspect:
         if first_time:
             self.registry[self.get_input_processor()] = lambda source: "DEFAULT"
             def new_method(source, IP, **kargs): #source, **kargs):
-                #raw_input(str(('new',self, args, kargs)))
-                #report('new',self, source,kargs)
+                """ """
                 for fxn, pred in self.registry.items():
                     test = pred(source)
                     if test and test != "DEFAULT":

@@ -11,9 +11,11 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.hds import HierarchicalData
 
 from cortex.core.data import DEFAULT_HOST
+from cortex.core.common import AgentPrerequisiteNotMet
 from cortex.mixins import MobileCodeMixin
 from cortex.core.manager import Manager
 from cortex.core.util import report
+
 from cortex.mixins._os import OSMixin
 from cortex.core.common import AgentPrerequisiteNotMet
 

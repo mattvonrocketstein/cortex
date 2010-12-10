@@ -44,8 +44,8 @@ class IPShellTwisted(threading.Thread):
 
     TIMEOUT = 0.03 # Millisecond interval between reactor runs.
 
-    def __init__(self, argv=None, user_ns=None, controller=None,debug=1,
-                 shell_class=MTInteractiveShell):
+    def __init__(self, argv=None, user_ns=None, controller=None,
+                 debug=1, shell_class=MTInteractiveShell):
         self.controller=controller
         from twisted.internet import reactor
         self.reactor = hijack_reactor()
