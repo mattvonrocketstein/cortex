@@ -1,6 +1,8 @@
 """ cortex.core.instructions
 """
 
+from cortex.core.util import report
+
 class Instruction(object):
     def syntax(*args, **kargs):
         pass
@@ -29,6 +31,7 @@ class InstructionSet(object):
 
     def finish(self):
         """ call when this instructionset is complete """
+        from cortex.core.api import publish
         do = publish()['do']
         do([x for x in self.instructionset])
 
