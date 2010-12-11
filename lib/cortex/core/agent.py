@@ -127,7 +127,5 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
         if hasattr(self, 'setup'):
             self.setup()
         super(Agent, self).play()
-        self.universe.reactor.callLater(1,self.iterate)
+        self.universe.reactor.callLater(1, self.iterate)
         return self
-
-Node = Agent

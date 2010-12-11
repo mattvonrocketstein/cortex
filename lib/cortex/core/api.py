@@ -5,17 +5,19 @@
 
 import os, sys
 import subprocess
-from cortex.core.parsing import Nodeconf
-from cortex.core.universe import Universe as universe
-from cortex.core.util import report
+
 from cortex.core.hds import HDS
+from cortex.core.util import report
+from cortex.core.parsing import Nodeconf
+from cortex.core.instructions import InstructionSet
+from cortex.core.universe import Universe as universe
 
 def label(api):
     return universe.label
 
-def build_agent(name, kls=object, kls_kargs={}):
-    """ proxy to the agent manager """
-    universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
+# signature: universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
+build_agent = universe.agents.manage
+
 
 def publish(**kargs):
     """ return a dictionary of the namespace for this module """
@@ -54,10 +56,11 @@ def clone(file=None, nodeconf=None, label=None, **kargs):
     args.append('--label ' + label)
     args = ' '.join(args)
     # tell the universe to clone itself using the new nodedef
-    line = '{shell} "{prog} {args} {file};cat >/dev/null"& '.format(shell = universe.system_shell,
-                                                    file  = file,
-                                                    prog  = universe.command_line_prog,
-                                                    args  = args)
+    line = '{shell} "{prog} {args} {file};cat >/dev/null"& '
+    line = line.format(shell = universe.system_shell,
+                       file  = file,
+                       prog  = universe.command_line_prog,
+                       args  = args)
 
     #raise Exception,line
     # hack to avoid infinite recursion, see also universe.decide_options
