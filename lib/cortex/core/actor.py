@@ -1,5 +1,63 @@
-""" cortex.core.actor
+""" cortex.core.actor:
+      http://en.wikipedia.org/wiki/Actor_model_theory
 
+  Actor Activation ordering
+
+    The activation ordering (-≈→) is a fundamental ordering that models
+    one event activating another (there must be energy flow in the message
+    passing from an event to an event which it activates).
+
+        * Because of the transmission of energy, the activation ordering is
+        relativistically invariant; that is, for all events e1.e2, if e1 -≈→ e2,
+        then the time of e1 precedes the time of e2 in the relativistic frames
+        of reference of all observers.
+
+        * Law of Strict Causality for the Activation Ordering:
+        For no event does e -≈→ e.
+
+        * Law of Finite Predecession in the Activation Ordering:
+        For all events e1 the set {e|e -≈→ e1} is finite.
+
+  Independence of the Law of Finite Chains Between Events in the Combined Ordering
+
+    However, [Clinger 1981] surprisingly proved that the Law of Finite Chains Between Events in the Combined Ordering is independent of the previous laws, i.e.,
+
+    Theorem. The Law of Finite Chains Between Events in the Combined Ordering does not follow from the previously stated laws.
+
+    Proof. It is sufficient to show that there is an Actor computation that satisfies the previously stated laws but violates the Law of Finite Chains Between Events in the Combined Ordering.
+
+        Consider a computation which begins when an actor Initial is sent a Start message causing it to take the following actions
+
+           1. Create a new actor Greeter1 which is sent the message SayHelloTo with the address of Greeter1
+           2. Send Initial the message Again with the address of Greeter1
+
+        Thereafter the behavior of Initial is as follows on receipt of an Again message with address Greeteri (which we will call the event Againi):
+
+           1. Create a new actor Greeteri+1 which is sent the message SayHelloTo with address Greeteri
+           2. Send Initial the message Again with the address of Greeteri+1
+
+        Obviously the computation of Initial sending itself Again messages never terminates.
+
+        The behavior of each Actor Greeteri is as follows:
+
+            * When it receives a message SayHelloTo with address Greeteri-1 (which we will call the event SayHelloToi), it sends a Hello message to Greeteri-1
+            * When it receives a Hello message (which we will call the event Helloi), it does nothing.
+
+        Now it is possible that Helloi -Greeteri→ SayHelloToi every time and therefore Helloi→SayHelloToi.
+        Also Againi -≈→ Againi+1 every time and therefore Againi → Againi+1.
+
+        Furthermore all of the laws stated before the Law of Strict Causality for the Combined Ordering are satisfied.
+        However, there may be an infinite number of events in the combined ordering between Again1 and SayHelloTo1 as follows:
+        Again1→...→Againi→...\infty...→Helloi→SayHelloToi→...→Hello1→SayHelloTo1
+
+    However, we know from physics that infinite energy cannot be expended along a
+    finite trajectory (see for example Quantum information and relativity theory).
+    Therefore, since the Actor model is based on physics, the Law of Finite Chains
+    Between Events in the Combined Ordering was taken as an axiom of the Actor model.
+
+"""
+
+""" implementation 1.
      actor model, one actor per thread. (just a reference implementation)
        taken from: http://www.valuedlessons.com/2008/06/message-passing-conccurrency-actor.html
 

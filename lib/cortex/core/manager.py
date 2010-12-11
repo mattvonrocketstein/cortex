@@ -47,7 +47,8 @@ class Manager(object):
 
     def resolve_boot_order(self, **kargs):
         """ by default, simply returns the names in
-            the order they were registered """
+            the order they were registered
+        """
         return [pending[0] for pending in self._pending ]
 
     def load(self):
@@ -55,7 +56,9 @@ class Manager(object):
               if <manage> is used, this should be called after
               all calls to it are finished
 
-              TODO: refactor
+              TODO: refactor as something like a guarded-do:
+                 The repetition executes the guarded commands repeatedly until
+                 none of the guards are true. Usually there is only one guard.
         """
         boot_order = self.resolve_boot_order()
         self.boot_order = boot_order
