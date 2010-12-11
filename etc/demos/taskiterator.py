@@ -2,9 +2,10 @@
 """
 
 from cortex.core import api
-from cortex.agents import TaskIterator
-from cortex.core.api import InstructionSet
-from cortex.contrib.procormalatex import PromelaCore
+from cortex.core.instructions import InstructionSet
+from cortex.agents.workers import TaskIterator
+from cortex.contrib.promela.claims import never
+from cortex.core.util import report
 
 # some dumb task examples
 def task1(): print 'zam1'
@@ -19,7 +20,7 @@ InstructionSet.build_agent('task-agent',
                            kls      = TaskIterator,
                            universe = api.universe,
                            tasks    = [task1, task2, task3] )
-InstructionSet.append(PromelaCore.never( [ lambda: False ] ))
+InstructionSet.append(never( [ lambda: False ] ))
 InstructionSet.finish()
 
 # Invoke the universe (mainloop)
