@@ -1,10 +1,6 @@
 """ cortex.contrib.promela.claims
-"""
 
-from cortex.core.api import InstructionSet
-
-def never(predicates):
-    """ Never claim
+       Never claim:
 
              + never { statements }
 
@@ -22,21 +18,41 @@ def never(predicates):
            auto-increment and decrement operations, communications,
            run and assert statements.
     """
-    from cortex.agents.workers import TaskIterator
-    from cortex.core import api
-    def tasks_from_predicates(predicates):
-            tasks = []
-            for predicate in predicates:
-                msg  = "Predicate entered into <never> was False!"
-                task = lambda: ( (not predicate()) and \
-                                 report(msg) )
-                tasks.append(task)
-            return tasks
+
+
+from cortex.core import api
+from cortex.core.util import report
+from cortex.contrib.promela import helpers
+from cortex.agents.workers import TaskIterator
+from cortex.core.instructions import InstructionSet
+
+failure_msg  = "Predicate entered into <never> was False!"
+on_failure_report=lambda:report(failure_msg)
+
+def never(predicates, name=None, on_failure=None):
+    """ returns instructions that implement the never claim in cortex.
+
+        on_failure::
+          a method that will be run in case of failure to verify claim
+          the default is to use <report> to log it.
+
+        name ::
+          a name for the agent that will effect this claim.
+          a default will be generated if it is not given
+    """
+
+    # Derive on_failure if not given
+    if on_failure is None:
+        on_failure = on_failure_report
+
+    # Build tasks and set name if not given
+    tasks = helpers.tasks_from_predicates(predicates, on_failure=on_failure)
+    name  = name or 'never:{N}:{id}'.format(N=len(predicates), id=str(id(predicates)))
+
+    # Grab an instructionset to write to, and build instruction
     instructions = InstructionSet()
-    tasks = tasks_from_predicates(predicates)
-    name  = 'never:{N}:{id}'.format(N=len(predicates),
-                                    id=str(id(predicates)))
-    return instructions.build_agent( name     = name,
-                                     kls      = TaskIterator,
-                                     universe = api.universe,
-                                     tasks    = tasks )
+    instruction  = instructions.build_agent( name     = name,
+                                             kls      = TaskIterator,
+                                             universe = api.universe,
+                                             tasks    = tasks )
+    return instruction

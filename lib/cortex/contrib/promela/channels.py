@@ -1,8 +1,55 @@
+""" cortex.contrib.promela.channels
+      Message Passing
+
+      Message channels are used to model the transfer of data from
+      one process to another. They are declared either locally or
+      globally, for instance as follows: chan qname = [16] of {short}
+
+      This declares a buffered channel that can store up to 16 messages
+      of type short (capacity is 16 here).
+
+      The statement: qname ! expr;
+
+      sends the value of the expression expr to the channel with name qname,
+      that is, it appends the value to the tail of the channel.
+
+      The statement:
+
+        + qname ? msg;
+
+      receives the message, retrieves it from the head of the channel, and
+      stores it in the variable msg. The channels pass messages in
+      first-in-first-out order.
+
+      A rendezvous port can be declared as a message channel with the
+      store length zero. For example, the following:
+
+        + chan port = [0] of {byte}
+
+      defines a rendezvous port that can pass messages of type byte.
+      Message interactions via such rendezvous ports are by definition
+      synchronous, i.e. sender or receiver (the one that arrives first
+      at the channel) will block for the contender that arrives second
+      (receiver or sender).
+
+      When a buffered channel has been filled to its capacity
+      (sending is "capacity" number of outputs ahead of receiving
+      inputs), the default behavior of the channel is to become
+      synchronous, and the sender will block on the next sending.
+      Observe that there is no common message buffer shared between
+      channels. Increasing complexity, as compared to using a channel
+      as unidirectional and point to point, it is possible to share
+      channels between multiple receivers or multiple senders, and to
+      merge independent data-streams into a single shared channel. From
+      this follows that a single channel may also be used for
+      bidirectional communication.
+"""
+
 class Channel:
     """ Channel operations
 
-           q!var1,const,var2,...  or, equivalently  q!var1(const,var2,...)
-           q?var1,const,var2,...  or, equivalently  q?var1(const,var2,...)
+          +  q!var1,const,var2,...  or, equivalently  q!var1(const,var2,...)
+          +  q?var1,const,var2,...  or, equivalently  q?var1(const,var2,...)
 
          Are the standard channel operations; the first is a send statement,
          the second a receive. Here, q denotes a channel and the list

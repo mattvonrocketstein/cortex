@@ -1,5 +1,23 @@
 """ cortex.contrib.promela.commands
 """
+def atomic(statements):
+        """ The Atomic Construct atomic {statements;}
+
+              By prefixing a sequence of statements enclosed in curly braces
+              with the keyword atomic the user can indicate that the sequence
+              is to be executed as one indivisible unit, non-interleaved with
+              any other processes.
+
+              It is a runtime error if any statement, other than the first
+              statement, blocks in an atomic sequence. Atomic sequences can
+              be an important tool in reducing the complexity of verification
+              models. Note that atomic sequences restricts the amount of
+              interleaving that is allowed in a distributed system. Intractable
+              models can be made tractable by labeling all manipulations of
+              local variables with atomic sequences.
+        """
+        pass
+
 def run(self):
         """ Such a process is instantiated by a run-operation:
 

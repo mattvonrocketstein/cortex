@@ -1,6 +1,9 @@
 """ cortex.contrib.promela.process
 """
 
+from cortex.core.util import report
+from cortex.core.agent import Agent
+
 class Process(Agent):
     """ Processes
         A basic process declaration has the form

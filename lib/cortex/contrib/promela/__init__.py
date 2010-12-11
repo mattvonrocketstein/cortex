@@ -27,7 +27,7 @@ class Notation(object):
     """
 
 from cortex.core.util import report
-from cortex.core.agent import Agent
+#from cortex.core.agent import Agent
 from cortex.core.api import InstructionSet
 from cortex.contrib.promela.claims import never
 from cortex.contrib.promela.logic import Predicates
