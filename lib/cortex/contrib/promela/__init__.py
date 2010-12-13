@@ -7,13 +7,15 @@
         can be exploited for model-verification with the "spin"
         tool.
 
-    see also: specification at http://spinroot.com/spin/Man/Quick.html
+        See also:
+            promela specification:           http://spinroot.com/spin/Man/Quick.html
+            overview of spin model checker:  http://spinroot.com/spin/whatispin.html#A
 
-methods inside PromelaCore should generate cortex
-compatible instructionsets for doing an equivalent
-operation.
+    The goal is to gernate cortex compatible instructionsets for doing
+    semantically equivalent promela operations.
 
 """
+
 class Notation(object):
     """ Remote references
         The expression:
@@ -27,7 +29,6 @@ class Notation(object):
     """
 
 from cortex.core.util import report
-#from cortex.core.agent import Agent
 from cortex.core.api import InstructionSet
 from cortex.contrib.promela.claims import never
 from cortex.contrib.promela.logic import Predicates

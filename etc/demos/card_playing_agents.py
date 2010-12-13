@@ -6,31 +6,40 @@
     the agents are defined and the problem is implicit.
 """
 
-
 from cortex.core import api
-#from cortex.core.agent import Agent
-from cortex.agents.turntaker import TurnTaker, TurnTakingGroup
+from cortex.agents.turntaker import TurnTaker
+from cortex.agents.turntaker import TurnTakingGroup
 
-from cortex.core.bus import handles_and_consumes_event
+from cortex.core.data import EVENT_T
 from cortex.core.bus import handles_event, event
-
+from cortex.util.decorators import afterwards_emit
+from cortex.core.bus import handles_and_consumes_event
 
 CUT_CARDS = event("CUT_CARDS")
+CARDS_CUT = event("CARDS_CUT")
 CARD_GAME = TurnTakingGroup('CardPlayers')
+CARDS     = [X for X in "ABCDEFGHIJKLMNOPQRSTUV"]
 
 class Player(TurnTaker):
 
+    #@afterwards_emit(CARDS_CUT)
     @handles_and_consumes_event(CUT_CARDS)
-    def cut_cards_request(self, cards):
-        """ handles the cut-cards request from dealer
+    def cut_cards_request(self, postoffice, cards):
+        """ handles and consumes the cut-cards request,
+            which will be emitted from the dealer.. after
+            the event has been noticed by this player, no
+            other player should be notified about/allowed
+            to handle the event.
 
               NOTE: dealer may be in a non-local universe.
 
         """
-        num_cards = len(cards)/2;
+        report("Handling cut-cards-request")#, cards)
+        N = len(cards)/2;
         first_half = cards[N:]
         second_half = cards[:N]
-        return first_half + second_half
+        result = first_half + second_half
+        (self.universe|'postoffice').publish(CARDS_CUT, result)
 
     class Meta:
         turn_taking_group = CARD_GAME
@@ -45,12 +54,27 @@ class Dealer(Player):
               he's a player but a special player
     """
 
+    @afterwards_emit(CUT_CARDS)
     def shuffle_cards(self):
-        """ typically the dealer shuffles alone,
-           but since these are robots and the deck
-           can get arbitrarily large, we will say
-           that all players get to help shuffle """
-        NIY
+        """ Typically the dealer shuffles alone,
+            but since these are robots and the deck
+            can get arbitrarily large, we will say
+            that all players get to help shuffle
+        """
+        import random
+        global CARDS
+        random.shuffle(CARDS)
+        return CARDS
+
+    @handles_and_consumes_event(CARDS_CUT)
+    def collect_cards(self,postoffice, cards):
+        """ """
+        report("Collecting cards")
+        self.deal_cards(cards)
+
+    def deal_cards(self, cards):
+        """ """
+
 
     class Meta:
         """ dealer inherits goals from player, but
@@ -73,7 +97,7 @@ class Dealer(Player):
 
 
 # Parameters for the services. mostly empty and ready to override
-term_args  = {'syndicate_events_to_terminal' : False}  # Cortex-Terminal arguments: be quiet
+term_args  = {'syndicate_events_to_terminal' : True}  # Cortex-Terminal arguments: be quiet
 api_args   = {}                                        # Arguments for the API-serving daemon
 linda_args = {}                                        # Linda (tuplespace) parameters
 map_args   = {}                                        # Network-mapper parameters
@@ -107,4 +131,5 @@ api.do([ ["build_agent", ('player-agent',), play_args], ])
 #macroverse.distribute_workers()
 
 # Invoke the universe (mainloop)
+#import IPython; embedshell = IPython.Shell.IPShellEmbed(argv=['-noconfirm_exit']); embedshell()
 api.universe.play()

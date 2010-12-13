@@ -182,18 +182,33 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation, ServiceLoader,
         # honor instance methods on services
         #  that use the "handles_event" decorator
         def honor():
-            for service in self.services:
-                service= ( self | service )
-                junk = Namespace(service.__class__.__dict__).callables()
-                for name,func in junk.items():
-                    #raise Exception, type(junk)
-                    if hasattr(func, 'handles_event'):
-                        event_type = func.handles_event
-                        handler = getattr(service, name)
-                        (self|'postoffice').subscribe(event_type, handler)
+            agents = []
+            token  = 'handles_event'
+            action = lambda event_type,handler: (self|'postoffice').subscribe(event_type, handler)
+            checkmethods([(self|service) for service in self.services],
+                         action, token)
 
-        #HACK
-        reactor.callLater(6, honor)
+            token = 'handles_and_consumes_event'
+            action = lambda event_type,handler: (self|'postoffice').csubscribe(event_type, handler)
+            checkmethods([self.agents[agent].obj for agent in self.agents], action, token)
+
+        def checkmethods(agents, action, token):
+            """ apply action to agent eventhandlers
+                utilizing {token}
+            """
+            for agent in agents:
+                junk = Namespace(agent.__class__.__dict__).callables()
+                count=0
+                for name, func in junk.items():
+                    count+=1
+                    #print name,func
+                    if hasattr(func, token):
+                        event_type = getattr(func,token)
+                        handler    = getattr(agent, name)
+                        action(event_type, handler)
+                fmt = dict(count=count,type=agent.__class__.__name__)
+                #report("SYSTEM: iterated {count} methods in agent of type {type}".format(**fmt))
+        reactor.callLater(3, honor)
 
         # Main loop
         reactor.run()

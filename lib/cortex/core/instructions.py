@@ -18,7 +18,7 @@ class InstructionSet(object):
         return self.instructionset.append(other)
 
     def records_result_locally(name):
-        """ build a decorator: """
+        """ builds a decorator to  """
         def dec(fxn):
             def new_fxn(*args, **kargs):
                 """ the replacement function """

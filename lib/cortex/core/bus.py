@@ -1,6 +1,7 @@
 """ cortex.core.bus
 """
 
+import datetime
 from cyrusbus.bus import Bus
 
 from cortex.core.util import report
@@ -38,7 +39,8 @@ class TupleBus(Bus):
         """ override from cyrusbus enforcing simple callbacks as
             subscriptions (by default cyrusbus uses dictionaries)
         """
-        if key not in self.keys():
+        #if key not in self.keys():
+        if key not in self.public_keyskeys():
             return False
         return callback in self.subscriptions[key]
 
@@ -53,16 +55,38 @@ class TupleBus(Bus):
         for subscriber in self.subscriptions[key]:
             subscriber(self, *args, **kwargs)
 
+            # honor limits placed by csubscribe
+            if subscriber in getattr(self,'consumers',[]):
+                break
+
     def subscribe(self, key, callback, force=False):
         """ override from cyrusbus forcing tuples, not lists.
-             also changed return-value, now sends back all subscribers for <key>
+
+              NOTE: also changed return-value, now sends back
+                    all subscribers for <key>
         """
         if key not in self.public_keys():
             self[key] = tuple([callback])
-
         elif force or not self.has_subscription(key, callback):
             self[key] = self[key] + (callback,)
         return self[key]
+
+    def csubscribe(self, key, callback):
+        """ consuming subscribe """
+        consumers=getattr(self,'consumers',[])
+        consumers.append(callback)
+        self.consumers = consumers
+        self.subscribe(key, callback)
+
+    def xsubscribe(self, key, callback):
+        """ exclusive subscribe """
+        key = "__{key}::{time}__".format(key=key)
+        assert self[key] not in self.public_keys()
+        assert self[key] not in self.keys()
+        self[key] =  tuple(callback,)
+        return key
+
+    xs = xsubscribe
 
 class SelfHostingTupleBus(TupleBus):
     """ This class fools cyrusbus into using instances directly in the

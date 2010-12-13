@@ -16,20 +16,21 @@ def atomic(statements):
               models can be made tractable by labeling all manipulations of
               local variables with atomic sequences.
         """
-        pass
+        return statements
 
 def run(self):
-        """ Such a process is instantiated by a run-operation:
+    """ Such a process is instantiated by a run-operation:
 
-               run pname(Transfer, Device[0], 0)
+          + run pname(Transfer, Device[0], 0)
 
-            that first assigns the actual parameters to the formal
-            ones and then executes the statements in the body. Each
-            process instance has a unique, positive instantiation
-            number, which is yielded by the run-operator (and by pid);
-            see specvar. A process-instance remains active until the
-            process' body terminates (if ever).
-        """
+        that first assigns the actual parameters to the formal
+        ones and then executes the statements in the body. Each
+        process instance has a unique, positive instantiation
+        number, which is yielded by the run-operator (and by pid);
+        see specvar. A process-instance remains active until the
+        process' body terminates (if ever).
+    """
+    pass
 
 def active(self):
         """

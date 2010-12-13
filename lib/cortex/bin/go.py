@@ -174,6 +174,10 @@ def entry():
                     report('  Original exception will be availible as "__exception__", details follow:',exception=scope.get('__exeption__'))
                     embed_shell(**scope)
                 else:
+                    #import traceback
+                    #import sys
+                    #print sys.last_traceback()
+                    #traceback.print_last() #
                     raise Exception, scope['__exception__']
 
     elif options.interactive: embed_shell()

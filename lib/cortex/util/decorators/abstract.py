@@ -28,8 +28,8 @@ class AbstractDecorator(object):
 
 
         setattr(fxn, '__decorated__', True)
-        new_fxn = self.decorate(fxn)
 
+        new_fxn = self.decorate(fxn)
         # not every decorator mutates,
         #  some only annotate, so don't
         #   force subclasses to return a fxn
