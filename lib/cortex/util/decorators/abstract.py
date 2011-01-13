@@ -123,7 +123,7 @@ class SimpleAnnotator(AbstractDecorator):
         NOTE: by default only supports assignment with StringTypes,
               you can override that by subclasses and defining "allowed_types"
     """
-    def __init__(self, value_to_set):
+    def _init_with_args(self, value_to_set):
         allowed_types = getattr(self, 'allowed_types', types.StringTypes)
         if not isinstance(value_to_set, allowed_types):
             err = 'To use "{kls}", you should call it with a single string that youd like to store.'

@@ -9,7 +9,7 @@ from cortex.util.decorators.abstract import AbstractDecorator
 
 class recurse_with_reactor(AbstractDecorator):
 
-    def __init__(self, timedelta):
+    def _init_with_args(self, timedelta):
         self.timedelta=timedelta
 
     def decorate(self, fxn):
