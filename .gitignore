@@ -5,3 +5,4 @@ lib/cortex/bin/tmp/*
 build/*
 dist/*
 .cache/*
+*#
