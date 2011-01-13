@@ -1,5 +1,5 @@
 """ cortex.tests.hds
-       tests cortex.core.hds, your friendly neighborhood
+       tests cortex.contrib.hds, your friendly neighborhood
        hierarchical data structure pattern.
 
        TODO: NIY

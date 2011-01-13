@@ -1,5 +1,6 @@
 """ cortex.core.data
 """
+from cortex.core.symbols import event
 
 # These functions are so simple they're practically data..
 from cortex.core.functional import NOOP, IDENTITY
@@ -7,11 +8,11 @@ from cortex.core.functional import NOOP, IDENTITY
 # pseudo-types for message-passing.. mainly used in conjunction with postoffice
 ################################################################################
 NOT_FOUND_T = "randomjunk NOT_FOUND_T randomjunk"
-NOTICE_T = "NOTICE_T"
-EVENT_T  = "EVENT_T"
-PEER_T   = "PEER_T"
-WARN_T   = "WARN_T"
-ERROR_T  = "ERROR_T"
+NOTICE_T = event("notice") ##"NOTICE_T"
+EVENT_T  = event("event") #"EVENT_T"
+PEER_T   = event("peer_discovery") #"PEER_T"
+WARN_T   = event("warning") #"WARN_T"
+ERROR_T  = event("error") #"ERROR_T"
 
 # reflections on cortex codebase
 ################################################################################

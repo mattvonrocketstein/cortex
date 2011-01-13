@@ -8,18 +8,19 @@
 
 
 from cortex.core import api
-#from cortex.core.agent import Agent
 from cortex.agents.turntaker import TurnTaker, TurnTakingGroup
 
 from cortex.core.bus import handles_and_consumes_event
-from cortex.core.bus import handles_event, event
+from cortex.core.bus import handles_event, event, emits
 
 
+CARDS_CUT = event("CARDS_CUT")
 CUT_CARDS = event("CUT_CARDS")
 CARD_GAME = TurnTakingGroup('CardPlayers')
 
 class Player(TurnTaker):
 
+    @emits(CARDS_CUT)
     @handles_and_consumes_event(CUT_CARDS)
     def cut_cards_request(self, cards):
         """ handles the cut-cards request from dealer

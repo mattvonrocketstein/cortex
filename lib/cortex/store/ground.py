@@ -11,7 +11,7 @@ from lindypy.TupleSpace import Client, tuplespace
 
 from cortex.core.util import report
 from cortex.core.data import NOT_FOUND_T
-from cortex.core.hds import HierarchicalData
+from cortex.contrib.hds import HierarchicalData
 from cortex.core.atoms import PersistenceMixin
 from cortex.store.tuplespace import CortexTSpace
 from cortex.store.mixins import TransformerMixin

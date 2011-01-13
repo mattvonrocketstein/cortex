@@ -1,6 +1,6 @@
 """ cortex.services.network_mapper
 
-      a wrapper around nmap for simplistic peer-discovery
+    a wrapper around nmap for simplistic peer-discovery
 
 """
 
@@ -13,6 +13,7 @@ from cortex.core.peer import Peer
 from cortex.core.data import PEER_T
 from cortex.core.data import CORTEX_PORT_RANGE
 from cortex.util.decorators import constraint, handles_event
+from cortex.util.decorators import recurse_with_reactor
 
 NOT_FOUND_T = 'NOTFound'
 port_range  = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
@@ -56,20 +57,22 @@ class AbstractMapper(Service):
                 port_aspect = { 'port' : NOT_FOUND_T }
                 peer_metadata.update(port_aspect)
                 (self.universe|'postoffice').publish_json(PEER_T, peer_metadata)
-            self.universe.reactor.callLater(10, lambda: self.iterate(host))
+
 
     class Meta:
         abstract = True # abstract services will never be launched..
 
 class Mapper(AbstractMapper):
     """ NMap Service:
-          start: brief description of service start-up here
-          stop:  brief description service shutdown here
+        start: brief description of service start-up here
+        stop:  brief description service shutdown here
     """
-
+    @recurse_with_reactor(5)
     def iterate(self, host=None):
         """ """
         AbstractMapper.scan(self, host)
+        print 'iterating'
+        #self.universe.reactor.callLater(3, lambda: self.iterate(host))
 
     @handles_event(PEER_T)
     def discovery(self, postoffice, pickled_data, **kargs):
@@ -83,7 +86,7 @@ class Mapper(AbstractMapper):
     @constraint(boot_first='api')
     def start(self):
         """ i'd like to use the asynchronous portscanner but this
-              scan_data = nmap.PortScannerAsync().scan('127.0.0.1','10-100','--system-dns',callback=foo)
+            scan_data = nmap.PortScannerAsync().scan('127.0.0.1','10-100','--system-dns',callback=foo)
 
             fails with:
               PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.

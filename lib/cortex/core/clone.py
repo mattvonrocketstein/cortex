@@ -16,7 +16,7 @@
 """
 
 from cortex.core.manager import Manager
-from cortex.core.hds import HDS
+from cortex.contrib.hds import HDS
 
 class Clone(HDS):
     """ """

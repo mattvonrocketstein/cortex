@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" cortex.core.hds: hierarchical data structure pattern
+""" cortex.contrib.hds: hierarchical data structure pattern
 
       adapted from:  Recipe 286150: Hierarchical data objects (Python) by Uwe Schmitt
                      ActiveState Code (http://code.activestate.com/recipes/286150/)

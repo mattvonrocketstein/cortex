@@ -39,7 +39,7 @@ class AutodiscoveryClient(Service):
         peerMan = self.universe.peers
 
         if name not in peerMan.registry:
-            # TODO: use core.hds
+            # TODO: use contrib.hds
             peerMan.registry[str(name)]={}
             report('added registry entry for name',str(name))
 

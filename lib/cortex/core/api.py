@@ -11,6 +11,8 @@ from cortex.core.util import report
 from cortex.core.parsing import Nodeconf
 from cortex.core.instructions import InstructionSet
 from cortex.core.universe import Universe as universe
+from cortex.core.util import report
+from cortex.contrib.hds import HDS
 
 def label(api):
     return universe.label

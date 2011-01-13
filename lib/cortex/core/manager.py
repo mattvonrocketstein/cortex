@@ -6,6 +6,7 @@
 import datetime
 
 from cortex.core.util import report
+
 from cortex.core.hds import HierarchicalData
 from cortex.core.hds import HDS
 class Registerer:
@@ -38,6 +39,7 @@ class Registerer:
         new_asset = self[name]
         new_asset = self.post_registration(new_asset)
         return new_asset
+
 class Loader:
     def post_load(self):
         """ default is a noop """

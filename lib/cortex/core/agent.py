@@ -8,7 +8,7 @@ import os
 from cortex.core.common import AgentError
 from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
-from cortex.core.hds import HierarchicalData
+from cortex.contrib.hds import HierarchicalData
 
 from cortex.core.data import DEFAULT_HOST
 from cortex.core.common import AgentPrerequisiteNotMet
