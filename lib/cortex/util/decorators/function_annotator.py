@@ -4,34 +4,54 @@
 from cortex.util.decorators.abstract import AbstractDecorator
 
 class FunctionAnnotator(AbstractDecorator):
-    """ loads function up with key-values """
-    def __init__(self, prefix, **function_metadata):
+    """ loads function up with key-values
+        example usage:
+           blue = FunctionAnnotator("label",color="Blue")
+           @blue
+           def fxn(arg1):
+               pass
+           fxn._label_blue==True
+    """
+
+    def _init_with_args(self, prefix):
+        """ expecting: *args, from AbstractDecorator.__init__ """
         self._prefix           = prefix
+
+    def _init_with_kargs(self, **function_metadata):
+        """ expecting: **kargs, from AbstractDecorator.__init__ """
         self.function_metadata = function_metadata
 
     @property
     def prefix(self):
+        """ format prefix """
         return '_' + self._prefix + '_'
 
     def remove_annotations(self, fxn):
         """ remove what we've done during decoration """
-        [ delattr(fxn, self.prefix, val) for val in self.function_metadata ]
-        delatr(fxn, 'summary_annotations')
-        delatr(fxn, 'remove_annotations')
 
     def inversion(self, fxn):
         """ """
         self.remove_annotations(fxn)
         AbstractDecorator.inversion(self,fxn)
 
-    def summary_annotations(self, fxn):
-        return [ self.prefix + val for val in self.function_metadata ]
+    def annotations(self, fxn):
+        """ fxn as annotation dictionary:
+              return all annotations on a given fxn """
+        names = dir(fxn)
+        test  = lambda x: x.startswith(self.prefix)
+        out   = set([ tuple([x.replace(self.prefix,''), getattr(fxn, x)]) for x in names if test(x)])
+        return out
 
     def decorate(self, fxn):
+        """ """
+        if not hasattr(fxn,'func_annotations'):
+            fxn.func_annotations = fxn.func_annotations=set([])
         for label, val in self.function_metadata.items():
-            setattr(fxn, '_' + self.prefix + '_'+label, val)
+            setattr(fxn, self.prefix + label, val)
+            fxn.func_annotations = fxn.func_annotations.union([tuple([label,val])])
 
+            #fxn.func_annotations = property(lambda: self.annotations(fxn))
         # store an inversion and summary function..
         #  the <inversion> function will be stored by superclass
         fxn.remove_annotations  = lambda: self.remove_annotations(fxn)
-        fxn.summary_annotations = lambda: self.summary_annotations(fxn)
+        #fxn.summary_annotations = lambda: self.summary_annotations(fxn)

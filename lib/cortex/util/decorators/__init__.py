@@ -8,6 +8,7 @@ from cortex.util.decorators.function_annotator import FunctionAnnotator
 from cortex.util.decorators.abstract import AbstractDecorator
 
 class recurse_with_reactor(AbstractDecorator):
+
     def __init__(self, timedelta):
         self.timedelta=timedelta
 
@@ -41,7 +42,7 @@ class emits(FunctionAnnotator):
         self.signal = event(signal)
         FunctionAnnotator.__init__(self, 'emits', signal)
 
-    def decorate(self,fxn):
+    def decorate(self, fxn):
         # returns None
         FunctionAnnotator.decorate(self, fxn)
         def new_fxn(himself, *args, **kargs):
@@ -60,16 +61,27 @@ class emits(FunctionAnnotator):
 class constraint(FunctionAnnotator):
     """ a special case of function annotation, usage example follows.
 
-            >>> @constraint(kindness="dont hit people in the face")
+            >>> @constraint(labor="value")
             >>> def myfunction(stuff, other): pass
-            >>> myfunction._constraint_kindness == "dont hit people in the face"
+            >>> myfunction._constraint_labor == "value"
             True
             >>>
+
+        additionally, this class will store a
     """
     table = []
 
     def __init__(self, **labels_and_constraints):
-        FunctionAnnotator.__init__(self, 'constraint', **labels_and_constraints)
+        FunctionAnnotator.__init__(self, 'constraint',
+                                   **labels_and_constraints)
+    def constraints_on(self, fxn):
+        pass
+
+    def keys(self):
+        return self.table
+
+    def values(self):
+        return [getattr(x,'_constraint_'+x) for x in self.table]
 
     def post_decoration_hook(self, fxn):
         """ """

@@ -14,34 +14,52 @@ from cortex.util.decorators.data import AlreadyDecorated, DecoratorSetupError
 
 class AbstractDecorator(object):
     """ Patterns in function decoration """
+
     def decorate(self, fxn):
         return fxn
 
+    def _set_decorated_flag(self,fxn):
+        """ mark function as decorated """
+        try:
+            setattr(fxn, '__decorated__', True)
+        except AttributeError:
+            # Called with a string?
+            err  = " Cannot set __decorated__ label for object of type '{typ}'"
+            err += ".\n\t\t(Did you call a decorator on something other than a function.. ?)"
+            err  = err.format(typ=type(fxn).__name__)
+            raise ValueError, err
+        return fxn
+
     def __call__(self, fxn):
-        """ does the actual decoration and adds hooks,
-            do not override unless you have a good reason.
+        """ connects or invokes various hooks for pre/post decoration,
+             manages  various book-keeping.
+
+            NOTE: do not override unless you have a good reason.
+                  the actual decoration occurs in the call to
+                  self.decorate
         """
-        # pre-call may decide to abort, check that out
+
+        # pre-call may signal to abort further work,
+        #  so first, check that out:
         command = self.pre_decoration_hook(fxn)
         if command == DECORATION_ABORT_COMMAND:
             return fxn
 
-
-        setattr(fxn, '__decorated__', True)
+        # Mark it,
+        #  Decorate it
+        #   Record the event
+        self._set_decorated_flag(fxn)
         new_fxn = self.decorate(fxn)
+        self.memory = self.memory.union([fxn])
 
         # not every decorator mutates,
         #  some only annotate, so don't
         #   force subclasses to return a fxn
-        if new_fxn is None:
-            new_fxn = fxn
+        new_fxn = new_fxn or fxn
 
         # try to define <inversion> and store it in the function,
         #  so that the function is capable of undecorating itself
-        inversion = lambda: self.inversion(fxn)
-        setattr(fxn, '__invert_decorator__', inversion)
-        setattr(fxn, '__undecorate__', inversion)
-
+        setattr(fxn, 'xfunc_undecorate', lambda: self.inversion(fxn))
         self.post_decoration_hook(fxn)
         return fxn
 
@@ -71,18 +89,21 @@ class AbstractDecorator(object):
         pass
 
     def __init__(self, *args, **kargs):
-        """ """
-        self.handle_args(args)
-        self.handle_kargs(kargs)
+        """
+            NOTE:
+        """
+        # memory: a record of the work this factory has done
+        self.memory = set([])
+        self._init_with_args(*args)
+        self._init_with_kargs(**kargs)
 
-    def handle_args(self, args):
+    def _init_with_args(self, *args):
         """ default is a noop"""
         pass
 
-    def handle_kargs(self, kargs):
+    def _init_with_kargs(self, **kargs):
         """ default is a noop"""
         pass
-
 
 class MutationDecorator(AbstractDecorator):
     """ TODO: NIY """
