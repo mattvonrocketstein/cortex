@@ -1,6 +1,7 @@
-""" cortex.core.restrictions.__init__
+""" cortex.logic.restrictions
 """
 
 def __domain_restricted__(func):
-    """ placeholder for restriction enforcement/verification """
+    """ decorator for restriction
+        enforcement/verification  """
     return func
