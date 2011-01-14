@@ -9,6 +9,9 @@
 
 import pickle
 
+# Reserved names for dictionary compatibility
+FORBIDDEN = 'as_dictionary keys values items'.split()
+
 class HierarchicalData(object):
 
     """
@@ -21,10 +24,18 @@ class HierarchicalData(object):
         # self._d stores subtrees
         self._d = {}
 
+    def as_dictionary(self):
+        return dict( [ [x,self._getLeaves()[x]] for x in self._getLeaves().keys() \
+                       if x not in FORBIDDEN])
+    def keys(self): return self.as_dictionary().keys()
+    def values(self): return self.as_dictionary().values()
+    def items(self): return self.as_dictionary().items()
+
     def __getattr__(self, name):
         # only attributes not starting with "_" are organinzed
         # in the tree
-        if not name.startswith("_"):
+
+        if (name not in FORBIDDEN) and (not name.startswith("_")):
             return self._d.setdefault(name, HierarchicalData())
         raise AttributeError("object %r has no attribute %s" % (self, name))
 

@@ -7,6 +7,7 @@ import datetime
 
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
+from cortex.core.hds import HDS
 
 class Manager(object):
     """ Managers are inspired by django's managers.  Think of
