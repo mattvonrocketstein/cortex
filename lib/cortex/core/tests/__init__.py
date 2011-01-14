@@ -7,6 +7,7 @@ from cortex.contrib.aima.logic import variables, fol_bc_ask,pretty
 
 """
 import unittest
+
 class GroundTest(unittest.TestCase):
      #test the main cortex data-store
 

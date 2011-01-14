@@ -8,8 +8,95 @@ import datetime
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
 from cortex.core.hds import HDS
+class Registerer:
+    def post_registration(self, asset):
+        """ post_registration hook:
 
-class Manager(object):
+              This function can modify the value, but must always
+              return the new asset that is to be managed.  Default
+              is a no-op.
+        """
+        return asset
+
+    def pre_registration(self, name, **item_metadata):
+        """ pre_registration hook:
+
+              This function can modify the name, the item's metadata,
+              or both, but it must always return (name, item_metadata).
+              Default is a no-op.
+        """
+        return name, item_metadata
+    def register(self, name, **item_metadata):
+        """ register object <name> with namespace <item_metadata>
+        """
+        name, item_metadata = self.pre_registration(name, **item_metadata)
+        name = str(name)
+        self.registry[name] = getattr(self, 'asset_class', DEFAULT_ASSET_CLASS)()
+        for key, value in item_metadata.items():
+            setattr( self.registry[name], key, value)
+        self._stamp(name)
+        new_asset = self[name]
+        new_asset = self.post_registration(new_asset)
+        return new_asset
+class Loader:
+    def post_load(self):
+        """ default is a noop """
+        return
+
+    def load_items(self, items):
+        """ load_items """
+        for name in items:
+            search = filter(lambda x: name == x[0], self._pending)
+            if search:
+                junk_name, kls, kls_kargs = search[0]
+                kls_kargs = kls_kargs or {}
+                self.load_item(name=name, kls=kls, kls_kargs=kls_kargs,
+                               index=items.index(name))
+
+    def load_item(self, name=None, kls=None, kls_kargs=None, index=None):
+        """ will be called by Manager.load
+        """
+        obj = self.load_obj(kls=kls, **kls_kargs)
+
+        self.register(name,
+                      obj        = obj,
+                      index      = index,
+                      kargs      = kls_kargs)
+
+    def pre_load_obj(self, kls=None, **kls_kargs):
+        """ pre_load_obj hook:
+        """
+        return kls, kls_kargs
+
+    def load_obj(self, kls=None, **kls_kargs):
+        """ load_obj """
+        kls, kls_kargs = self.pre_load_obj(kls=kls, **kls_kargs)
+        obj = kls(**kls_kargs)
+        obj = self.post_load_obj(obj)
+        return obj
+
+    def post_load_obj(self, obj):
+        """ post_load_obj hook:
+              .. used for agent.play()
+        """
+        return obj
+
+    def load(self):
+        """ Convention:
+              if <manage> is used, this should be called after
+              all calls to it are finished
+
+              TODO: refactor as something like a guarded-do:
+                 The repetition executes the guarded commands repeatedly until
+                 none of the guards are true. Usually there is only one guard.
+        """
+        boot_order = self.resolve_boot_order()
+        self.boot_order = boot_order
+        report('determined boot order:', boot_order)
+        self.load_items(boot_order)
+        self.post_load()
+
+class Manager(object,Registerer, Loader):
     """ Managers are inspired by django's managers.  Think of
         this class as a collection of patterns in tracking,
         reporting, and order statistics.  Example usage follows.
@@ -52,62 +139,7 @@ class Manager(object):
         """
         return [pending[0] for pending in self._pending ]
 
-    def load(self):
-        """ Convention:
-              if <manage> is used, this should be called after
-              all calls to it are finished
 
-              TODO: refactor as something like a guarded-do:
-                 The repetition executes the guarded commands repeatedly until
-                 none of the guards are true. Usually there is only one guard.
-        """
-        boot_order = self.resolve_boot_order()
-        self.boot_order = boot_order
-        report('determined boot order:', boot_order)
-        self.load_items(boot_order)
-        self.post_load()
-
-    def post_load(self):
-        """ default is a noop """
-        return
-
-    def load_items(self, items):
-        """ load_items """
-        for name in items:
-            search = filter(lambda x: name == x[0], self._pending)
-            if search:
-                junk_name, kls, kls_kargs = search[0]
-                kls_kargs = kls_kargs or {}
-                self.load_item(name=name, kls=kls, kls_kargs=kls_kargs,
-                               index=items.index(name))
-
-    def load_item(self, name=None, kls=None, kls_kargs=None, index=None):
-        """ will be called by Manager.load
-        """
-        obj = self.load_obj(kls=kls, **kls_kargs)
-
-        self.register(name,
-                      obj        = obj,
-                      index      = index,
-                      kargs      = kls_kargs)
-
-    def pre_load_obj(self, kls=None, **kls_kargs):
-        """ pre_load_obj hook:
-        """
-        return kls, kls_kargs
-
-    def load_obj(self, kls=None, **kls_kargs):
-        """ load_obj """
-        kls, kls_kargs = self.pre_load_obj(kls=kls, **kls_kargs)
-        obj = kls(**kls_kargs)
-        obj = self.post_load_obj(obj)
-        return obj
-
-    def post_load_obj(self, obj):
-        """ post_load_obj hook:
-              .. used for agent.play()
-        """
-        return obj
 
     def keys(self):
         """ dictionary compatability """
@@ -179,36 +211,7 @@ class Manager(object):
         """
         return
 
-    def post_registration(self, asset):
-        """ post_registration hook:
 
-              This function can modify the value, but must always
-              return the new asset that is to be managed.  Default
-              is a no-op.
-        """
-        return asset
-
-    def pre_registration(self, name, **item_metadata):
-        """ pre_registration hook:
-
-              This function can modify the name, the item's metadata,
-              or both, but it must always return (name, item_metadata).
-              Default is a no-op.
-        """
-        return name, item_metadata
-
-    def register(self, name, **item_metadata):
-        """ register object <name> with namespace <item_metadata>
-        """
-        name, item_metadata = self.pre_registration(name, **item_metadata)
-        name = str(name)
-        self.registry[name] = getattr(self, 'asset_class', DEFAULT_ASSET_CLASS)()
-        for key, value in item_metadata.items():
-            setattr( self.registry[name], key, value)
-        self._stamp(name)
-        new_asset = self[name]
-        new_asset = self.post_registration(new_asset)
-        return new_asset
 
     def __str__(self):
         """ """
