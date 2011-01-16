@@ -12,7 +12,7 @@ from cortex.core.util import report
 from cortex.core.data import EVENT_T, ERROR_T
 from cortex.store.keyspace import Keyspace
 from cortex.services import Service
-from cortex.core.bus import SelfHostingTupleBus
+from cortex.net.bus import SelfHostingTupleBus
 from cortex.util.decorators import constraint
 
 class PostOffice(Service, Keyspace, SelfHostingTupleBus):
