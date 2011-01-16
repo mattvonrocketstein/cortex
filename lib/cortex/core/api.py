@@ -6,7 +6,7 @@
 import os, sys
 import subprocess
 
-from cortex.core.hds import HDS
+from cortex.contrib.hds import HDS
 from cortex.core.util import report
 from cortex.core.parsing import Nodeconf
 from cortex.core.instructions import InstructionSet
