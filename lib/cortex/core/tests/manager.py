@@ -7,7 +7,7 @@ import unittest
 from cortex.core.manager import Manager
 
 #from cortex.contrib.hds import HDS
-from cortex.core.hds import HDS
+from cortex.contrib.hds import HDS
 
 class ManagerTest(unittest.TestCase,):
     """ test the abstract manager """
@@ -46,8 +46,9 @@ class ManagerTest(unittest.TestCase,):
 
     ## Boot order stuff
     def test_bo(self):
+        # with no 
         self.man.register('P', one='1')
         self.man.register('Q', two='2')
-        print self.man.resolve_boot_order()
+        self.man.resolve_boot_order()
 if __name__ =='__main__':
     unittest.main()
