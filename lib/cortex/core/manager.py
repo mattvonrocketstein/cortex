@@ -1,15 +1,38 @@
 """ cortex.core.manager
 
       Manager pattern stuff
+
+      NOTE: subclasses are discouraged from using args..
+            why not be a good chap and use kargs instead?
 """
 
 import datetime
 
 from cortex.core.util import report
+from cortex.contrib.hds import HierarchicalData
+from cortex.contrib.hds import HDS
 
-from cortex.core.hds import HierarchicalData
-from cortex.core.hds import HDS
+from cortex.util.decorators import call_first_if_exists
+from cortex.util.decorators import call_after_if_exists
+from cortex.util.decorators.wrappers import chain_forward_if_exists
+
 class Registerer:
+    """ abstract registration pattern mechanism
+
+
+
+    """
+    def _init_registerer(self, *args, **kargs):
+        """ """
+        self.registry   = {}
+
+    def _stamp(self, name):
+        """ Timestamps the asset with name <name>, safe
+            to call multiple times, but dishonesty is
+            discouraged.
+        """
+        self.registry[name].stamp = datetime.datetime.now()
+
     def post_registration(self, asset):
         """ post_registration hook:
 
@@ -27,6 +50,7 @@ class Registerer:
               Default is a no-op.
         """
         return name, item_metadata
+
     def register(self, name, **item_metadata):
         """ register object <name> with namespace <item_metadata>
         """
@@ -41,9 +65,16 @@ class Registerer:
         return new_asset
 
 class Loader:
-    def post_load(self):
-        """ default is a noop """
-        return
+    def _init_loader(self, *args, **kargs):
+        """ """
+        self._pending   = []
+
+    def resolve_boot_order(self, **kargs):
+        """ by default, simply returns the names in
+            the order they were registered
+        """
+        return [pending[0] for pending in self._pending ]
+
 
     def load_items(self, items):
         """ load_items """
@@ -65,24 +96,32 @@ class Loader:
                       index      = index,
                       kargs      = kls_kargs)
 
+    ## Begin load-obj suite
     def pre_load_obj(self, kls=None, **kls_kargs):
         """ pre_load_obj hook:
         """
         return kls, kls_kargs
 
+    @chain_forward_if_exists('post_load_obj')
     def load_obj(self, kls=None, **kls_kargs):
         """ load_obj """
         kls, kls_kargs = self.pre_load_obj(kls=kls, **kls_kargs)
         obj = kls(**kls_kargs)
-        obj = self.post_load_obj(obj)
+        #obj = self.post_load_obj(obj)
         return obj
+    #def post_load_obj(self, obj):
+    #    """ post_load_obj hook:
+    #          .. used for agent.play()
+    #    """
+    #    return obj
 
-    def post_load_obj(self, obj):
-        """ post_load_obj hook:
-              .. used for agent.play()
-        """
-        return obj
+    ## Begin bulk-load suite
 
+    #def pre_load(self):
+    #    """ default is a noop """
+    #    pass
+    @call_first_if_exists('pre_load')
+    @call_after_if_exists('post_load')
     def load(self):
         """ Convention:
               if <manage> is used, this should be called after
@@ -97,6 +136,10 @@ class Loader:
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
         self.post_load()
+    #def post_load(self):
+    #    """ default is a noop """
+    #    return
+
 
 class Manager(object,Registerer, Loader):
     """ Managers are inspired by django's managers.  Think of
@@ -124,97 +167,17 @@ class Manager(object,Registerer, Loader):
     """
     class NotFound(Exception): pass
 
-    def __init__(self, *args, **kargs):
+    def _init_manager(self, *args, **kargs):
+        """ initialize generic storage for the
+            actual manager itself.
         """
-             NOTE: subclasses are discouraged from using args..
-                   why not be a good chap and use kargs instead?
-        """
-        self._pending   = []
-        self.registry   = {}
-
-        # generic storage for the actual manager itself.
         self.generic_store = HierarchicalData()
 
-    def resolve_boot_order(self, **kargs):
-        """ by default, simply returns the names in
-            the order they were registered
-        """
-        return [pending[0] for pending in self._pending ]
-
-
-
-    def keys(self):
-        """ dictionary compatability """
-        return [x for x in self]
-
-    def items(self):
-        """ dictionary compatability """
-        return self.registry.items()
-
-    def __len__(self):
-        """ list/dictionary compatibility """
-        return len(self.registry)
-
-    def __getattr__(self, name):
-        """ by default attributes are lazy
-        """
-        # Enforces privacy and special names
-        special_names = ['asset_class']
-        if name.startswith('_') or name in special_names:
-            raise AttributeError, name
-
-        try:
-            return object.__getattribute__(self, '__getitem__')(name)
-        except self.NotFound:
-            return getattr(object.__getattribute__(self, 'generic_store'), name)
-
-    @property
-    def last(self):
-        """ All incoming assets should have been stamped;
-            this function returns the oldest asset. """
-        return self[self.as_list[-1]]
-
-    @property
-    def first(self):
-        """ All incoming assets should have been stamped;
-            this function returns the youngest asset.
-        """
-        return self[self.as_list[0]]
-
-    def _stamp(self, name):
-        """ Timestamps the asset with name <name>, safe
-            to call multiple times, but dishonesty is
-            discouraged.
-        """
-        self.registry[name].stamp = datetime.datetime.now()
-
-    def pre_manage(self, name=None, kls=object, **kls_kargs):
-        """ pre_manage hook:
-              This function can modify the values, but must always
-              return the ....  Default is a no-op.
-        """
-        return name, kls, kls_kargs
-
-    def manage(self, name=None, kls=object, kls_kargs={}):
-        """ This function queues up a pile of future assets and the arguments
-            to initialize them with.  This pile will be dealt with when <load>
-            is called.
-        """
-        name, kls, kls_kargs = self.pre_manage(name=name, kls=kls, **kls_kargs)
-
-        self._pending.append([name, kls, kls_kargs])
-        return name
-
-    def post_manage(self):
-        """ pre_manage hook:
-
-              This function can modify the values, but must always
-              return the ....  Default is a no-op.
-        """
-        return
-
-
-
+    def __init__(self, *args, **kargs):
+        """ """
+        self._init_registerer()
+        self._init_loader()
+        self._init_manager()
     def __str__(self):
         """ """
         return str( self.as_list )
@@ -261,5 +224,72 @@ class Manager(object,Registerer, Loader):
     def __iter__(self):
         """ list/dictionary compatibility: a dumb proxy """
         return iter(self.registry)
+
+    def keys(self):
+        """ dictionary compatability """
+        return [x for x in self]
+
+    def items(self):
+        """ dictionary compatability """
+        return self.registry.items()
+
+    def __len__(self):
+        """ list/dictionary compatibility """
+        return len(self.registry)
+
+    def __getattr__(self, name):
+        """ by default attributes are lazy
+        """
+        # Enforces privacy and special names
+        special_names = ['asset_class']
+        if name.startswith('_') or name in special_names:
+            raise AttributeError, name
+
+        try:
+            return object.__getattribute__(self, '__getitem__')(name)
+        except self.NotFound:
+            return getattr(object.__getattribute__(self, 'generic_store'), name)
+
+    @property
+    def last(self):
+        """ All incoming assets should have been stamped;
+            this function returns the oldest asset. """
+        return self[self.as_list[-1]]
+
+    @property
+    def first(self):
+        """ All incoming assets should have been stamped;
+            this function returns the youngest asset.
+        """
+        return self[self.as_list[0]]
+
+    ## Begin manage-suite
+    def pre_manage(self, name=None, kls=object, **kls_kargs):
+        """ pre_manage hook:
+              This function can modify the values, but must always
+              return the ....  Default is a no-op.
+        """
+        return name, kls, kls_kargs
+
+    def manage(self, name=None, kls=object, kls_kargs={}):
+        """ This function queues up a pile of future assets and the arguments
+            to initialize them with.  This pile will be dealt with when <load>
+            is called.
+        """
+        name, kls, kls_kargs = self.pre_manage(name=name, kls=kls, **kls_kargs)
+
+        self._pending.append([name, kls, kls_kargs])
+        return name
+
+    def post_manage(self):
+        """ pre_manage hook:
+
+              This function can modify the values, but must always
+              return the ....  Default is a no-op.
+        """
+        return
+
+
+
 
 DEFAULT_ASSET_CLASS = HierarchicalData
