@@ -30,7 +30,7 @@
  + logilab -- switch to this for CSP instead the AIMA code?
  + pyke    -- python meets prolog, great for dealing with the "knapsack problem"
  + python-snakes -- petri nets using arbitrary python objects as tokens
- + baker 1.1 -- easier command line scripts (perfect for cli version ofsudo  cortex.core.api)
+ + baker 1.1 -- easier command line scripts (perfect for cli version of cortex.core.api)
  + xanalogica.tumblers -- transfinite addressing scheme (evaluating for usage as cortex URI backend)
    see also: http://pypi.python.org/pypi/DescribedRoutes/0.2.2
  + cogen -- coroutine flavored concurrency to complement threads/multiprocessing/reactor models
