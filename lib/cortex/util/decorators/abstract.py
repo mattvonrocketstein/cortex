@@ -61,7 +61,7 @@ class AbstractDecorator(object):
         #  so that the function is capable of undecorating itself
         setattr(fxn, 'xfunc_undecorate', lambda: self.inversion(fxn))
         self.post_decoration_hook(fxn)
-        return fxn
+        return new_fxn
 
     def inversion(self, fxn):
         """ undo this decoration.
@@ -105,19 +105,6 @@ class AbstractDecorator(object):
         """ default is a noop"""
         pass
 
-class MutationDecorator(AbstractDecorator):
-    """ TODO: NIY """
-
-    def decorate(self, fxn):
-        """ """
-        decoration = getattr(self,'decoration',None)
-        assert decoration, "MutatingDecorator must define decoration"
-        self.fxn = fxn
-
-        # patch it to look more like the original
-        #self.decoration.func_name = fxn.func_name
-        #self.decoration.__doc__  = fxn.__doc__
-
 class SimpleAnnotator(AbstractDecorator):
     """ see also: tokenfactory
         NOTE: by default only supports assignment with StringTypes,
@@ -146,3 +133,13 @@ class StrictSimpleAnnotator(SimpleAnnotator):
         if current_value is not None:
             raise AlreadyDecorated, err.format(**format)
         return fxn
+
+class SingleArgumentDecorator(AbstractDecorator):
+    """ pattern for decorator that takes one argument,
+        saves that argument for later use in computing the
+        new function.  for examples, see:
+
+           call_first_if_exists, call_after_if_exists
+    """
+    def _init_with_args(self, name, *args):
+        self.main_argument = name
