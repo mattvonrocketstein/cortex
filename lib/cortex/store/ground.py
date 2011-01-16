@@ -18,14 +18,14 @@ from cortex.store.mixins import TransformerMixin
 
 class Memory(CortexTSpace, PersistenceMixin, TransformerMixin):
     """ The memory object can hopefully be used just like the data-store you need,
-        whatever it is. It morphs into a linda-style tuplespace / "shared blackboard",
+        whatever that is. It morphs into a linda-style tuplespace / "shared blackboard",
         a distributed hash table, or publish/subscribe style event bus.  It is
         embeddable insofar as it supports explicitly named subspaces, allowing
         everyone to see only the section they are interested in, or selectively
         sync/update that subspace.
     """
 
-    universe = None
+    universe      = None
     __init_tspace = TSpace.__init__
 
     @property
