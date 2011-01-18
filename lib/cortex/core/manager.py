@@ -16,6 +16,11 @@ from cortex.util.decorators import call_first_if_exists
 from cortex.util.decorators import call_after_if_exists
 from cortex.util.decorators.wrappers import chain_forward_if_exists
 
+from cortex.contrib.hds import HierarchicalData
+#from cortex.core.hds import HierarchicalData
+#from cortex.core.hds import HDS
+
+
 class Registerer:
     """ abstract registration pattern mechanism
 
@@ -135,7 +140,7 @@ class Loader:
         self.boot_order = boot_order
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
-        self.post_load()
+        #self.post_load()
     #def post_load(self):
     #    """ default is a noop """
     #    return
@@ -171,7 +176,8 @@ class Manager(object,Registerer, Loader):
         """ initialize generic storage for the
             actual manager itself.
         """
-        self.generic_store = HierarchicalData()
+        #self.generic_store = HierarchicalData()
+        pass
 
     def __init__(self, *args, **kargs):
         """ """
@@ -237,18 +243,18 @@ class Manager(object,Registerer, Loader):
         """ list/dictionary compatibility """
         return len(self.registry)
 
-    def __getattr__(self, name):
-        """ by default attributes are lazy
-        """
-        # Enforces privacy and special names
-        special_names = ['asset_class']
-        if name.startswith('_') or name in special_names:
-            raise AttributeError, name
+    #def __getattr__(self, name):
+    #    """ by default attributes are lazy
+    #    """
+    #    # Enforces privacy and special names
+    #    special_names = ['asset_class']
+    #    if name.startswith('_') or name in special_names:
+    #        raise AttributeError, name
 
-        try:
-            return object.__getattribute__(self, '__getitem__')(name)
-        except self.NotFound:
-            return getattr(object.__getattribute__(self, 'generic_store'), name)
+    #    try:
+    #        return object.__getattribute__(self, '__getitem__')(name)
+    #    except self.NotFound:
+    #        return getattr(object.__getattribute__(self, 'generic_store'), name)
 
     @property
     def last(self):

@@ -44,14 +44,17 @@ class FunctionAnnotator(AbstractDecorator):
 
     def decorate(self, fxn):
         """ """
+
         if not hasattr(fxn,'func_annotations'):
             fxn.func_annotations = fxn.func_annotations=set([])
-        for label, val in self.function_metadata.items():
+        md = self.function_metadata.items()
+        #print 'labeling', fxn,'with', md
+        for label, val in md:
             setattr(fxn, self.prefix + label, val)
             fxn.func_annotations = fxn.func_annotations.union([tuple([label,val])])
 
             #fxn.func_annotations = property(lambda: self.annotations(fxn))
         # store an inversion and summary function..
         #  the <inversion> function will be stored by superclass
-        fxn.remove_annotations  = lambda: self.remove_annotations(fxn)
-        #fxn.summary_annotations = lambda: self.summary_annotations(fxn)
+        fxn.func_remove_annotations  = lambda: self.remove_annotations(fxn)
+        return fxn

@@ -59,7 +59,7 @@ class AbstractDecorator(object):
 
         # try to define <inversion> and store it in the function,
         #  so that the function is capable of undecorating itself
-        setattr(fxn, 'xfunc_undecorate', lambda: self.inversion(fxn))
+        setattr(fxn, 'func_undecorate', lambda: self.inversion(fxn))
         self.post_decoration_hook(fxn)
         return new_fxn
 

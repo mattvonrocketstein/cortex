@@ -6,7 +6,6 @@ from cortex.util.decorators import call_first_if_exists
 from cortex.util.decorators import call_after_if_exists
 from cortex.util.decorators import chain_after_if_exists
 
-
 class kitchen_three:
     """ mock for test case """
     cleaned_dishes = False
