@@ -10,15 +10,12 @@ import datetime
 
 from cortex.core.util import report
 from cortex.contrib.hds import HierarchicalData
-from cortex.contrib.hds import HDS
 
 from cortex.util.decorators import call_first_if_exists
 from cortex.util.decorators import call_after_if_exists
 from cortex.util.decorators.wrappers import chain_forward_if_exists
+from cortex.util.decorators.wrappers import input_preprocessor_if_exists
 
-from cortex.contrib.hds import HierarchicalData
-#from cortex.core.hds import HierarchicalData
-#from cortex.core.hds import HDS
 
 
 class Registerer:
@@ -270,30 +267,24 @@ class Manager(object,Registerer, Loader):
         return self[self.as_list[0]]
 
     ## Begin manage-suite
-    def pre_manage(self, name=None, kls=object, **kls_kargs):
-        """ pre_manage hook:
-              This function can modify the values, but must always
-              return the ....  Default is a no-op.
-        """
-        return name, kls, kls_kargs
-
+    @call_after_if_exists('post_manage')
+    @input_preprocessor_if_exists('pre_manage')
     def manage(self, name=None, kls=object, kls_kargs={}):
         """ This function queues up a pile of future assets and the arguments
             to initialize them with.  This pile will be dealt with when <load>
             is called.
         """
-        name, kls, kls_kargs = self.pre_manage(name=name, kls=kls, **kls_kargs)
-
+        #name, kls, kls_kargs = self.pre_manage(name=name, kls=kls, kls_kargs=kls_kargs)
         self._pending.append([name, kls, kls_kargs])
         return name
 
-    def post_manage(self):
-        """ pre_manage hook:
-
-              This function can modify the values, but must always
-              return the ....  Default is a no-op.
-        """
-        return
+    #def post_manage(self):
+    #    """ pre_manage hook:
+#
+   #           This function can modify the values, but must always
+ #             return the ....  Default is a no-op.
+  #      """
+   #     return
 
 
 

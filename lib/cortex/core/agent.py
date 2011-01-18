@@ -46,12 +46,12 @@ class AgentManager(Manager):
         """ stop all services this manager knows about """
         [ s.stop() for s in self ]
 
-    def pre_manage(self, name=None, kls=None, **kls_kargs):
+    def pre_manage(self, name=None, kls=None, kls_kargs={}):
         """ make an educated guess whenever 'name' is not given
         """
         if 'name' not in kls_kargs:
             kls_kargs['name'] = name
-        return name, kls, kls_kargs
+        return dict(name=name, kls=kls, kls_kargs=kls_kargs)
 
     def pre_load_obj(self, kls=None, **kls_kargs):
         """ pre_load_obj hook:

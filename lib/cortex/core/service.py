@@ -20,10 +20,10 @@ class ServiceManager(AgentManager):
     # Need to undo what AgentManager has done to this particular method
     pre_load_obj      = Manager.pre_load_obj
 
-    def pre_manage(self, name=None, kls=None, **kls_kargs):
+    def pre_manage(self, name=None, kls=None, kls_kargs={}):
         """ undo agentmanager's hook for pre_manager..
         """
-        return name, kls, kls_kargs
+        return dict(name=name, kls=kls, kls_kargs=kls_kargs)
 
     def _boot_order_constraint(self, s1, boot_order1, s2, boot_order2):
         """ returns True iff if s1, s2 satisfy the

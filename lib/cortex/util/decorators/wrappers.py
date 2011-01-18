@@ -2,6 +2,34 @@
 """
 from cortex.util.decorators.abstract import SingleArgumentDecorator
 
+class input_preprocessor_if_exists(SingleArgumentDecorator):
+    """ NOTE:   intended for instance methods
+        NOTE:   only honors **kargs currently
+        USAGE:
+
+          + Given:
+
+             def pre_manage(self, name=None, kls=object, kls_kargs={}):
+                 return dict(name="john",kls=object,kls_kargs={})
+
+          + The following are equivalent:
+
+             @input_preprocessor_if_exists('pre_manage')
+             def manage(self, name=None, kls=object, kls_kargs={}):
+                 do_real_management_here()
+
+             def manage(self, name=None, kls=object, kls_kargs={}):
+                 name, kls, kls_kargs = self.pre_manage(name=name, kls=kls,
+                                                        kls_kargs=kls_kargs)
+                 do_real_management_here()
+    """
+    def decorate(self, fxn):
+        def function(himself, **kargs):
+            if hasattr(himself, self.main_argument):
+                call_first = getattr(himself, self.main_argument)
+                result_kargs = call_first(**kargs)
+            return fxn(himself, **result_kargs)
+        return function
 
 class call_first_if_exists(SingleArgumentDecorator):
     """ NOTE:  intended for use with instance methods.
@@ -33,15 +61,16 @@ class call_first_if_exists(SingleArgumentDecorator):
 
 class call_after_if_exists(SingleArgumentDecorator):
     """ NOTE:  intended for use with instance methods.
-        NOTE:  intended for use with instance methods.
+
+        NOTE:  the "named function" will always be called with
+               the same arguments as the decorated function;
+               the return value of the original function will
+               be preserved.
+
         USAGE: given a name, will search for that funcction
                (inside the same object) and call it after the
                decorated method is called.  if the function
-               is not found, we continue silently.  the "named
-               function" will always be called with the same
-               arguments as the decorated function.  the
-               return value of the original function is
-               preserved.
+               is not found, we continue silently.
 
                 class example:
                     def pre_foo(self):  print "PRE FOO"

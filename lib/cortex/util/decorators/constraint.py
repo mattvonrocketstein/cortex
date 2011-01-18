@@ -12,8 +12,9 @@ class constraint(FunctionAnnotator):
             True
             >>>
 
-        additionally, this class will store a
+        additionally, this class will store a ..
     """
+
     table = []
 
     def __init__(self, **labels_and_constraints):
