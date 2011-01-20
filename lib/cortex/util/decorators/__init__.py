@@ -15,6 +15,7 @@ from cortex.util.decorators.function_annotator import FunctionAnnotator
 from cortex.util.decorators.emits import emits
 from cortex.util.decorators.constraint import constraint
 from cortex.util.decorators.reactor_recursion import recurse_with_reactor
+from cortex.util.decorators.multimethods import multimethod
 
 class handles_event(StrictSimpleAnnotator):
     label_name = 'handles_event'
