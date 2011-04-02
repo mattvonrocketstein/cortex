@@ -46,6 +46,9 @@ class console:
         else:
             raise AttributeError,name
 
+    def vertical_space(self):
+        print
+
     @staticmethod
     def blue(string):
         """ TODO: generic function for this
@@ -74,15 +77,17 @@ def whosdaddy():
     """
     x = inspect.stack()[2]
     frame = x[0]
-    fname = x[1]
+    file_name = x[1]
     flocals = frame.f_locals
     func_name = x[3]
+    # if self is a named argument in the locals, print
+    # the class name, otherwise admit that we don't know
     if 'self' in flocals:
         header = flocals['self'].__class__.__name__
     else:
         header = '<??>'
-    header = ' '+header + '.' + func_name
-    print ' + ', fname, '\n  ', header, '--'
+    header = ' ' + header + '.' + func_name
+    return ' + in ' + file_name + '\n  ' + header + ' --'
 
 def report(*args, **kargs):
     """ the global reporting mechanism.
@@ -91,13 +96,16 @@ def report(*args, **kargs):
                <log>, <syndicate>,  and <call-your-moms-cell-phone>.
     """
     global console
-    whosdaddy()
-    print '\targs=',
-    print console.color(str(args)),
-    print '\tkargs='
-
-    flush = kargs.pop('flush',False)
-    console.color(str(kargs))
+    header = kargs.get('header', None)
+    full = False
+    if header is None: header=whosdaddy(); full=True
+    print header
+    if full:
+        print '\targs=',
+        print console.color(str(args)),
+        print '\tkargs='
+        flush = kargs.pop('flush', False)
+        console.color(str(kargs))
 
     #if flush:
     #    sys.stdout.flush() # is this even working with ipython?
@@ -105,7 +113,7 @@ def report(*args, **kargs):
 # Patterns in files, directories
 ####################################################################
 
-def all_in(path,files):
+def all_in(path, files):
     """ returns True if the given path has every file mentioned """
     assert isinstance(files,list),"expected list would be passed in"
     tmp = os.listdir(path)
