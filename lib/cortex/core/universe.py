@@ -78,11 +78,32 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         report("Universe.play!")
         self.decide_name()
         self.started = True
+        from cortex.core import api as API
+        from cortex.core.api import publish
+        _api = publish()
+        def parse_error(error, instruction, args, kargs, api=_api):
+            import platform, inspect, pprint, StringIO
+            api_header = "Cortex-API @ {H}://{F}"
+            api_header = api_header.format(F=API,
+                                           H=platform.node(),)
+            fhandle    = StringIO.StringIO(); pprint.pprint(api, fhandle)
+            api_body   = ''# fhandle.getvalue()
+            zapi   = api_header + api_body
+            #api_body   = '\n'.join(([x[0] for x in api.items()]))
+            opts   = dict(api=zapi, instruction=instruction,args=args,kargs=kargs)
+            header = "ParseError: {E}:".format(E=error)
+            body   = """
+            instruction = {instruction}
+            args        = {args}
+            kargs       = {kargs}
+            with api    = {api}
+            """
+            error  = (header + body).format(**opts)
+            print error
+            sys.exit()
 
         def get_handler(instruction):
             """ grab an item named "instruction" from the api """
-            from cortex.core.api import publish
-            _api = publish()
             return _api.get(instruction)
 
         # Interprets all the instructions in the nodeconf
@@ -92,7 +113,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                 original = node
                 instruction, args = node[0], node[1:]
 
-                report("parsing node",node)
+                report("parsing node", node)
                 if len(args)==1:
                     kargs = {}
                 else:
@@ -101,6 +122,8 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                 #raw_input([arguments,kargs])
 
                 handler = get_handler(instruction)
+                if not handler:
+                    parse_error("No instruction handler!", instruction, args, kargs)
                 handler(*args, **kargs)
 
         # is this working?
@@ -150,6 +173,20 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         self.name    = name
         return name
 
+    def fault(self, error, context):
+        """ TODO: sane yet relatively automatic logging for faults.
+        """
+        console.vertical_space()
+        report("",header=console.red("--> FAULT <--"))
+        console.draw_line()
+        print ( "\n{error}".format(error=error))
+        import StringIO, pprint
+        fhandle=StringIO.StringIO()
+        pprint.pprint(context, fhandle)
+        print console.color(fhandle.getvalue())
+        console.draw_line()
+        console.vertical_space()
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
 
     def loadService(self, service, **kargs):
         """ """
@@ -162,8 +199,9 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
 
                     try: namespace = get_mod(mod_name)
                     except ImportError, e:
-                        #raise e
-                        report("Failed to get module {mod} to load service.".format(mod=mod_name))
+                        error   = "Failed to get module {mod} to load service.".format(mod=mod_name)
+                        context = dict(exception=e)
+                        self.fault(error, context)
                     else:
                         if class_name in namespace:
                             obj = namespace[class_name]
@@ -176,7 +214,8 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                 mod_name = service
                 try: mod = get_mod(mod_name)
                 except ImportError, e:
-                    report("Failed to get module '{mod}' to load service.".format(mod=mod_name))
+                    self.fault("Failed to get module '{mod}' to load service.".format(mod=mod_name),
+                               dict(exception=e))
                     mod = {}
 
                 ret_vals = []
