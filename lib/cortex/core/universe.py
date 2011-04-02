@@ -213,11 +213,12 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
             else:
                 mod_name = service
                 try: mod = get_mod(mod_name)
-                except ImportError, e:
+                except (AttributeError,ImportError), e:
                     self.fault("Failed to get module '{mod}' to load service.".format(mod=mod_name),
                                dict(exception=e))
                     mod = {}
-
+                else:
+                    if mod==AttributeError: mod = {}
                 ret_vals = []
                 for name, val in mod.items():
                     if inspect.isclass(val):
