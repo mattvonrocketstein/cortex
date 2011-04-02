@@ -1,13 +1,16 @@
 """ cortex.core.util
 """
 from cortex.core.data import SERVICES_DOTPATH
+
 def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
     """ stupid helper for universe to snag modules
         from inside the services root """
+    from twisted.python.reflect import namedAny
+    mod = namedAny('.'.join([root_dotpath,mod_name]))
     out = {}
     ns  = {}
-    exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
-    mod = ns['mod']
+    #exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
+    #mod = ns['mod']
 
     for name in dir(mod):
         val = getattr(mod, name)
