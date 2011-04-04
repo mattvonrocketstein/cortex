@@ -147,7 +147,7 @@ class Service(Agent):
               services *must* define <start> and <stop>,
               therefore the functionality of <play> is implied.
         """
-        self.universe.reactor.callLater(1, self.start)
+        self.universe.reactor.callWhenRunning(self.start)
         return self
 
 # A cheap singleton
