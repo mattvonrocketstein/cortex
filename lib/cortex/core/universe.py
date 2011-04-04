@@ -135,8 +135,10 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         self.services.load()
         self.agents.load()
 
-        # Main loop
+        # Setup threadpool
         self.threadpool = reactor.getThreadPool()
+
+        # Main loop
         reactor.run()
 
     def sleep(self):
@@ -227,7 +229,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                     errors.append(error)
 
                     ## Attempt discovery by asking Service's who actually subclasses him
-                    subclasses = Service.subclasses(dictionary=True, normalize=True)
+                    subclasses = Service.subclasses(deep=True, dictionary=True, normalize=True)
                     if mod_name.lower() in subclasses:
                         kls = subclasses[mod_name.lower()]
                         return self.start_service(kls, **kargs)
