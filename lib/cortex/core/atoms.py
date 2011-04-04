@@ -5,10 +5,13 @@
 import pickle
 from cortex.core.util import report, console
 
+class Mixin(object):
+    pass
+
 class AddressMixin:
     """ """
 
-class PersistenceMixin:
+class Persistence(Mixin):
     """ """
     def persist(self):
         """ Convention:
@@ -37,12 +40,13 @@ class PersistenceMixin:
         ___f.write(_str)
         ___f.close()
         report('persisted memory to', fname)
+PersistenceMixin=Persistence
 
 def is_persistent(obj):
     """ dumb helper.. """
     return PersistenceMixin in obj.__class__.__bases__
 
-class AutonomyMixin:
+class Autonomy(Mixin):
     """ """
     def harikari(self):
         """ Convention:
@@ -117,6 +121,29 @@ class AutonomyMixin:
         report("freeze for "+self.name)
         self.stop()
         if is_persistent(self): self.persist()
+AutonomyMixin = Autonomy
+
+import time
+class Threadpooler(Autonomy):
+
+    @property
+    def iteration_period(self):
+        return getattr(self,'_iteration_period', 1)
+
+    def run(self):
+        """ will be run in a thread from the twisted threadpool """
+        while self.started:
+            time.sleep(self.iteration_period)
+            self.iterate()
+
+    def iterate(self):
+        print "override this: default iteration for threadpooler.."
+
+    def start(self):
+        """ autonomy override """
+        Autonomy.start(self)
+        go = lambda: self.universe.threadpool.callInThread(self.run)
+        self.universe.reactor.callLater(1, go)
 
 class PerspectiveMixin:
     """
@@ -130,7 +157,8 @@ class PerspectiveMixin:
 
     def darkly(self):
         """ if this host refers to a local version, obtain an image of
-            self suitable for acurate transmission/storage elsewhere
+            self sui
+            table for acurate transmission/storage elsewhere
         """
         report("darkly for "+self.name)
     shadow = shadowed = darkly

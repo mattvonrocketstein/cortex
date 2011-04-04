@@ -81,6 +81,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         from cortex.core import api as API
         from cortex.core.api import publish
         _api = publish()
+
         def parse_error(error, instruction, args, kargs, api=_api):
             import platform, inspect, pprint, StringIO
             api_header = "Cortex-API @ {H}://{F}"
@@ -135,6 +136,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         self.agents.load()
 
         # Main loop
+        self.threadpool = reactor.getThreadPool()
         reactor.run()
 
     def sleep(self):
@@ -237,7 +239,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                     mod = {}
 
                 if errors:
-                    map(self.fault, errors)
+                    [self.fault(*err) for err in errors ]
 
                 ret_vals = []
                 for name, val in mod.items():
