@@ -86,10 +86,13 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
     class __metaclass__(type):
         """ Agent Metaclass: track subclasses for all classes """
+
         subclass_registry = {}
 
         def __new__(mcls, name, bases, dct):
-            """ Initializing (configuring) class """
+            """ called when initializing (configuring) class,
+                this method records data about hierarchy structure
+            """
             result = type.__new__(mcls, name, bases, dct)
             reg = getattr(mcls, 'subclass_registry',{})
             if bases not in reg: reg[bases] = [ result ]
@@ -97,12 +100,24 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
             mcls.subclass_registry = reg
             return result
 
-        def subclasses(kls,dictionary=False, normalize=False):
+        def subclasses(kls, deep=False, dictionary=False, normalize=False):
+            """ get subclasses for class """
             matches = []
             meta = kls.__metaclass__
-            for bases in meta.subclass_registry:
-                if kls in bases:
-                    matches+= meta.subclass_registry[bases]
+
+            # keep it simple stupid
+            if not deep:
+                for bases in meta.subclass_registry:
+                    if kls in bases:
+                        matches += meta.subclass_registry[bases]
+
+            # use a bigger hammer..
+            if deep:
+                import operator
+                matches = filter(lambda k: issubclass(k,kls),\
+                                 reduce(operator.add, meta.subclass_registry.values()))
+
+            # convert output to { subclass_name : subclass_object }
             if dictionary:
                 matches = [ [m.__name__, m] for m in matches ]
                 if normalize: matches = [ [x[0].lower(),x[1]] for x in matches]
