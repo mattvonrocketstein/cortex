@@ -84,11 +84,35 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
         TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
     """
+    class __metaclass__(type):
+        """ Agent Metaclass: track subclasses for all classes """
+        subclass_registry = {}
+
+        def __new__(mcls, name, bases, dct):
+            """ Initializing (configuring) class """
+            result = type.__new__(mcls, name, bases, dct)
+            reg = getattr(mcls, 'subclass_registry',{})
+            if bases not in reg: reg[bases] = [ result ]
+            else:                reg[bases].append(result)
+            mcls.subclass_registry = reg
+            return result
+
+        def subclasses(kls,dictionary=False, normalize=False):
+            matches = []
+            meta = kls.__metaclass__
+            for bases in meta.subclass_registry:
+                if kls in bases:
+                    matches+= meta.subclass_registry[bases]
+            if dictionary:
+                matches = [ [m.__name__, m] for m in matches ]
+                if normalize: matches = [ [x[0].lower(),x[1]] for x in matches]
+                matches = dict(matches)
+            return matches
+
     name = 'default-name'
 
     def __init__(self, host=None, universe=None, name=None, **kargs):
-        """
-        """
+        """ """
         self.universe = universe
         self.host     = host or DEFAULT_HOST
         self.name     = name

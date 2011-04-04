@@ -210,15 +210,35 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                     raise Exception,'will not interpret that dotpath yet'
 
             # just one word.. where/what could it be?
+
             else:
+                errors = []
                 mod_name = service
+
+                ## Attempt to discover a module in cortex.services
                 try: mod = get_mod(mod_name)
-                except (AttributeError,ImportError), e:
-                    self.fault("Failed to get module '{mod}' to load service.".format(mod=mod_name),
-                               dict(exception=e))
+                except (AttributeError, ImportError), e:
+
+                    ## Log that we were not able to discover a module
+                    error = "Failed to get module '{mod}' to load service.".format(mod=mod_name)
+                    error = [error, dict(exception=e)]
+                    errors.append(error)
+
+                    ## Attempt discovery by asking Service's who actually subclasses him
+                    subclasses = Service.subclasses(dictionary=True, normalize=True)
+                    if mod_name.lower() in subclasses:
+                        kls = subclasses[mod_name.lower()]
+                        return self.start_service(kls, **kargs)
+                    else:
+                        ## Log that we were not able to discover a subclass
+                        error = "Failed to find subclass named {mod}".format(mod=mod_name)
+                        error = [error,{}]
+                        errors.append(error)
                     mod = {}
-                else:
-                    if mod==AttributeError: mod = {}
+
+                if errors:
+                    map(self.fault, errors)
+
                 ret_vals = []
                 for name, val in mod.items():
                     if inspect.isclass(val):
