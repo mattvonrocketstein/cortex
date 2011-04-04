@@ -3,16 +3,18 @@
 """
 
 import pickle
+import time
+from types import GeneratorType
+
 from cortex.core.util import report, console
 
-class Mixin(object):
-    pass
+class Mixin(object): pass
 
 class AddressMixin:
-    """ """
+    """ Something that's addressable """
 
 class Persistence(Mixin):
-    """ """
+    """ Something that's persistent """
     def persist(self):
         """ Convention:
              <persist> for "complex" structures is:
@@ -123,27 +125,56 @@ class Autonomy(Mixin):
         if is_persistent(self): self.persist()
 AutonomyMixin = Autonomy
 
-import time
 class Threadpooler(Autonomy):
+    """
+         will be run in a thread from the twisted threadpool
 
+         if the subclass wrote iterate() as a
+           generator, exhaust it and then decide
+             whether to stop based on self.iterate.reentrant
+
+         TODO: save answer in some way?
+    """
     @property
     def iteration_period(self):
-        return getattr(self,'_iteration_period', 1)
+        """
+            TODO: make getters and setters; it's better
+                 than having to do something in __init__..
+
+        """
+        return getattr(self, '_iteration_period', 1)
 
     def run(self):
-        """ will be run in a thread from the twisted threadpool """
+        """ see docs for Threadpooler """
         while self.started:
             time.sleep(self.iteration_period)
-            self.iterate()
+            result = self.iterate()
+            if isinstance(result, GeneratorType):
+                report("Entering generator",header='')
+                try:
+                    while result: result.next()
+                except StopIteration:
+                    if hasattr(self.iterate, 'reentrant'):
+                        pass
+                    else:
+                        self.stop()
 
     def iterate(self):
-        print "override this: default iteration for threadpooler.."
+        """ Just for example purposes, and to remind
+            subclassers to override this method
+        """
+        msg = "override this: default iteration for threadpooler.."
+        report(msg)
+        yield "arbitrary value"
+        time.sleep(1) # Should not block anything
+
+    iterate.reentrant=True
 
     def start(self):
         """ autonomy override """
         Autonomy.start(self)
         go = lambda: self.universe.threadpool.callInThread(self.run)
-        self.universe.reactor.callLater(1, go)
+        self.universe.reactor.callWhenRunning(go)
 
 class PerspectiveMixin:
     """
