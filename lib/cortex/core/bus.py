@@ -34,12 +34,15 @@ class TupleBus(Bus):
         """ override from cyrusbus enforcing simple callbacks as
             subscriptions (by default cyrusbus uses dictionaries)
 
+            :: returns number of messages delivered
         """
         if not self.has_any_subscriptions(key):
             return self
-
+        N = 0
         for subscriber in self.subscriptions[key]:
             subscriber(self, *args, **kwargs)
+            N+=1
+        return N
 
     def subscribe(self, key, callback, force=False):
         """ override from cyrusbus forcing tuples, not lists.
