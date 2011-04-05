@@ -17,6 +17,7 @@ class unittestservice(Threadpooler, Service, TestCase):
         return dct
 
     def iterate(self):
+        """
         #nose.core.runmodule(name='__main__', **kw)
         #def suite(dct):
         #    UtestClass = type('D',(TestCase,), dct )
@@ -25,21 +26,28 @@ class unittestservice(Threadpooler, Service, TestCase):
         #def asuite():
         #    tests = ['test_default_size', 'test_resize']
         #    return unittest.TestSuite(map(WidgetTestCase, tests))
-        namespace = self.get_all_tests()
         #x = suite(namespace).run(unittest.TestResult())
+        #suite(tests).run()
+        """
+        namespace = self.get_all_tests()
         tests = namespace.keys()
         report("Found {N} tests".format(N=len(tests)))
-        #suite(tests).run()
         tests = self.get_all_tests().items()
-
         for name, test in tests:
             report("testing",name)
             yield test()
         report("Finished Tests")
 
 class SanityCheck(unittestservice, TestCase):
-    def test_postoffice(self):
-        print (self.universe|'postoffice')
+
+    def test_channels(self):
+        poffice = (self.universe|'postoffice')
+        chan_sandwich = poffice.event.sandwich
+        def g(*args, **kargs): report("callback worked", args,kargs)
+        chan_sandwich.subscribe(g)
+        chan_sandwich("test")
+        #chan_sandwich.destroy()
+
     def test_universe(self):
         "is the universe setup? "
         self.assertTrue(self.universe)
