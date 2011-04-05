@@ -24,7 +24,9 @@ class ChannelType(type):
         ## if it's bound, then make a bound subchannel, otherwise yell
         else:
             if kls._bound:
-                FORBIDDEN = ['trait_names','subchannels','_getAttributeNames']
+                FORBIDDEN = ['trait_names','bound','bind',
+                             'subscribe',
+                             'subchannels','_getAttributeNames']
                 if name in FORBIDDEN or '(' in name:
                     raise AttributeError("ChannelType: %r has no attribute %s" % (kls.__name__, name))
                     #return kls.__dict__.get(name)
@@ -74,23 +76,30 @@ class Channel(object):
 
         TODO: channel type declarations.. use linda?
     """
+
     __metaclass__ = ChannelType
+
+    @F("cannot subscribe to an unbound channel")
+    def subscribe(kls, callback):
+        return kls._postoffice.subscribe(kls._label, callback)
+
+    @F("cannot publish to a unbound channel")
+    def _publish(kls, *args, **kargs):
+        kargs.update(dict(__args=args))
+        return kls._postoffice.publish(kls._label, **kargs)
 
     @F("cannot query for subchannels on an unbound channel")
     def subchannels(kls):
-        return [x for x in Channel.registry.keys() if x.startswith(kls._label+'::')]
+        return [ x for x in Channel.registry.keys() \
+                 if x.startswith(kls._label+'::') ]
 
     @classmethod
     def _bind(kls, postoffice):
         """ a channel must be bound to operate """
         kls._bound=True
         kls._postoffice = postoffice
+        return kls
 
-    @F("cannot publish to a unbound channel")
-    def _publish(kls, *args, **kargs):
-        kargs.update(dict(__args=args))
-        if not kls._bound: raise Exception, "channel is unbound"
-        return kls._postoffice.publish(kls._label, **kargs)
 channel=Channel
 
 class ChannelManager(object):
@@ -99,6 +108,8 @@ class ChannelManager(object):
         """ derives the channels embedded
             in this kls by way of inspection
         """
+        CHANNELS = getattr(kls, 'CHANNELS', [])
+        if CHANNELS: return CHANNELS
         matches = []
         for name in dir(kls):
             obj = getattr(kls, name)

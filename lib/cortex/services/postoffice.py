@@ -44,6 +44,8 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus,ChannelManager):
         keyspace_owner = self
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
         SelfHostingTupleBus.__init__(self) # will call self.reset()
+
+        # sets ``self`` as postoffice for each declared channel
         self.bind_embedded_channels()
 
     def publish_json(self, label, data):
