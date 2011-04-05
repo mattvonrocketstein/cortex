@@ -14,20 +14,18 @@ from cortex.core.ground import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus
 
-class channel(object):
-    @classmethod
-    def _bind(kls, postoffice):
-        kls._bound=True
-        kls._postoffice = postoffice
+class ChannelType(type):
 
-    @classmethod
-    def _publish(kls, *args, **kargs):
-        kargs.update(dict(__args=args))
-        if not kls._bound: raise Exception, "channel is unbound"
-        return kls._postoffice.publish(kls._label, **kargs)
+    def __getattr__(kls, name):
+        # only attributes not starting with "_" are organinzed
+        # in the tree
+        if not name.startswith("_"):
+            return kls.__metaclass__.__new__(kls.__metaclass__, name, (channel, ),
+                                             dict(_label=name))
+                #return self._d.setdefault(name, HierarchicalData())
+        raise AttributeError("zzzzobject %r has no attribute %s" % (kls, name))
 
-    class __metaclass__(type):
-        def __new__(mcls, name, bases, dct):
+    def __new__(mcls, name, bases, dct):
             """ called when initializing (configuring) class,
                 this method records data about hierarchy structure
             """
@@ -40,20 +38,46 @@ class channel(object):
             mcls.registry = reg
             return reg[name]
 
-        def __call__(kls, *args, **kargs):
+    def __call__(kls, *args, **kargs):
             kls._publish(*args, **kargs)
 
-        def __getattr__(kls, name):
-            # only attributes not starting with "_" are organinzed
-            # in the tree
-            if not name.startswith("_"):
-                return kls.__metaclass__.__new__(kls.__metaclass__, name, (channel, ),
-                                                 dict(_label=name))
-                #return self._d.setdefault(name, HierarchicalData())
-            raise AttributeError("zzzzobject %r has no attribute %s" % (kls, name))
+class Channel(object):
+    """ inspired by promela
 
+        TODO: channel type declarations.. use linda?
+    """
+    __metaclass__ = ChannelType
+    @classmethod
+    def _bind(kls, postoffice):
+        """ a channel must be bound to operate """
+        kls._bound=True
+        kls._postoffice = postoffice
 
-class PostOffice(Service, Keyspace, SelfHostingTupleBus):
+    @classmethod
+    def _publish(kls, *args, **kargs):
+        kargs.update(dict(__args=args))
+        if not kls._bound: raise Exception, "channel is unbound"
+        return kls._postoffice.publish(kls._label, **kargs)
+channel=Channel
+
+class ChannelManager(object):
+    @classmethod
+    def enumerate_embedded_channels(kls):
+        """ derives the channels embedded
+            in this kls by way of inspection
+        """
+        matches = []
+        for name in dir(kls):
+            obj = getattr(kls,name)
+            if hasattr(obj,'_bound'): #HACK
+                matches.append(obj)
+        return matches
+
+    def bind_embedded_channels(self):
+        for chan in self.enumerate_embedded_channels():
+            chan._bind(self)
+
+class PostOffice(Service, Keyspace, SelfHostingTupleBus,ChannelManager):
     """ PostOffice Service:
 
           A wrapper over cyrusbus's basic layout that uses a
@@ -67,21 +91,11 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
                 or guarantee that subscriber-callbacks are themselves
                 non-blocking.
     """
-    ## Begin channel declarations (TODO: make this more like promela)
-    notice = channel.NOTICE
-    error = getattr(channel, ERROR_T)  # shortcut for publishing errors
-    event  = getattr(channel, EVENT_T) # shortcut for publishing events
 
-    @classmethod
-    def enumerate_embedded_channels(kls):
-        """ derives the channels embedded
-            in this kls by way of inspection """
-        matches = []
-        for name in dir(kls):
-            obj = getattr(kls,name)
-            if hasattr(obj,'_bound'): #HACK
-                matches.append(obj)
-        return matches
+    ## Begin channel declarations        ( TODO: make this more like promela )
+    notice = channel.NOTICE              # shortcut for publishing notices (unused)
+    error  = getattr(channel, ERROR_T)   # shortcut for publishing errors  (unused)
+    event  = getattr(channel, EVENT_T)   # shortcut for publishing events  (used by term)
 
     def __init__(self, *args, **kargs):
         """ """
@@ -91,9 +105,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus):
         keyspace_owner = self
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
         SelfHostingTupleBus.__init__(self) # will call self.reset()
-        #self.event.bind(self)
-        for chan in self.enumerate_embedded_channels():
-            chan._bind(self)
+        self.bind_embedded_channels()
 
     def publish_json(self, label, data):
         """ publish as json """
