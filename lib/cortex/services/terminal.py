@@ -127,7 +127,6 @@ class Terminal(Service, LocalQueue, ShellAspect):
             self.shell.mainloop()
         except ReactorAlreadyRunning:
             pass
-
         return self
 
 
