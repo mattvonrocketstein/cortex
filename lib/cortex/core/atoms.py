@@ -77,17 +77,29 @@ class Autonomy(Mixin):
 
     def start(self):
         """ Convention:
-              <start> is an invoker, or a mainloop
+              <start> is an invoker, or a mainloop.
+
+            Note: When invocation is largely separate from mainloop,
+            it is suggested to add a <run> for the mainloop which is
+            called from <start>. ( Remember: <run> is not guaranteed
+            to be called by the framework; call it yourself however
+            you wish from your <start>.)
         """
-        #report("starting")
         self.started     = True
         self.is_stopped  = False
+
+    def run(self):
+        """ ABSTRACT: See note in ``start`` """
+
+    @property
+    def stopped(self):
+        """ TODO: single source of truth this.. """
+        return self.is_stopped
 
     def stop(self):
         """ Convention:
               <stop> is a halter
         """
-        #report("stopping")
         self.is_stopped = True
         self.started    = False
 
