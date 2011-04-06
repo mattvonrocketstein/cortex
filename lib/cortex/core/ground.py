@@ -134,23 +134,29 @@ class Memory(TSpace, PersistenceMixin):
         return TSpace.add(self, *args, **kargs)
 
 class DefaultKeyMapper(object):
-    """ The trivial protocol for mapping a tuplespace to a keyspace
+    """ The trivial protocol for mapping a keyspace onto a tuplespace
     """
     def tuple2key(self,t):
-        """ """
+        """ covert a tuple to a key """
         return t[0]
 
     def tuple2value(self, t):
-        """ """
-        return t and t[1:][0]
+        """ convert a tuple to a value """
+        return t and t[1:][0] # destructive! chops off cdr
 
     def __setitem__(self, key, value):
         """ dictionary compatibility """
-        if key in self.keys():
+        #del self[key]
+        self.__delitem__(key)
+        #if key in self.keys():
             # enforce the rule by pruning, then add
-            old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
+        #    old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
         self.add( (key, value) )
 
+    def __delitem__(self, key):
+        """ dictionary compatibility """
+        if key in self.keys():
+            old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
 
 class Keyspace(Memory, DefaultKeyMapper):
     """ Thin wrapper around <Memory> to make it look like a dictionary

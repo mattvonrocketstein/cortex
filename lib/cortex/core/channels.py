@@ -88,10 +88,20 @@ class Channel(object):
         kargs.update(dict(__args=args))
         return kls._postoffice.publish(kls._label, **kargs)
 
+    @classmethod
+    def unsubscribe(kls):
+        kls._postoffice.unsubscribe(kls._label)
+
+    @classmethod
+    def destroy(kls):
+        kls.unsubscribe()
+        del Channel.__metaclass__.registry[kls._label]
+        return None
+
     @F("cannot query for subchannels on an unbound channel")
     def subchannels(kls):
-        return [ x for x in Channel.registry.keys() \
-                 if x.startswith(kls._label+'::') ]
+        return [ item[1] for item in Channel.registry.items() \
+                 if item[0].startswith(kls._label+'::') ]
 
     @classmethod
     def _bind(kls, postoffice):
