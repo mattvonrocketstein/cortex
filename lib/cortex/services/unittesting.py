@@ -37,8 +37,7 @@ class unittestservice(Threadpooler, Service, TestCase):
             yield test()
         report("Finished Tests")
 
-class SanityCheck(unittestservice, TestCase):
-
+class ChannelCheck(TestCase):
     def test_channels(self):
         class result_holder: switch=0
         def callback(*args, **kargs): result_holder.switch = 1
@@ -67,6 +66,8 @@ class SanityCheck(unittestservice, TestCase):
         chan_sandwich.destroy()
         self.assertTrue(len(poffice.event.subchannels())==0)
 
+class UniverseCheck(TestCase):
+
     def test_universe(self):
         "is the universe setup? "
         self.assertTrue(self.universe)
@@ -78,7 +79,43 @@ class SanityCheck(unittestservice, TestCase):
     def test_services(self):
         " is the servicemanager a servicemanager? "
         from cortex.core.service import ServiceManager
-        self.assertEqual(type(self.universe.services), ServiceManager)
+        services = self.universe.services
+        self.assertEqual(type(services), ServiceManager)
+
+        services = self.services
+        self.assertTrue('sanitycheck' in services)
+        self.assertTrue('postoffice' in services)
+        self.assertTrue('linda' in services)
+
+class AgentCheck(TestCase):
+
+    def test_autonomy(self):
+        "test basic autonomy: is the test is running, we should be started"
+        self.assertTrue(self.started)
+        self.assertTrue(not self.is_stopped)
+        self.assertTrue(not self.stopped)
+
+    def test_autonomy2(self,other=None):
+        "test autonomy spec"
+        other = other or self
+        F = lambda x: callable(getattr(other,x,None) )
+        self.assertTrue(F('iterate'))
+        self.assertTrue(F('run'), "{o} has no run method".format(o=other))
+        self.assertTrue(F('start'))
+        self.assertTrue(F('stop'))
+    def test_autonomy_for_every_service(self):
+        for service in self.services.values():
+            self.test_autonomy2(service)
+
+class TestTools:
+    @property
+    def services(self):
+        """ proxy for convenience """
+        return self.universe.services.as_dict
+
+class SanityCheck(unittestservice, TestTools,AgentCheck, UniverseCheck, ChannelCheck):
+    _testMethodName = 'xxx'
+
 
     def test_service_load_unloading(self):
         """ """
