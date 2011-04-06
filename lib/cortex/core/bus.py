@@ -16,8 +16,16 @@ class TupleBus(Bus):
         which is simply a key/callback dictionary.  this
         version simplifies that by just storing callbacks.
     """
+    def unsubscribe_all(self, key):
+        def declare_unplugged(cb):
+            cb.unplugged=True
+        [ declare_unplugged(callback) for callback in self.subscriptions[key] ]
+        print type(self.subscriptions)
+        del self.subscriptions[key]
 
-    def unsubscribe(self, key, callback):
+    def unsubscribe(self, key, callback=None):
+        if callback is None:
+            return self.unsubscribe_all(key)
         if not self.has_subscription(key, callback):
             return self
         self.subscriptions[key] = tuple([cb for cb in self.subscriptions[key] if cb!=callback])
