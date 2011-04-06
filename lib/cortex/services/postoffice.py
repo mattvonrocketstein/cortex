@@ -66,14 +66,3 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus,ChannelManager):
         """ """
         super(Service, self).start()
         self.reset()
-
-class ParanoidPostOffice(PostOffice):
-    """ ParanoidPostOffice Service
-          Same as PostOffice, but with more restricted access to
-          the <publish> operation.
-    """
-
-    do_not_discover = True
-
-    def start(self):
-        raise Exception,NIY
