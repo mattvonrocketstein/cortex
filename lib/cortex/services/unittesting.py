@@ -7,8 +7,8 @@ from cortex.core.service import Service
 from cortex.core.atoms import Threadpooler
 from cortex.core.util import report, console
 
-class unittestservice(Threadpooler, Service, TestCase):
-    """ """
+class UnitTestService(Threadpooler, Service, TestCase):
+    """ Cortex Service / Agent"""
 
     def get_all_tests(self):
         names = [x for x in dir(self.__class__) if x.startswith('test_')]
@@ -36,6 +36,7 @@ class unittestservice(Threadpooler, Service, TestCase):
             report("testing",name)
             yield test()
         report("Finished Tests")
+        #self.universe.halt()
 
 class ChannelCheck(TestCase):
     def test_channels(self):
@@ -113,7 +114,7 @@ class TestTools:
         """ proxy for convenience """
         return self.universe.services.as_dict
 
-class SanityCheck(unittestservice, TestTools,AgentCheck, UniverseCheck, ChannelCheck):
+class SanityCheck(UnitTestService, TestTools,AgentCheck, UniverseCheck, ChannelCheck):
     _testMethodName = 'xxx'
 
 
@@ -128,3 +129,5 @@ class SanityCheck(unittestservice, TestTools,AgentCheck, UniverseCheck, ChannelC
 
     def test_reactor_calllaters(self):
         pass
+
+UTS = UnitTestService

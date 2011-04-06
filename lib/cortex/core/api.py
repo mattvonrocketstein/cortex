@@ -56,6 +56,13 @@ def clone(file=None, nodeconf=None):
         p = subprocess.Popen(line, shell=True)
         universe._procs.append(p)
 
+def declare_goals(list_of_callables):
+    #list_of_callables
+    from cortex.services.goalmonitor import GoalMonitor
+    do( [[ "load_service",
+          ("GoalMonitor",),
+          dict(goals=list_of_callables)  ],])
+
 def load_file(fname, adl=False, python=True):
     """ loads a local file
           known formats:
