@@ -137,6 +137,11 @@ class Autonomy(Mixin):
         if is_persistent(self): self.persist()
 AutonomyMixin = Autonomy
 
+class ControllableMixin(Mixin):
+    def halt(self):
+        """ like "stop" only safe to call from anywhere """
+        ABSTRACT
+
 class Threadpooler(Autonomy):
     """
          will be run in a thread from the twisted threadpool
@@ -147,6 +152,12 @@ class Threadpooler(Autonomy):
 
          TODO: save answer in some way?
     """
+    @staticmethod
+    def reentrant(func):
+        func.reentrant=True
+        return func
+
+
     @property
     def iteration_period(self):
         """

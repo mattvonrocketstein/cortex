@@ -20,7 +20,7 @@ from cortex.core.reloading import AutoReloader
 from cortex.core.parsing import Nodeconf
 from cortex.core.util import report, console
 from cortex.core.data import SERVICES_DOTPATH
-from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
+from cortex.core.atoms import AutonomyMixin, PerspectiveMixin,ControllableMixin
 from cortex.core.atoms import PersistenceMixin
 from cortex.core.peer import PeerManager, PEERS
 from cortex.core.service import Service, SERVICES
@@ -30,7 +30,7 @@ from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
 
 class __Universe__(AutoReloader, OSMixin, UniverseNotation,
-                   AutonomyMixin, PerspectiveMixin, PersistenceMixin):
+                   ControllableMixin, AutonomyMixin, PerspectiveMixin, PersistenceMixin):
     """ """
     system_shell  = 'xterm -fg green -bg black -e '
     reactor       = reactor
@@ -139,7 +139,11 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         self.threadpool = reactor.getThreadPool()
 
         # Main loop
+        #from twisted.internet.error import ReactorNotRunning
+        #try:
         reactor.run()
+        #except ReactorNotRunning:
+        #    pass
 
     def sleep(self):
         """ """
@@ -153,8 +157,13 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         except SystemExit:
             pass
 
+    def halt(self):
+        """ override controllable """
+        self.reactor.callFromThread(self.stop)
+
     def stop(self):
-        """ """
+        """ override autonomy """
+        self.started = False
         for service in self.services:
             try: self.services[service].obj.stop()
             except Exception,e:
@@ -162,7 +171,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                 report(err_msg)
                 report(str(e))
                 #IP.quitting=True
-        self.started = False
+        self.threadpool.stop()
         for thr in self.threads:
             thr._Thread__stop()
         self.reactor.stop()
