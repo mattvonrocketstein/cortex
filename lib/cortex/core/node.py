@@ -3,27 +3,27 @@
 
 import os
 
+from cortex.core.util import report
+from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
-from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
+from cortex.core.data import NOOP, LOOPBACK_HOST, GENERIC_LOCALHOST
 from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
 from cortex.core.manager import Manager
-from cortex.core.util import report
-
-class AgentPrerequisiteNotMet(Exception):
-    """ Move along, nothing to see here """
 
 class AgentManager(Manager):
-    """
-    """
-
-    load_first = ['ServiceManager']     # TODO: not enforced..
+    """ """
+    # TODO: not enforced..
+    load_first = ['ServiceManager']
 
     # Class specifying how the objects in this
     #  container will be represented
     asset_class = HierarchicalData
+
+    class AgentPrerequisiteNotMet(Exception):
+        """ Move along, nothing to see here """
 
     def __init__(self, universe=None, **kargs):
         """ """
@@ -77,70 +77,32 @@ class AgentManager(Manager):
         """ pre_registration hook """
         report( asset.obj )
 
-# A cheap singleton
-AGENTS = AgentManager()
-
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
+        CONVENTION: __init__ always passes unconsumed kargs to _post_init()
         TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
     """
-    class __metaclass__(type):
-        """ Agent Metaclass: track subclasses for all classes """
+    __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
+    _post_init    = NOOP
+    name          = 'default-name'
 
-        subclass_registry = {}
-
-        def __new__(mcls, name, bases, dct):
-            """ called when initializing (configuring) class,
-                this method records data about hierarchy structure
-            """
-            result = type.__new__(mcls, name, bases, dct)
-            reg = getattr(mcls, 'subclass_registry',{})
-            if bases not in reg: reg[bases] = [ result ]
-            else:                reg[bases].append(result)
-            mcls.subclass_registry = reg
-            return result
-
-        def subclasses(kls, deep=False, dictionary=False, normalize=False):
-            """ get subclasses for class """
-            matches = []
-            meta = kls.__metaclass__
-
-            # keep it simple stupid
-            if not deep:
-                for bases in meta.subclass_registry:
-                    if kls in bases:
-                        matches += meta.subclass_registry[bases]
-
-            # use a bigger hammer..
-            if deep:
-                import operator
-                matches = filter(lambda k: issubclass(k,kls),\
-                                 reduce(operator.add, meta.subclass_registry.values()))
-
-            # convert output to { subclass_name : subclass_object }
-            if dictionary:
-                matches = [ [m.__name__, m] for m in matches ]
-                if normalize: matches = [ [x[0].lower(),x[1]] for x in matches]
-                matches = dict(matches)
-            return matches
-
-    name = 'default-name'
 
     def __init__(self, host=None, universe=None, name=None, **kargs):
-        """ """
+        """
+            TODO: "host" is bad.  use a better address formalism instead.
+        """
         self.universe = universe
         self.host     = host or DEFAULT_HOST
         self.name     = name
-
-        # pass the remainder of the kargs to _post_init for subclassers
-        if hasattr(self, '_post_init'):
-            self._post_init(**kargs)
+        self._post_init(**kargs)
 
     def stop(self):
-        """ Convention:
-              <stop> should..
+        """ autonomy override:
+            by convention, usage of <stop> shows that this agents
+            is stopping himself.  (if other agents are able to stop
+            this agent, it is more appropriate to use <halt> or
+            <shutdown> instead.)
         """
-        #report("node::stopping")
         super(Agent, self).stop()
 
     def iterate(self):
@@ -166,4 +128,5 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
         self.universe.reactor.callLater(1,self.iterate)
         return self
 
-Node = Agent
+Node    = Agent         # Alias
+AGENTS = AgentManager() # A cheap singleton
