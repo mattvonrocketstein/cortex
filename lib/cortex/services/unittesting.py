@@ -1,42 +1,41 @@
 """ cortex.services.unittesting
 """
-
 import unittest
-from unittest import TestCase
+from unittest import TestCase, TestResult, TextTestRunner
 from cortex.core.service import Service
 from cortex.core.atoms import Threadpooler
 from cortex.core.util import report, console
+from cortex.core.metaclasses import META
 
 class UnitTestService(Threadpooler, Service, TestCase):
     """ Cortex Service / Agent"""
+
+    __metaclass__ = META
 
     def get_all_tests(self):
         names = [x for x in dir(self.__class__) if x.startswith('test_')]
         dct = dict([ [name, getattr(self, name)] for name in names ])
         return dct
 
-    def iterate(self):
-        """
-        #nose.core.runmodule(name='__main__', **kw)
-        #def suite(dct):
-        #    UtestClass = type('D',(TestCase,), dct )
-        #    return unittest.TestSuite(map(UtestClass, dct.keys()))
+    @property
+    def ecase(self):
+        is_testcase = lambda B: issubclass(B, TestCase)
+        embedded_testcases = filter(is_testcase, self.__class__.__bases__)
+        return embedded_testcases
 
-        #def asuite():
-        #    tests = ['test_default_size', 'test_resize']
-        #    return unittest.TestSuite(map(WidgetTestCase, tests))
-        #x = suite(namespace).run(unittest.TestResult())
-        #suite(tests).run()
+    def iterate(self):
+        """ TextTestRunner(stream=sys.stderr, descriptions=True, verbosity=1)
         """
+        FTC       = unittest.FunctionTestCase
+        FTC_kargs = {} # dict(setUp=setUp)
         namespace = self.get_all_tests()
-        tests = namespace.keys()
-        report("Found {N} tests".format(N=len(tests)))
-        tests = self.get_all_tests().items()
-        for name, test in tests:
-            report("testing",name)
-            yield test()
-        report("Finished Tests")
-        #self.universe.halt()
+        functions_to_test = namespace.values()
+        report("Found {N} tests".format(N=len(functions_to_test)))
+        test_cases = [FTC(f, **FTC_kargs) for f in functions_to_test]
+        test_suite = unittest.TestSuite(test_cases)
+        TextTestRunner().run(test_suite)
+        test_suite.run(TestResult()) #unittest.main()
+        yield
 
 class ChannelCheck(TestCase):
     def test_channels(self):
@@ -65,13 +64,14 @@ class ChannelCheck(TestCase):
 
         # test that destroy unsubscribes and unregisters
         chan_sandwich.destroy()
-        self.assertTrue(len(poffice.event.subchannels())==0)
+        self.assertEqual(len(poffice.event.subchannels()), 0)
 
 class UniverseCheck(TestCase):
 
     def test_universe(self):
         "is the universe setup? "
         self.assertTrue(self.universe)
+
 
     def test_reactor(self):
         "is the reactor setup? "
@@ -104,6 +104,7 @@ class AgentCheck(TestCase):
         self.assertTrue(F('run'), "{o} has no run method".format(o=other))
         self.assertTrue(F('start'))
         self.assertTrue(F('stop'))
+
     def test_autonomy_for_every_service(self):
         for service in self.services.values():
             self.test_autonomy2(service)
