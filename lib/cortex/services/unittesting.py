@@ -13,18 +13,14 @@ class UnitTestService(Threadpooler, Service, TestCase):
     __metaclass__ = META
 
     def get_all_tests(self):
+        """ enumerate every test_* method in this instance's class """
         names = [x for x in dir(self.__class__) if x.startswith('test_')]
         dct = dict([ [name, getattr(self, name)] for name in names ])
         return dct
 
-    @property
-    def ecase(self):
-        is_testcase = lambda B: issubclass(B, TestCase)
-        embedded_testcases = filter(is_testcase, self.__class__.__bases__)
-        return embedded_testcases
-
     def iterate(self):
-        """ TextTestRunner(stream=sys.stderr, descriptions=True, verbosity=1)
+        """ TODO: break up into yields by subclass
+            TextTestRunner sig: (stream=sys.stderr, descriptions=True, verbosity=1)
         """
         FTC       = unittest.FunctionTestCase
         FTC_kargs = {} # dict(setUp=setUp)
@@ -38,6 +34,7 @@ class UnitTestService(Threadpooler, Service, TestCase):
         yield
 
 class ChannelCheck(TestCase):
+    """ test the channel abstraction """
     def test_channels(self):
         class result_holder: switch=0
         def callback(*args, **kargs): result_holder.switch = 1
@@ -67,14 +64,14 @@ class ChannelCheck(TestCase):
         self.assertEqual(len(poffice.event.subchannels()), 0)
 
 class UniverseCheck(TestCase):
-
+    """ check various aspects of an engaged universe
+        for correctness """
     def test_universe(self):
         "is the universe setup? "
         self.assertTrue(self.universe)
 
-
     def test_reactor(self):
-        "is the reactor setup? "
+        "is the twisted reactor installed in the universe? "
         self.assertTrue(self.universe.reactor)
 
     def test_services(self):
@@ -89,7 +86,7 @@ class UniverseCheck(TestCase):
         self.assertTrue('linda' in services)
 
 class AgentCheck(TestCase):
-
+    """ check various aspects of a running agent """
     def test_autonomy(self):
         "test basic autonomy: is the test is running, we should be started"
         self.assertTrue(self.started)
@@ -97,7 +94,7 @@ class AgentCheck(TestCase):
         self.assertTrue(not self.stopped)
 
     def test_autonomy2(self,other=None):
-        "test autonomy spec"
+        """ test autonomy spec """
         other = other or self
         F = lambda x: callable(getattr(other,x,None) )
         self.assertTrue(F('iterate'))
@@ -106,6 +103,10 @@ class AgentCheck(TestCase):
         self.assertTrue(F('stop'))
 
     def test_autonomy_for_every_service(self):
+        """ every service registered with this universe
+            should use the autonomy mixin, and so should
+            implement the autonomy spec
+        """
         for service in self.services.values():
             self.test_autonomy2(service)
 
@@ -116,8 +117,7 @@ class TestTools:
         return self.universe.services.as_dict
 
 class SanityCheck(UnitTestService, TestTools,AgentCheck, UniverseCheck, ChannelCheck):
-    _testMethodName = 'xxx'
-
+    _testMethodName = 'WhyDoesThisNeedToBeHere?'
 
     def test_service_load_unloading(self):
         """ """
@@ -128,7 +128,15 @@ class SanityCheck(UnitTestService, TestTools,AgentCheck, UniverseCheck, ChannelC
         " is the unittest service installed as a service? "
         self.assertTrue( [ self.__class__.__name__.lower() in self.universe.services ] )
 
-    def test_reactor_calllaters(self):
-        pass
+    def test_reactor_calls(self):
+        """ "self.universe.reactor.callLater(1, callback)"
+            does not work-- apparently threadpool blocks it.
+        """
+        class result_holder: switch=0
+        def callback(): result_holder.switch += 1
+        self.universe.reactor.callFromThread(callback)
+        import time;time.sleep(1)
+        self.assertEqual(result_holder.switch,1)
+
 
 UTS = UnitTestService
