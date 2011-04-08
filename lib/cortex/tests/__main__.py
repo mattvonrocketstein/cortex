@@ -11,10 +11,11 @@ from cortex.tests.channel import *
 from cortex.core import api
 from cortex.services.unittesting import UnitTestService
 import os, sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+#sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from cortex.tests.channel import *
-
+from cortex.tests.core_universe import UniverseCheck
+from cortex.tests.core_channels import ChannelCheck
+from cortex.tests.core_agent import AgentCheck
 ## Parameters for the services.. empty and ready to override
 bases = (AgentCheck, UniverseCheck, ChannelCheck)
 interactive = False                                  # Whether to run shell

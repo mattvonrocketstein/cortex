@@ -28,6 +28,28 @@ class META(type):
         for hook in hooks:
             hook(mcls, name, bases, dct, class_obj)
         return class_obj
+def subclass_tracker(*bases, **kargs):
+    """ dynamically generates the subclass tracking class that extends ``bases``.
+
+        often the name doesn't matter and will never be seen,
+        but you might as well be verbose in case it's stumbled across.
+
+        usually an empty dictionary is fine for the namespace.. after all you're
+        specifying the bases already, right?
+
+        Example usage follows:
+
+          SomeService(classtracker(Service, Mixin1, Mixin2)):
+               ''' function body '''
+
+    """
+    if kargs:
+        assert kargs.keys()==['namespace'],'only the namespace kw arg is defined'
+        namespace=kargs.pop('namespace')
+    else:
+        namespace = {}
+    name = 'DynamicallyGeneratedClassTracker'
+    return META(name, bases, namespace)
 
 class META1(META):
     """ a metaclass that tracks it's subclasses. """

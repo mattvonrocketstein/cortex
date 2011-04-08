@@ -5,14 +5,9 @@ from unittest import TestCase, TestResult, TextTestRunner
 from cortex.core.service import Service
 from cortex.core.atoms import Threadpooler
 from cortex.core.util import report, console
-from cortex.core.metaclasses import META
+from cortex.core.metaclasses import subclass_tracker
 
-class UTS(Threadpooler, Service, TestCase):
-
-
-    __metaclass__ = META
-
-class UnitTestService(UTS):
+class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
     """ Cortex Service / Agent"""
     def get_all_tests(self):
         """ enumerate every test_* method in this instance's class """
