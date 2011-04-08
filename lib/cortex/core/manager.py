@@ -225,8 +225,17 @@ class Manager(object):
         if isinstance(name, str):
             for nayme in self.registry:
                 if name.lower() == nayme.lower():
-                    return self.registry[name]
-            raise self.NotFound('No such service: ' + name)
+                    try:
+                        return self.registry[name]
+                    except KeyError,k:
+                        if name!=name.lower():
+                            return self.__getitem__(name.lower())
+                        else:
+                            raise k
+            if name!=name.lower():
+                return self.__getitem__(name.lower())
+            else:
+                raise self.NotFound('No such service: ' + name)
 
     @property
     def as_dict(self):
