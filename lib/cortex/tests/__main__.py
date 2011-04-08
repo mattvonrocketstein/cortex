@@ -10,14 +10,16 @@ from cortex.tests.channel import *
 
 from cortex.core import api
 from cortex.services.unittesting import UnitTestService
-import os, sys
-#sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cortex.tests.core_universe import UniverseCheck
 from cortex.tests.core_channels import ChannelCheck
 from cortex.tests.core_agent import AgentCheck
+from cortex.tests.agents_watchdog import WatchdogTest
+
+# Test-classes to use
+bases = (AgentCheck, WatchdogTest, UniverseCheck, ChannelCheck, )
+
 ## Parameters for the services.. empty and ready to override
-bases = (AgentCheck, UniverseCheck, ChannelCheck)
 interactive = False                                  # Whether to run shell
 post_args   = {}                                     # Postoffice parameters
 term_args   = {}                                     # Cortex-Terminal arguments

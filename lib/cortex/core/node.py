@@ -80,7 +80,10 @@ class AgentManager(Manager):
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     """
         CONVENTION: __init__ always passes unconsumed kargs to _post_init()
+
         TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
+        TODO: Make mixin classes work with __add__
+
     """
     __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP

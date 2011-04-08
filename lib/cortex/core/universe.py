@@ -2,8 +2,8 @@
 
       The universe is an abstraction intended to unify the representation
       of aspects of the interpretter, the operating system, the "mainloop",
-      and the cortex runtime.  It should (probably) effectively be a singleton--
-      one per process.
+      the process, and the cortex runtime.  It should effectively be a
+      singleton-- one per process.
 """
 
 import os, sys
@@ -56,14 +56,12 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         nodeconf_err = 'Universe.nodeconf_file tests false or is not set.'
         assert hasattr(self, 'nodeconf_file') and self.nodeconf_file, nodeconf_err
         jsons = Nodeconf(self.nodeconf_file).parse()
-        #raise Exception,jsons
         return jsons
 
     @property
     def Nodes(self):
         """ nodes: static definition """
         blammo = getattr(self, '_use_nodeconf', self.read_nodeconf)
-        #, self.read_nodeconf()
         return blammo()
 
     @property
