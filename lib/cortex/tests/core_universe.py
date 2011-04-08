@@ -1,4 +1,4 @@
-""" core_universe"""
+""" cortex.tests.core_universe """
 
 from unittest import TestCase
 
