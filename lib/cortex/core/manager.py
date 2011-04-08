@@ -68,7 +68,9 @@ class Manager(object):
             if search:
                 junk_name, kls, kls_kargs = search[0]
                 kls_kargs = kls_kargs or {}
-                self.load_item(name=name, kls=kls, kls_kargs=kls_kargs,
+                self.load_item(kls=kls,
+                               name=name,
+                               kls_kargs=kls_kargs,
                                index=items.index(name))
 
     def load_item(self, name=None, kls=None, kls_kargs=None, index=None):
@@ -88,6 +90,7 @@ class Manager(object):
 
     def load_obj(self, kls=None, **kls_kargs):
         """ load_obj """
+        #report("load_obj",kls)
         kls, kls_kargs = self.pre_load_obj(kls=kls, **kls_kargs)
         obj = kls(**kls_kargs)
         obj = self.post_load_obj(obj)
