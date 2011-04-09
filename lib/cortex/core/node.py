@@ -38,6 +38,11 @@ class AgentManager(Manager):
         """ dictionary compatability """
         return [[var, val.obj] for var,val in Manager.items(self)]
 
+    def flush(self):
+        """ TODO: test this """
+        self.stop_all()
+        self.registry = {}
+
     def stop_all(self):
         """ stop all services this manager knows about """
         [ s.stop() for s in self ]
