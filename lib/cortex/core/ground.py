@@ -28,7 +28,34 @@ class HierarchicalWrapper(HierarchicalData):
 
 class Memory(TSpace, PersistenceMixin):
     """ A thin wrapper around lindypy's tuplespace. """
+    """ Memory according to ACT-R cognitive architecture:
+        Memory modules. There are two kinds of memory modules in ACT-R:
+          o Declarative memory, consisting of facts such as Washington, D.C. is the
+            capital of United States, France is a country in Europe, or 2+3=5
+          o Procedural memory, made of productions. Productions represent knowledge
+            about how we do things: for instance, knowledge about how to type the
+            letter "Q" on a keyboard, about how to drive, or about how to perform
+            addition.
 
+
+          All the modules can only be accessed through their buffers. The contents of
+          the buffers at a given moment in time represents the state of ACT-R at that
+          moment. The only exception to this rule is the procedural module, which
+          stores and applies procedural knowledge. It does not have an accessible
+          buffer and is actually used to access other module's contents.
+
+          Procedural knowledge is represented in form of productions. The term
+          "production" reflects the actual implementation of ACT-R as a production
+          system, but, in fact, a production is mainly a formal notation to specify
+          the information flow from cortical areas (i.e. the buffers) to the basal
+          ganglia, and back to the cortex.
+
+          At each moment, an internal pattern matcher searches for a production that
+          matches the current state of the buffers. Only one such production can be
+          executed at a given moment. That production, when executed, can modify the
+          buffers and thus change the state of the system. Thus, in ACT-R, cognition
+          unfolds as a succession of production firings.
+    """
     universe = None
 
     def __init__(self, owner, name=None, filename=None):
