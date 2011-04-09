@@ -2,6 +2,7 @@
 """
 
 from unittest import TestCase
+
 class AgentCheck(TestCase):
     """ check various aspects of a running agent """
 

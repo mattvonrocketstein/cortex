@@ -48,15 +48,13 @@ class AgentManager(Manager):
         [ s.stop() for s in self ]
 
     def pre_manage(self, name=None, kls=None, **kls_kargs):
-        """ make an educated guess whenever 'name' is not given
-        """
+        """ make an educated guess whenever 'name' is not given """
         if 'name' not in kls_kargs:
             kls_kargs['name'] = name
         return name, kls, kls_kargs
 
     def pre_load_obj(self, kls=None, **kls_kargs):
-        """ pre_load_obj hook:
-        """
+        """ pre_load_obj hook: """
         assert self.universe, 'universe is broken!'
 
         # enforce requirements (NOTE: servicemanager will want to undo this)
@@ -70,8 +68,7 @@ class AgentManager(Manager):
         return super(AgentManager,self).pre_load_obj(kls=kls, **kls_kargs)
 
     def post_load_obj(self, obj):
-        """ post_load_obj hook:
-        """
+        """ post_load_obj hook: """
         return obj.play()
 
     def pre_registration(self, name, **metadata):

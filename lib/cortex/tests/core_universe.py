@@ -2,6 +2,8 @@
 
 from unittest import TestCase
 
+from cortex.core.node import Agent
+
 class ServiceManagerCheck(TestCase):
     def test_service_manager(self):
         # is the servicemanager a servicemanager?
@@ -20,13 +22,10 @@ class ServiceManagerCheck(TestCase):
 
 class AgentManagerCheck(TestCase):
     def test_agentmanager_load(self):
-        from cortex.core.node import Agent
-        class tmp(Agent): pass
-        self.assertTrue('tmp' not in self.universe.agents.as_dict)
+        self.assertTrue('tmptest' not in self.universe.agents.as_dict)
         self.universe.agents.load_item(name='tmptest',
-                                       kls=tmp,
-                                       kls_kargs=dict(universe=self.universe),
-                                       index=None )
+                                       kls=Agent.subclass(),
+                                       kls_kargs=dict(universe=self.universe),)
         self.assertTrue('tmptest' in self.universe.agents)
         self.assertTrue('tmptest' in self.universe.agents.registry)
 
