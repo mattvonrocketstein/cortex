@@ -1,6 +1,7 @@
 """ cortex.core.metaclasses
 """
 
+import uuid
 import types
 
 def metaclass_hook(func):
@@ -12,6 +13,10 @@ class META(type):
         to avoid MRO issues, this should be the main one used,
         and everything should subclass it and define hooks.
     """
+    def subclass(kls,name=None,dct={}):
+        name = name or "DynamicSubclass_" + str(uuid.uuid1()).split('-')[-2]
+        return kls.__metaclass__(name, (kls,), dct)
+
     @staticmethod
     def enumerate_hooks(mcls):
         matches = [x for x in dir(mcls) if getattr(getattr(mcls,x,None),'metaclass_hook', False)]
@@ -28,28 +33,6 @@ class META(type):
         for hook in hooks:
             hook(mcls, name, bases, dct, class_obj)
         return class_obj
-def subclass_tracker(*bases, **kargs):
-    """ dynamically generates the subclass tracking class that extends ``bases``.
-
-        often the name doesn't matter and will never be seen,
-        but you might as well be verbose in case it's stumbled across.
-
-        usually an empty dictionary is fine for the namespace.. after all you're
-        specifying the bases already, right?
-
-        Example usage follows:
-
-          SomeService(classtracker(Service, Mixin1, Mixin2)):
-               ''' function body '''
-
-    """
-    if kargs:
-        assert kargs.keys()==['namespace'],'only the namespace kw arg is defined'
-        namespace=kargs.pop('namespace')
-    else:
-        namespace = {}
-    name = 'DynamicallyGeneratedClassTracker'
-    return META(name, bases, namespace)
 
 class META1(META):
     """ a metaclass that tracks it's subclasses. """
@@ -142,3 +125,25 @@ class test:
     __metaclass__ = ClassTracking
     def foo(self): print 3
 """
+def subclass_tracker(*bases, **kargs):
+    """ dynamically generates the subclass tracking class that extends ``bases``.
+
+        often the name doesn't matter and will never be seen,
+        but you might as well be verbose in case it's stumbled across.
+
+        usually an empty dictionary is fine for the namespace.. after all you're
+        specifying the bases already, right?
+
+        Example usage follows:
+
+          SomeService(classtracker(Service, Mixin1, Mixin2)):
+               ''' function body '''
+
+    """
+    if kargs:
+        assert kargs.keys()==['namespace'],'only the namespace kw arg is defined'
+        namespace=kargs.pop('namespace')
+    else:
+        namespace = {}
+    name = 'DynamicallyGeneratedClassTracker'
+    return META(name, bases, namespace)

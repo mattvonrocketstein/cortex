@@ -11,13 +11,15 @@ from cortex.tests.channel import *
 from cortex.core import api
 from cortex.services.unittesting import UnitTestService
 
+from cortex.tests.core_metaclasses import MetaclassesTest
 from cortex.tests.core_universe import UniverseCheck
 from cortex.tests.core_channels import ChannelCheck
 from cortex.tests.core_agent import AgentCheck
 from cortex.tests.agents_watchdog import WatchdogTest
 
 # Test-classes to use
-bases = (AgentCheck, WatchdogTest, UniverseCheck, ChannelCheck, )
+bases = (MetaclassesTest, AgentCheck,
+         WatchdogTest, UniverseCheck, ChannelCheck, )
 
 ## Parameters for the services.. empty and ready to override
 interactive = True                                  # Whether to run shell
