@@ -4,6 +4,7 @@
 from unittest import TestCase
 class AgentCheck(TestCase):
     """ check various aspects of a running agent """
+
     def test_autonomy(self):
         "test basic autonomy: is the test is running, we should be started"
         self.assertTrue(self.started)

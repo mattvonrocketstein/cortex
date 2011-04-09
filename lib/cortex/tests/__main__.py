@@ -20,7 +20,7 @@ from cortex.tests.agents_watchdog import WatchdogTest
 bases = (AgentCheck, WatchdogTest, UniverseCheck, ChannelCheck, )
 
 ## Parameters for the services.. empty and ready to override
-interactive = False                                  # Whether to run shell
+interactive = True                                  # Whether to run shell
 post_args   = {}                                     # Postoffice parameters
 term_args   = {}                                     # Cortex-Terminal arguments
 linda_args  = {}                                     # Linda (tuplespace) parameters

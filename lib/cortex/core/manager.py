@@ -46,14 +46,21 @@ class Manager(object):
         self.generic_store = HierarchicalData()
 
     def resolve_boot_order(self, **kargs):
-        """ by default, simply returns the names in
-            the order they were registered """
-        return [pending[0] for pending in self._pending ]
+        """ by default, simply returns the names in the same order
+            they were registered.  subclassers may want to change
+            this.
+        """
+        return [ pending[0] for pending in self._pending ]
 
     def load(self):
-        """ Convention:
-              if <manage> is used, this should be called after
-              all calls to it are finished
+        """ Determines prerequisites with <solve_boot_order>, and fees that
+            value to load_items.
+
+            Convention:
+              calling <load> means that all the declarative "setup" calls
+              to this manager have been completed.  in other words, if <manage>
+              is used, this should be called after all calls to <manage> are
+              finished.
 
               TODO: refactor
         """
@@ -77,7 +84,6 @@ class Manager(object):
         """ will be called by Manager.load
         """
         obj = self.load_obj(kls=kls, **kls_kargs)
-
         self.register(name,
                       obj        = obj,
                       index      = index,
@@ -198,7 +204,7 @@ class Manager(object):
         self.registry[name] = getattr(self, 'asset_class', DEFAULT_ASSET_CLASS)()
         for key, value in item_metadata.items():
             setattr( self.registry[name], key, value)
-        self._stamp(name)
+        self._stamp(name) # sets birthday
         new_asset = self[name]
         new_asset = self.post_registration(new_asset)
         return new_asset
