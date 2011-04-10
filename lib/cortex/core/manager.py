@@ -83,7 +83,6 @@ class Manager(object):
         obj.obj.stop()
         del self.registry[key]
 
-
     def load_items(self, items):
         """ load_items """
         for name in items:
@@ -283,4 +282,29 @@ class Manager(object):
         """ list/dictionary compatibility: a dumb proxy """
         return iter(self.registry)
 
+    def __call__(self, kls, name=None, **kargs):
+        """ shortcut for load_item"""
+        if not hasattr(self, 'universe'):
+            err = "expected manager would know the universe by the time it was asked to load something"
+            raise ValueError, err
+
+        defaults = self.default_kls_kargs
+        for k in defaults:
+            if k not in kargs:
+                kargs.update({k:defaults[k]})
+
+        if name is None:
+            import uuid
+            name = "DynamicAgentName" + uuid.uuid1().split('-')[-2]
+
+        self.load_item(kls=kls, name=name, kls_kargs=kargs)
+
+    @property
+    def default_kls_kargs(self):
+        """ when __call__ is used, anything not appearing
+            here and not in **kargs will be copied over. """
+        return dict(universe=self.universe)
+
 DEFAULT_ASSET_CLASS = HierarchicalData
+
+class CortexManager(Manager): pass

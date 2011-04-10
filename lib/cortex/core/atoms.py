@@ -204,7 +204,9 @@ class Threadpooler(Autonomy):
         msg = "override this: default iteration for threadpooler.."
         report(msg)
         yield "arbitrary value"
-        time.sleep(1) # Should not block anything
+        # Next line should not block anything..
+        #   it's in the threadpool.
+        time.sleep(1)
 
     iterate.reentrant=True
 

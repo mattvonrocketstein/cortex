@@ -24,8 +24,8 @@ bases = (MetaclassesTest, AgentCheck,
          ChannelCheck, )
 
 ## Parameters for the services.. empty and ready to override
-interactive = True                                   # Whether to run shell
-#interactive = False                                  # Whether to run shell
+#interactive = True                                   # Whether to run shell
+interactive = False                                  # Whether to run shell
 post_args   = {}                                     # Postoffice parameters
 term_args   = {}                                     # Cortex-Terminal arguments
 linda_args  = {}                                     # Linda (tuplespace) parameters
