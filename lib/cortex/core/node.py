@@ -16,6 +16,7 @@ from cortex.core.manager import Manager
 
 class AgentManager(Manager):
     """ """
+
     # TODO: not enforced..
     load_first = ['ServiceManager']
 

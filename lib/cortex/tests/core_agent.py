@@ -8,12 +8,34 @@ from cortex.core.node import AgentManager
 
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
+
+    def test_load_duplicates(self):
+        self.assertTrue('dupetest' not in self.universe.agents.as_dict)
+        dynclass = Agent.subclass()
+        kargs = dict(name='dupetest', kls=dynclass,
+                     kls_kargs=dict(universe=self.universe), #TODO make this implied
+                     )
+        self.universe.agents.load_item(**kargs)
+
+        ## check registry two ways
+        self.assertTrue('dupetest' in self.universe.agents.registry)
+        self.assertTrue('dupetest' in self.universe.agents)
+
+
+        hds = self.universe.agents.registry['dupetest']
+        obj = hds.obj
+        self.assertRaises(AgentManager.Duplicate,
+                          lambda: self.universe.agents.load_item(**kargs))
+        self.universe.agents.unload(obj)
+
+
     def test_agentmanager_load_unload(self):
         self.assertTrue('tmptest' not in self.universe.agents.as_dict)
         dynclass = Agent.subclass()
-        self.universe.agents.load_item(name='tmptest',
-                                       kls=dynclass,
-                                       kls_kargs=dict(universe=self.universe),)
+        kargs = dict(name='tmptest', kls=dynclass,
+                     kls_kargs=dict(universe=self.universe), #TODO make this implied
+                     )
+        self.universe.agents.load_item(**kargs)
 
         ## check registry two ways
         self.assertTrue('tmptest' in self.universe.agents.registry)
@@ -38,7 +60,6 @@ class AgentManagerCheck(TestCase):
         self.assertTrue(obj.stopped)
 
     def test_agent_manager(self):
-        # TODO: define and convert this test to use the trivial agent
         # is the agentmanager an agentmanager?
         self.assertEqual(type(self.universe.agents), AgentManager)
 
@@ -56,8 +77,8 @@ class AgentCheck(TestCase):
         (in this case, the unittestservice is the agent in question)
     """
 
-    def test_autonomy(self):
-        "test basic autonomy: is the test is running, we should be started"
+    def test_basic_autonomy(self):
+        #test basic autonomy: is the test is running?  then we should be started
         self.assertTrue(self.started)
         self.assertTrue(not self.is_stopped)
         self.assertTrue(not self.stopped)
