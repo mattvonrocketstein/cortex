@@ -76,6 +76,9 @@ class AgentCheck(TestCase):
 
         (in this case, the unittestservice is the agent in question)
     """
+    def test_self_as_service(self):
+        # is the unittest service installed as a service?
+        self.assertTrue( [ self.__class__.__name__.lower() in self.universe.services ] )
 
     def test_basic_autonomy(self):
         #test basic autonomy: is the test is running?  then we should be started
