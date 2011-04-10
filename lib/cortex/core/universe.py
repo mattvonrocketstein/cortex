@@ -28,9 +28,12 @@ from cortex.core.service import ServiceManager
 from cortex.core.node import AGENTS #AgentManager
 from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
+from cortex.core.atoms import FaultTolerant
 
-class __Universe__(AutoReloader, OSMixin, UniverseNotation,
-                   ControllableMixin, AutonomyMixin, PerspectiveMixin, PersistenceMixin):
+class __Universe__(AutoReloader, UniverseNotation, OSMixin,
+                   ControllableMixin, AutonomyMixin,
+                   PerspectiveMixin, PersistenceMixin,
+                   FaultTolerant):
     """ """
     system_shell  = 'xterm -fg green -bg black -e '
     reactor       = reactor
@@ -48,7 +51,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
     @property
     def tumbler(self):
         from xanalogica.tumbler import Tumbler
-        return
+        return Tumbler
 
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
@@ -68,6 +71,10 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
     def nodes(self):
         """ nodes: dynamic definition """
 
+    def load(self):
+        """ call load for all embedded managers """
+        self.services.load()
+        self.agents.load()
 
     def play(self):
         """
@@ -108,7 +115,6 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         # Interprets all the instructions in the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.Nodes:
-            #for node in self.read_nodeconf():
                 original = node
                 instruction, args = node[0], node[1:]
 
@@ -118,7 +124,6 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                 else:
                     args = args[:-1]
                     kargs = (args and args[-1]) or {}
-                #raw_input([arguments,kargs])
 
                 handler = get_handler(instruction)
                 if not handler:
@@ -129,19 +134,15 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         for name, kls, kls_kargs in self.agents._pending:
             kls_kargs.update( { 'universe' : self } )
 
-        # TODO: invoke managers with __call__ ?
-        self.services.load()
-        self.agents.load()
+        # Call load for all embedded managers
+        self.load()
 
         # Setup threadpool
         self.threadpool = reactor.getThreadPool()
 
         # Main loop
-        #from twisted.internet.error import ReactorNotRunning
-        #try:
         reactor.run()
-        #except ReactorNotRunning:
-        #    pass
+
 
     def sleep(self):
         """ """
@@ -183,21 +184,6 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         name = 'Universe({alfa})[{bravo}:{charlie}]@{delta}'.format(**name_args)
         self.name    = name
         return name
-
-    def fault(self, error, context):
-        """ TODO: sane yet relatively automatic logging for faults.
-        """
-        console.vertical_space()
-        report("",header=console.red("--> FAULT <--"))
-        console.draw_line()
-        print ( "\n{error}".format(error=error))
-        import StringIO, pprint
-        fhandle=StringIO.StringIO()
-        pprint.pprint(context, fhandle)
-        print console.color(fhandle.getvalue())
-        console.draw_line()
-        console.vertical_space()
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
 
     def loadService(self, service, **kargs):
         """ """

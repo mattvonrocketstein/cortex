@@ -9,11 +9,21 @@ class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
     def test_agentmanager_load(self):
         self.assertTrue('tmptest' not in self.universe.agents.as_dict)
+        dynclass = Agent.subclass()
         self.universe.agents.load_item(name='tmptest',
-                                       kls=Agent.subclass(),
+                                       kls=dynclass,
                                        kls_kargs=dict(universe=self.universe),)
-        self.assertTrue('tmptest' in self.universe.agents)
+
+        ## check registry two ways
         self.assertTrue('tmptest' in self.universe.agents.registry)
+        self.assertTrue('tmptest' in self.universe.agents)
+
+
+        hds = self.universe.agents.registry['tmptest']
+        obj = hds.obj
+        self.assertEqual(type(obj), dynclass, "agentmanager registered kls but did not instantiate it")
+        self.assertTrue(obj.started, "agentmanager built instance but did not start it")
+        #self.assertTrue(self.universe.agents.registry
 
     def test_agent_manager(self):
         # TODO: define and convert this test to use the trivial agent
@@ -42,8 +52,8 @@ class AgentCheck(TestCase):
         self.assertTrue(not self.is_stopped)
         self.assertTrue(not self.stopped)
 
-    def test_autonomy2(self,other=None):
-        """ test autonomy spec """
+    def test_autonomy_spec(self,other=None):
+        # test autonomy spec
         other = other or self
         F = lambda x: callable(getattr(other,x,None) )
         self.assertTrue(F('iterate'))
@@ -52,9 +62,8 @@ class AgentCheck(TestCase):
         self.assertTrue(F('stop'))
 
     def test_autonomy_for_every_service(self):
-        """ every service registered with this universe
-            should use the autonomy mixin, and so should
-            implement the autonomy spec
-        """
+        # every service registered with this universe
+        # should use the autonomy mixin, and so should
+        # implement the autonomy spec
         for service in self.services.values():
-            self.test_autonomy2(service)
+            self.test_autonomy_spec(service)

@@ -17,12 +17,14 @@ from cortex.tests.core_channels import ChannelCheck
 from cortex.tests.core_agent import AgentCheck
 from cortex.tests.agents_watchdog import WatchdogTest
 
-# Test-classes to use
+## Test-classes to use
+## TODO: discover these so the list doesn't have to be touched..
 bases = (MetaclassesTest, AgentCheck,
          WatchdogTest, UniverseCheck, ChannelCheck, )
 
 ## Parameters for the services.. empty and ready to override
-interactive = True                                  # Whether to run shell
+interactive = True                                   # Whether to run shell
+#interactive = False                                  # Whether to run shell
 post_args   = {}                                     # Postoffice parameters
 term_args   = {}                                     # Cortex-Terminal arguments
 linda_args  = {}                                     # Linda (tuplespace) parameters

@@ -11,17 +11,16 @@ class UniverseCheck(AgentManagerCheck, ServiceManagerCheck):
         with twisted reactor
     """
     def test_universe(self):
-        "is the universe setup? "
+        # is the universe setup for this agent?
         self.assertTrue(self.universe)
 
     def test_reactor(self):
-        "is the twisted reactor installed in the universe? "
+        # is the twisted reactor installed in the universe?
         self.assertTrue(self.universe.reactor)
 
     def test_reactor_calls(self):
-        """ "self.universe.reactor.callLater(1, callback)"
-            does not work-- apparently threadpool blocks it.
-        """
+        # does not work-- apparently threadpool blocks it:
+        #self.universe.reactor.callLater(1, callback)
         class result_holder: switch=0
         def callback(): result_holder.switch += 1
         self.universe.reactor.callFromThread(callback)

@@ -10,6 +10,21 @@ from cortex.core.util import report, console
 
 class Mixin(object): pass
 
+class FaultTolerant(Mixin):
+    """ faults are a replacement for exceptions """
+    def fault(self, error, context):
+        """ TODO: sane yet relatively automatic logging for faults.. """
+        console.vertical_space()
+        report("",header=console.red("--> FAULT <--"))
+        console.draw_line()
+        print ( "\n{error}".format(error=error))
+        import StringIO, pprint
+        fhandle = StringIO.StringIO()
+        pprint.pprint(context, fhandle)
+        print console.color(fhandle.getvalue())
+        console.draw_line()
+        console.vertical_space()
+
 class AddressMixin:
     """ Something that's addressable """
 
