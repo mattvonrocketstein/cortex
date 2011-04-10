@@ -4,7 +4,7 @@
 """
 
 import datetime
-
+from types import StringTypes
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
 
@@ -67,6 +67,20 @@ class Manager(object):
         boot_order = self.resolve_boot_order()
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
+
+    def unload(self, obj):
+        if not isinstance(obj, StringTypes):
+            matches = filter(lambda x: x[1].obj == obj, self.registry.items())
+            key = matches and matches[0][0]
+            if not key:
+                raise ValueError,"No value found for " + str(obj)
+        else:
+            key = obj
+        assert isinstance(key,StringTypes),"manager.unload(): requires string or something mappable to string for retrieval"
+        obj = self.registry[key]
+        obj.obj.stop()
+        del self.registry[key]
+
 
     def load_items(self, items):
         """ load_items """

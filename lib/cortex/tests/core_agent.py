@@ -4,10 +4,11 @@
 from unittest import TestCase
 
 from cortex.core.node import Agent
+from cortex.core.node import AgentManager
 
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
-    def test_agentmanager_load(self):
+    def test_agentmanager_load_unload(self):
         self.assertTrue('tmptest' not in self.universe.agents.as_dict)
         dynclass = Agent.subclass()
         self.universe.agents.load_item(name='tmptest',
@@ -22,15 +23,24 @@ class AgentManagerCheck(TestCase):
         hds = self.universe.agents.registry['tmptest']
         obj = hds.obj
         self.assertEqual(type(obj), dynclass, "agentmanager registered kls but did not instantiate it")
+
+        ## ensure started
         self.assertTrue(obj.started, "agentmanager built instance but did not start it")
-        #self.assertTrue(self.universe.agents.registry
+
+        self.universe.agents.unload(obj)
+
+        ## check registry two ways
+        self.assertTrue('tmptest' not in self.universe.agents)
+        self.assertTrue('tmptest' not in self.universe.agents.registry)
+
+        ## ensure stopped
+        self.assertTrue(not obj.started)
+        self.assertTrue(obj.stopped)
 
     def test_agent_manager(self):
         # TODO: define and convert this test to use the trivial agent
         # is the agentmanager an agentmanager?
-        from cortex.core.node import AgentManager
-        agents = self.universe.agents
-        self.assertEqual(type(agents), AgentManager)
+        self.assertEqual(type(self.universe.agents), AgentManager)
 
     def test_agent_manager_flush(self):
         #self.universe.agents.flush()
