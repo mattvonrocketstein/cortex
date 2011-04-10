@@ -3,11 +3,12 @@
 
 from unittest import TestCase
 
-#from cortex.agents.watchdog import WatchDog
 from cortex.tests import wait
+from cortex.agents.watchdog import WatchDog
+
 class WatchdogTest(TestCase):
     """ """
-    def asdftest_watchdog_load(self):
+    def test_watchdog_load(self):
         self.universe.agents(WatchDog, 'wdtest')
         err = "agents.load did not work."
         self.assertTrue('wdtest' in self.universe.agents, err)
