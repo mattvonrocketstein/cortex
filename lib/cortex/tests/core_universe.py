@@ -2,47 +2,8 @@
 
 from unittest import TestCase
 
-from cortex.core.node import Agent
-
-class ServiceManagerCheck(TestCase):
-    def test_service_manager(self):
-        # is the servicemanager a servicemanager?
-        from cortex.core.service import ServiceManager
-        services = self.universe.services
-        self.assertEqual(type(services), ServiceManager)
-
-        services = self.services
-        self.assertTrue('unittestservice' in services)
-        self.assertTrue('postoffice' in services)
-        self.assertTrue('linda' in services)
-
-    def test_service_load(self):
-        #TODO: define and convert this test to use the trivial service
-        pass
-
-class AgentManagerCheck(TestCase):
-    def test_agentmanager_load(self):
-        self.assertTrue('tmptest' not in self.universe.agents.as_dict)
-        self.universe.agents.load_item(name='tmptest',
-                                       kls=Agent.subclass(),
-                                       kls_kargs=dict(universe=self.universe),)
-        self.assertTrue('tmptest' in self.universe.agents)
-        self.assertTrue('tmptest' in self.universe.agents.registry)
-
-    def test_agent_manager(self):
-        # TODO: define and convert this test to use the trivial agent
-        # is the agentmanager an agentmanager?
-        from cortex.core.node import AgentManager
-        agents = self.universe.agents
-        self.assertEqual(type(agents), AgentManager)
-
-    def test_agent_manager_flush(self):
-        #self.universe.agents.flush()
-        #self.assertEqual(len(agents),0)
-        pass
-
-        # NOTE: tests False when empty (it's a feature..)
-        #self.assertTrue(self.universe.agents)
+from cortex.tests.core_service import ServiceManagerCheck
+from cortex.tests.core_agent import AgentManagerCheck
 
 class UniverseCheck(AgentManagerCheck, ServiceManagerCheck):
     """ check various aspects of an engaged universe
