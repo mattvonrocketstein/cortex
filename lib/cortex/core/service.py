@@ -135,7 +135,7 @@ class Service(Agent):
               <stop> for services differs from your typical
               agent because ..
         """
-        report("service::stopping")
+        #report("service::stopping")
         self.is_stopped = True
         self.started    = False
         super(Service, self).stop()

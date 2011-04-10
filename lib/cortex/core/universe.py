@@ -158,13 +158,17 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
 
     def halt(self):
         """ override controllable """
-        self.reactor.callFromThread(self.stop)
+        return self.reactor.callFromThread(self.stop)
 
     def stop(self):
         """ override autonomy """
         self.started = False
+        stopped=[]
         for service in self.services:
-            try: self.services[service].obj.stop()
+            try:
+                service = self.services[service].obj
+                service.stop()
+                stopped.append(service)
             except Exception,e:
                 err_msg = 'Squashed exception stopping service "{service}".  Original Exception follows'.format(service=service)
                 report(err_msg)
@@ -174,6 +178,7 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
         for thr in self.threads:
             thr._Thread__stop()
         self.reactor.stop()
+        report("Stopped: ", [x for x in stopped] )
 
     def decide_name(self):
         """ """

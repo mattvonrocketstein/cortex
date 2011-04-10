@@ -1,7 +1,7 @@
 """ tests for cortex
 
     turns out the best place to run tests are
-    to be inside the system that's being tested.
+    to be inside the system that's being tested..
 """
 
 from cortex.tests.channel import *
@@ -20,7 +20,8 @@ from cortex.tests.agents_watchdog import WatchdogTest
 ## Test-classes to use
 ## TODO: discover these so the list doesn't have to be touched..
 bases = (MetaclassesTest, AgentCheck,
-         WatchdogTest, UniverseCheck, ChannelCheck, )
+         WatchdogTest,    UniverseCheck,
+         ChannelCheck, )
 
 ## Parameters for the services.. empty and ready to override
 interactive = True                                   # Whether to run shell
