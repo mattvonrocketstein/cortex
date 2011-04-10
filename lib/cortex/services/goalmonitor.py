@@ -1,6 +1,6 @@
 """ cortex.services.goalmonitor
 
-      a simple service that
+      a simple service that performs an action after all it's goals are met.
 
       TODO:
 """
@@ -15,6 +15,8 @@ class GoalMonitor(Threadpooler, Service):
 
           start: brief description of service start-up here
           stop:  brief description service shutdown here
+
+          TODO: have this extend the watchdog agent
 
           TODO: either wrap TupleBus.publish up in something asynchronous,
                 or guarantee that subscriber-callbacks are themselves

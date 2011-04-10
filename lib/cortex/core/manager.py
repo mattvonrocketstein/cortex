@@ -32,6 +32,8 @@ class Manager(object):
          NOTE: if subclasses define 'asset_class', then it will be used in place of
                the default class <HierarchicalData>
     """
+    class Duplicate(Exception): pass
+
     class NotFound(Exception): pass
 
     def __init__(self, *args, **kargs):
@@ -97,6 +99,8 @@ class Manager(object):
     def load_item(self, name=None, kls=None, kls_kargs=None, index=None):
         """ will be called by Manager.load
         """
+        if name in self.registry:
+            raise Manager.Duplicate("Duplicate: " +name)
         obj = self.load_obj(kls=kls, **kls_kargs)
         self.register(name,
                       obj        = obj,
