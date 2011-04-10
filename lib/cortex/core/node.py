@@ -11,6 +11,7 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
+from cortex.core.atoms import FaultTolerant
 from cortex.core.manager import Manager
 
 class AgentManager(Manager):
@@ -77,9 +78,9 @@ class AgentManager(Manager):
 
     def post_registration(self, asset):
         """ pre_registration hook """
-        report( asset.obj )
+        #report( asset.obj )
 
-class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
+class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     """
         CONVENTION: __init__ always passes unconsumed kargs to _post_init()
 
@@ -90,7 +91,6 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
     __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP
     name          = 'default-name'
-
 
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
