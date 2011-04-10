@@ -10,10 +10,6 @@ from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
 
-def build_agent(name, kls=object, kls_kargs={}):
-    """ proxy to the agent manager """
-    universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
-
 def publish(**kargs):
     """ return a dictionary of the namespace for this module """
 
@@ -96,6 +92,13 @@ def chat(api, msg=".. answering ping", response='pong!'):
     """ simple command, but very useful for testing remote apis """
     report(msg)
     return response
+
+def build_agent(name, kls=object, kls_kargs={}):
+    """ proxy to the agent manager
+
+         TODO: obsoleted by universe.services.__call__ ?
+    """
+    universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
 
 ping = chat
 echo = chat
