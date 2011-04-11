@@ -115,17 +115,32 @@ class AgentIterationCheck(TestCase):
         # test should be equivalent to test_agents_iterate1
         class result_holder: switch = 0
         x = (self.universe|'postoffice').event.i3
-        def callback(*args,**kargs):
-            result_holder.switch = 1
-            #report('blam')
+        def callback(*args,**kargs): result_holder.switch = 1
         x.subscribe(callback)
-        A = Agent.subclass(name='i2', iterate = lambda : x('bang') )
+        myiterate = lambda : x('arbitrary channel message')
+        A = Agent.subclass(universe=self.universe, name='i2', iterate = myiterate )
         self.universe.agents(A);
-        self.assertTrue(result_holder.switch==1)
+        self.assertEqual(result_holder.switch, 1)
         self.universe.agents.unload(A)
         x.destroy()
+    def asdf_test_Agents_iterate31(self):
+        # like 3, only using context manager
+        # test should be equivalent to test_agents_iterate1
+        class result_holder: switch = 0
+        x = (self.universe|'postoffice').event.i3
+        def callback(*args,**kargs): result_holder.switch = 1
+        x.subscribe(callback)
+        myiterate = lambda : x('arbitrary channel message')
+        with Agent.subclass(universe=self.universe,
+                            name='i2',
+                            iterate = myiterate ) as A:
 
-class AgentCheck(AgentIterationCheck):#TestCase):
+            #self.universe.agents(A);
+            self.assertEqual(result_holder.switch, 1)
+            #self.universe.agents.unload(A)
+        x.destroy()
+
+class AgentCheck(AgentIterationCheck):
     """ check various aspects of a running agent
 
         (in this case, the unittestservice is the agent in question)

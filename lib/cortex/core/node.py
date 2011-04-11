@@ -83,6 +83,7 @@ class AgentManager(Manager):
     def post_registration(self, asset):
         """ pre_registration hook """
         #report( asset.obj )
+AGENTS = AgentManager() # A cheap singleton
 
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     """
@@ -92,6 +93,7 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
         TODO: Make mixin classes work with __add__
 
     """
+    MANAGER = AGENTS
     __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP
     name          = 'default-name'
@@ -157,8 +159,4 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
         super(Agent, self).play()
         self.universe.reactor.callWhenRunning(self.iterate)
         return self
-
-
-
 Node    = Agent         # Alias
-AGENTS = AgentManager() # A cheap singleton
