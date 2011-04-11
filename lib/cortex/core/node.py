@@ -3,6 +3,8 @@
 
 import os
 
+from pep362 import Signature
+
 from cortex.core.util import report
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
@@ -13,6 +15,7 @@ from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
 from cortex.core.atoms import FaultTolerant
 from cortex.core.manager import Manager
+
 
 class AgentManager(Manager):
     """ """
@@ -93,6 +96,27 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     _post_init    = NOOP
     name          = 'default-name'
 
+    @classmethod
+    def _subclass_hooks(kls, name=None, iterate=None, **dct):
+        """ the following two should be equivalent,
+            because in the first case "self" is implied:
+
+              >>> A = Agent.subclass(iterate=lambda:dostuff(1,2,3) )
+              >>> A = Agent.subclass(iterate=lambda self:dostuff(1,2,3) )
+
+           both of these are equivalent to:
+              >>> class A(Agent):
+              >>>     def iterate(self):
+              >>>         dostufff(1,2,3)
+        """
+        if iterate is not None:
+            sig = Signature(iterate)
+            new_iterate = iterate
+            if not sig._parameters:
+                new_iterate = lambda self: iterate()
+            dct['iterate'] = new_iterate
+        return name,dct
+
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
             TODO: "host" is bad.  use a better address formalism instead.
@@ -131,8 +155,10 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
         if hasattr(self, 'setup'):
             self.setup()
         super(Agent, self).play()
-        self.universe.reactor.callLater(1,self.iterate)
+        self.universe.reactor.callWhenRunning(self.iterate)
         return self
+
+
 
 Node    = Agent         # Alias
 AGENTS = AgentManager() # A cheap singleton

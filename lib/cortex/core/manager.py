@@ -4,6 +4,8 @@
 """
 
 import datetime
+import inspect
+
 from types import StringTypes
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
@@ -72,16 +74,29 @@ class Manager(object):
 
     def unload(self, obj):
         if not isinstance(obj, StringTypes):
+
+            # first, given any nonstring object try to find exact matches
             matches = filter(lambda x: x[1].obj == obj, self.registry.items())
             key = matches and matches[0][0]
-            if not key:
-                raise ValueError,"No value found for " + str(obj)
+            if key: return self.unload(key)
+            else:
+                # given a class, try to find matches with isinstance
+                if inspect.isclass(obj):
+                    print obj, self.as_dict
+                    matches = [ pair for pair in self.registry.items() if isinstance(pair[1], obj)]
+                    return [ self.unload(x[0]) for x in matches ]
+
+                else:
+                    raise ValueError,"No value found for " + str(obj)
+
+        # got a stringy key
         else:
             key = obj
-        assert isinstance(key,StringTypes),"manager.unload(): requires string or something mappable to string for retrieval"
-        obj = self.registry[key]
-        obj.obj.stop()
-        del self.registry[key]
+            obj = self.registry[key]
+            obj.obj.stop()
+            del self.registry[key]
+            return key
+
 
     def load_items(self, items):
         """ load_items """
@@ -105,6 +120,7 @@ class Manager(object):
                       obj        = obj,
                       index      = index,
                       kargs      = kls_kargs)
+        return obj
 
     def pre_load_obj(self, kls=None, **kls_kargs):
         """ pre_load_obj hook:
@@ -295,9 +311,13 @@ class Manager(object):
 
         if name is None:
             import uuid
-            name = "DynamicAgentName" + uuid.uuid1().split('-')[-2]
-
-        self.load_item(kls=kls, name=name, kls_kargs=kargs)
+            name = "DynamicAgentName" + str(uuid.uuid1()).split('-')[0]
+        loader = lambda:\
+                 self.load_item(kls=kls,
+                                name=name,
+                                kls_kargs=kargs)
+        #self.universe.reactor.callFromThread(loader)
+        return loader()
 
     @property
     def default_kls_kargs(self):

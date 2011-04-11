@@ -10,16 +10,19 @@ class WatchDog(Agent):
         He barks with self.bark() or the "success" action he is
         passed on __init__.
     """
-    def _post_init(self, watch_list=[], success= None, **kargs):
-        """ NOTE: if "success" function is passed it will be used,
+
+    def _post_init(self, watch_list=[], bark= None, **kargs):
+        """ NOTE: if "bark" function is passed it will be used,
                   even if there is already a bark() method defined!
         """
         self.watch_list = watch_list
-        if success and getattr(self, 'bark'):
-            warn = "success function was passed in, but this class already has a bark() method!: "+str(self.__class__)
+        if bark and getattr(self, 'bark', None):
+            warn  = "bark function was passed in, but this class already has a bark() method!: "
+            warn += str(self.__class__)
             warnings.warn(warn)
-        if success:
-            setattr(self,  'bark', success)
+
+        if bark:
+            setattr(self,  'bark', bark)
 
     def iterate(self):
         """ watchdog overrides agent iterate """

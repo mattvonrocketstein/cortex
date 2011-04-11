@@ -184,7 +184,7 @@ class DefaultKeyMapper(object):
         """ dictionary compatibility """
         if key in self.keys():
             old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
-
+class NotFound(object): pass
 class Keyspace(Memory, DefaultKeyMapper):
     """ Thin wrapper around <Memory> to make it look like a dictionary
     """
@@ -206,7 +206,7 @@ class Keyspace(Memory, DefaultKeyMapper):
         if matching_tuples:
             first_match = matching_tuples[0]
             return self.tuple2value(first_match)
-        return "NOT FOUND"
+        return NotFound #"NOT FOUND"
 
     def subspace(self, name):
         """ return a nested keyspace with name <name> """
