@@ -6,28 +6,38 @@ from unittest import TestCase
 from cortex.core.node import Agent
 from cortex.core.node import AgentManager
 from cortex.core.util import report
+from cortex.tests import wait, X
 
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
 
     def test_load_duplicates(self):
         self.assertTrue('dupetest' not in self.universe.agents.as_dict)
-        dynclass = Agent.subclass()
-        kargs = dict(name='dupetest', kls=dynclass,
-                     kls_kargs=dict(universe=self.universe), #TODO make this implied
-                     )
+        # this next part is implied for test_load_duplicates2
+        kargs = dict(universe=self.universe)
+        kargs = dict(name='dupetest',
+                     kls=Agent.subclass(),
+                     kls_kargs=kargs, )
         self.universe.agents.load_item(**kargs)
 
         ## check registry two ways
         self.assertTrue('dupetest' in self.universe.agents.registry)
         self.assertTrue('dupetest' in self.universe.agents)
 
-
-        hds = self.universe.agents.registry['dupetest']
-        obj = hds.obj
         self.assertRaises(AgentManager.Duplicate,
                           lambda: self.universe.agents.load_item(**kargs))
-        self.universe.agents.unload(obj)
+        self.universe.agents.unload(self.universe.agents.registry['dupetest'].obj)
+
+    def test_load_duplicates2(self):
+        # should be equivalent to test_load_duplicates
+        self.assertTrue('dupetest' not in self.universe.agents.as_dict)
+        self.universe.agents(Agent.subclass(),name='dupetest')
+
+        ## check registry two ways
+        self.assertTrue('dupetest' in self.universe.agents.registry)
+        self.assertTrue('dupetest' in self.universe.agents)
+
+        self.universe.agents.unload(self.universe.agents.registry['dupetest'].obj)
 
 
     def test_agentmanager_load_unload(self):
@@ -73,7 +83,7 @@ class AgentManagerCheck(TestCase):
         # NOTE: tests False when empty (it's a feature..)
         #self.assertTrue(self.universe.agents)
 
-from cortex.tests import wait, X
+
 class AgentIterationCheck(TestCase):
     def test_agents_iterate1(self):
         # test should be equivalent to test_agents_iterate2
