@@ -26,7 +26,7 @@ class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
         report("Found {N} tests".format(N=len(functions_to_test)))
         test_cases = [FTC(f, **FTC_kargs) for f in functions_to_test]
         test_suite = unittest.TestSuite(test_cases)
-        TextTestRunner().run(test_suite)
+        TextTestRunner(verbosity=2).run(test_suite)
         test_suite.run(TestResult()) #unittest.main()
         yield
 
@@ -43,10 +43,6 @@ class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
         """ """
         class SimpleService(Service):
             pass
-
-    def test_self_as_service(self):
-        " is the unittest service installed as a service? "
-        self.assertTrue( [ self.__class__.__name__.lower() in self.universe.services ] )
 
 
 

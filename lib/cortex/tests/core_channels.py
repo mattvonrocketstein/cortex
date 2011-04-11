@@ -5,8 +5,11 @@ import unittest
 
 from unittest import TestCase
 
+from cortex.tests import wait
+
 class ChannelCheck(TestCase):
     """ test the channel abstraction """
+
     def test_channels(self):
         class result_holder: switch=0
         def callback(*args, **kargs): result_holder.switch = 1
@@ -27,11 +30,10 @@ class ChannelCheck(TestCase):
         # (block for a second so callback gets hit)
         chan_sandwich.subscribe(callback)
         chan_sandwich("test")
-        import time; time.sleep(1)
+        #wait()
         if result_holder.switch == 0:
             self.assertTrue(False and "callback not fired :(" )
 
         # test that destroy unsubscribes and unregisters
         chan_sandwich.destroy()
         self.assertEqual(len(poffice.event.subchannels()), 0)
-
