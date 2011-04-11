@@ -5,6 +5,7 @@ from unittest import TestCase
 
 from cortex.core.node import Agent
 from cortex.core.node import AgentManager
+from cortex.core.util import report
 
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
@@ -64,6 +65,7 @@ class AgentManagerCheck(TestCase):
         self.assertEqual(type(self.universe.agents), AgentManager)
 
     def test_agent_manager_flush(self):
+
         #self.universe.agents.flush()
         #self.assertEqual(len(agents),0)
         pass
@@ -71,11 +73,54 @@ class AgentManagerCheck(TestCase):
         # NOTE: tests False when empty (it's a feature..)
         #self.assertTrue(self.universe.agents)
 
-class AgentCheck(TestCase):
+from cortex.tests import wait, X
+class AgentIterationCheck(TestCase):
+    def test_agents_iterate1(self):
+        # test should be equivalent to test_agents_iterate2
+        class result_holder: switch=0
+        myiterate = lambda self: setattr(result_holder,'switch',1)
+        myiterate.reentrant=True
+        A = Agent.subclass().subclass(iterate=myiterate)
+        handle = self.universe.agents(A);
+        #self.assertEqual(handle,3)
+        self.assertEqual(handle.__class__, A)
+        #wait()
+        self.assertTrue(handle.started)
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        #self.assertEqual(handle.iterate, myiterate)
+        self.assertTrue(handle.iterate!=myiterate) # replaced with lambda self: ...
+        self.assertEqual(1, result_holder.switch)
+        self.universe.agents.unload(A)
+
+    def test_agents_iterate2(self):
+        # test should be equivalent to test_agents_iterate1
+        class result_holder: switch=0
+        A = Agent.subclass(name='i2', iterate=lambda self:setattr(result_holder,'switch',1) )
+        self.universe.agents(A); #wait()
+        #wait()
+        self.assertEqual(1, result_holder.switch)
+        self.universe.agents.unload(A)
+
+    def test_agents_iterate3(self):
+        # test should be equivalent to test_agents_iterate1
+        class result_holder: switch = 0
+        x = (self.universe|'postoffice').event.i3
+        def callback(*args,**kargs):
+            result_holder.switch = 1
+            #report('blam')
+        x.subscribe(callback)
+        A = Agent.subclass(name='i2', iterate = lambda : x('bang') )
+        self.universe.agents(A);
+        self.assertTrue(result_holder.switch==1)
+        self.universe.agents.unload(A)
+        x.destroy()
+
+class AgentCheck(AgentIterationCheck):#TestCase):
     """ check various aspects of a running agent
 
         (in this case, the unittestservice is the agent in question)
     """
+
     def test_self_as_service(self):
         # is the unittest service installed as a service?
         self.assertTrue( [ self.__class__.__name__.lower() in self.universe.services ] )

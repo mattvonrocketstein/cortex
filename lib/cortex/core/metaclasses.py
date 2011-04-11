@@ -13,7 +13,11 @@ class META(type):
         to avoid MRO issues, this should be the main one used,
         and everything should subclass it and define hooks.
     """
-    def subclass(kls,name=None,dct={}):
+
+    def subclass(kls, name=None, dct={}, **kargs):
+        dct.update(kargs)
+        if hasattr(kls, '_subclass_hooks'):
+            name,dct = kls._subclass_hooks(name=name, **dct)
         name = name or "DynamicSubclass_" + str(uuid.uuid1()).split('-')[-2]
         return kls.__metaclass__(name, (kls,), dct)
 

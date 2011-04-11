@@ -20,11 +20,12 @@ class GoalMonitor(WatchDog, Service, Threadpooler,):
     """ the Goal Service is a watchdog who shuts down the
         universe when all it's goals are completed.
     """
-    def _post_init(self, goals=[], **kargs):
+    def _post_init(self, goals=[], success=None, **kargs):
         """ alias watchdog's "watch_list" argument
             to "goals" for a more intuitive api.
         """
         kargs.update(dict(watch_list=goals))
+        kargs.update(dict(success=success))
         super(GoalMonitor,self)._post_init(**kargs)
 
     def bark(self):

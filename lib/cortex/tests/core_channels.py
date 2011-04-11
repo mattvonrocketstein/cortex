@@ -30,7 +30,7 @@ class ChannelCheck(TestCase):
         # (block for a second so callback gets hit)
         chan_sandwich.subscribe(callback)
         chan_sandwich("test")
-        wait()
+        #wait()
         if result_holder.switch == 0:
             self.assertTrue(False and "callback not fired :(" )
 
