@@ -4,7 +4,9 @@
 """
 
 import datetime
+import inspect
 
+from types import StringTypes
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
 
@@ -32,6 +34,8 @@ class Manager(object):
          NOTE: if subclasses define 'asset_class', then it will be used in place of
                the default class <HierarchicalData>
     """
+    class Duplicate(Exception): pass
+
     class NotFound(Exception): pass
 
     def __init__(self, *args, **kargs):
@@ -46,20 +50,53 @@ class Manager(object):
         self.generic_store = HierarchicalData()
 
     def resolve_boot_order(self, **kargs):
-        """ by default, simply returns the names in
-            the order they were registered """
-        return [pending[0] for pending in self._pending ]
+        """ by default, simply returns the names in the same order
+            they were registered.  subclassers may want to change
+            this.
+        """
+        return [ pending[0] for pending in self._pending ]
 
     def load(self):
-        """ Convention:
-              if <manage> is used, this should be called after
-              all calls to it are finished
+        """ Determines prerequisites with <solve_boot_order>, and fees that
+            value to load_items.
+
+            Convention:
+              calling <load> means that all the declarative "setup" calls
+              to this manager have been completed.  in other words, if <manage>
+              is used, this should be called after all calls to <manage> are
+              finished.
 
               TODO: refactor
         """
         boot_order = self.resolve_boot_order()
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
+
+    def unload(self, obj):
+        if not isinstance(obj, StringTypes):
+
+            # first, given any nonstring object try to find exact matches
+            matches = filter(lambda x: x[1].obj == obj, self.registry.items())
+            key = matches and matches[0][0]
+            if key: return self.unload(key)
+            else:
+                # given a class, try to find matches with isinstance
+                if inspect.isclass(obj):
+                    print obj, self.as_dict
+                    matches = [ pair for pair in self.registry.items() if isinstance(pair[1], obj)]
+                    return [ self.unload(x[0]) for x in matches ]
+
+                else:
+                    raise ValueError,"No value found for " + str(obj)
+
+        # got a stringy key
+        else:
+            key = obj
+            obj = self.registry[key]
+            obj.obj.stop()
+            del self.registry[key]
+            return key
+
 
     def load_items(self, items):
         """ load_items """
@@ -68,18 +105,22 @@ class Manager(object):
             if search:
                 junk_name, kls, kls_kargs = search[0]
                 kls_kargs = kls_kargs or {}
-                self.load_item(name=name, kls=kls, kls_kargs=kls_kargs,
+                self.load_item(kls=kls,
+                               name=name,
+                               kls_kargs=kls_kargs,
                                index=items.index(name))
 
     def load_item(self, name=None, kls=None, kls_kargs=None, index=None):
         """ will be called by Manager.load
         """
+        if name in self.registry:
+            raise Manager.Duplicate("Duplicate: " +name)
         obj = self.load_obj(kls=kls, **kls_kargs)
-
         self.register(name,
                       obj        = obj,
                       index      = index,
                       kargs      = kls_kargs)
+        return obj
 
     def pre_load_obj(self, kls=None, **kls_kargs):
         """ pre_load_obj hook:
@@ -88,6 +129,7 @@ class Manager(object):
 
     def load_obj(self, kls=None, **kls_kargs):
         """ load_obj """
+        #report("load_obj",kls)
         kls, kls_kargs = self.pre_load_obj(kls=kls, **kls_kargs)
         obj = kls(**kls_kargs)
         obj = self.post_load_obj(obj)
@@ -195,7 +237,7 @@ class Manager(object):
         self.registry[name] = getattr(self, 'asset_class', DEFAULT_ASSET_CLASS)()
         for key, value in item_metadata.items():
             setattr( self.registry[name], key, value)
-        self._stamp(name)
+        self._stamp(name) # sets birthday
         new_asset = self[name]
         new_asset = self.post_registration(new_asset)
         return new_asset
@@ -256,4 +298,33 @@ class Manager(object):
         """ list/dictionary compatibility: a dumb proxy """
         return iter(self.registry)
 
+    def __call__(self, kls, name=None, **kargs):
+        """ shortcut for load_item"""
+        if not hasattr(self, 'universe'):
+            err = "expected manager would know the universe by the time it was asked to load something"
+            raise ValueError, err
+
+        defaults = self.default_kls_kargs
+        for k in defaults:
+            if k not in kargs:
+                kargs.update({k:defaults[k]})
+
+        if name is None:
+            import uuid
+            name = "DynamicAgentName" + str(uuid.uuid1()).split('-')[0]
+        loader = lambda:\
+                 self.load_item(kls=kls,
+                                name=name,
+                                kls_kargs=kargs)
+        #self.universe.reactor.callFromThread(loader)
+        return loader()
+
+    @property
+    def default_kls_kargs(self):
+        """ when __call__ is used, anything not appearing
+            here and not in **kargs will be copied over. """
+        return dict(universe=self.universe)
+
 DEFAULT_ASSET_CLASS = HierarchicalData
+
+class CortexManager(Manager): pass

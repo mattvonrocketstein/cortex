@@ -3,6 +3,8 @@
 
 import os
 
+from pep362 import Signature
+
 from cortex.core.util import report
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
@@ -11,10 +13,13 @@ from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
+from cortex.core.atoms import FaultTolerant
 from cortex.core.manager import Manager
+
 
 class AgentManager(Manager):
     """ """
+
     # TODO: not enforced..
     load_first = ['ServiceManager']
 
@@ -38,20 +43,23 @@ class AgentManager(Manager):
         """ dictionary compatability """
         return [[var, val.obj] for var,val in Manager.items(self)]
 
+    def flush(self):
+        """ TODO: test this """
+        self.stop_all()
+        self.registry = {}
+
     def stop_all(self):
         """ stop all services this manager knows about """
         [ s.stop() for s in self ]
 
     def pre_manage(self, name=None, kls=None, **kls_kargs):
-        """ make an educated guess whenever 'name' is not given
-        """
+        """ make an educated guess whenever 'name' is not given """
         if 'name' not in kls_kargs:
             kls_kargs['name'] = name
         return name, kls, kls_kargs
 
     def pre_load_obj(self, kls=None, **kls_kargs):
-        """ pre_load_obj hook:
-        """
+        """ pre_load_obj hook: """
         assert self.universe, 'universe is broken!'
 
         # enforce requirements (NOTE: servicemanager will want to undo this)
@@ -65,8 +73,7 @@ class AgentManager(Manager):
         return super(AgentManager,self).pre_load_obj(kls=kls, **kls_kargs)
 
     def post_load_obj(self, obj):
-        """ post_load_obj hook:
-        """
+        """ post_load_obj hook: """
         return obj.play()
 
     def pre_registration(self, name, **metadata):
@@ -75,17 +82,40 @@ class AgentManager(Manager):
 
     def post_registration(self, asset):
         """ pre_registration hook """
-        report( asset.obj )
+        #report( asset.obj )
 
-class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
+class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     """
         CONVENTION: __init__ always passes unconsumed kargs to _post_init()
+
         TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
+        TODO: Make mixin classes work with __add__
+
     """
     __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP
     name          = 'default-name'
 
+    @classmethod
+    def _subclass_hooks(kls, name=None, iterate=None, **dct):
+        """ the following two should be equivalent,
+            because in the first case "self" is implied:
+
+              >>> A = Agent.subclass(iterate=lambda:dostuff(1,2,3) )
+              >>> A = Agent.subclass(iterate=lambda self:dostuff(1,2,3) )
+
+           both of these are equivalent to:
+              >>> class A(Agent):
+              >>>     def iterate(self):
+              >>>         dostufff(1,2,3)
+        """
+        if iterate is not None:
+            sig = Signature(iterate)
+            new_iterate = iterate
+            if not sig._parameters:
+                new_iterate = lambda self: iterate()
+            dct['iterate'] = new_iterate
+        return name,dct
 
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
@@ -125,8 +155,10 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin):
         if hasattr(self, 'setup'):
             self.setup()
         super(Agent, self).play()
-        self.universe.reactor.callLater(1,self.iterate)
+        self.universe.reactor.callWhenRunning(self.iterate)
         return self
+
+
 
 Node    = Agent         # Alias
 AGENTS = AgentManager() # A cheap singleton

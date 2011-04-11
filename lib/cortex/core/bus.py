@@ -6,7 +6,7 @@ from cyrusbus.bus import Bus
 from cortex.core.util import report
 from cortex.core.ground import Keyspace
 from cortex.services import Service
-
+from cortex.core.ground import NotFound
 
 class TupleBus(Bus):
     """ a wrapper over cyrusbus to use tuples
@@ -38,6 +38,14 @@ class TupleBus(Bus):
             return False
         return callback in self.subscriptions[key]
 
+    def has_any_subscriptions(self, key):
+        """ HACK: sidestepping problem with NotFound """
+        if key in self.subscriptions:
+            subs = self.subscriptions[key]
+            if hasattr(subs, '__len__'):
+                return len(subs) > 0
+        return False
+
     def publish(self, key, *args, **kwargs):
         """ override from cyrusbus enforcing simple callbacks as
             subscriptions (by default cyrusbus uses dictionaries)
@@ -47,7 +55,11 @@ class TupleBus(Bus):
         if not self.has_any_subscriptions(key):
             return self
         N = 0
-        for subscriber in self.subscriptions[key]:
+        subscribers = self.subscriptions[key]
+
+        if subscribers==NotFound:
+            return N
+        for subscriber in subscribers:
             subscriber(self, *args, **kwargs)
             N+=1
         return N
@@ -56,6 +68,8 @@ class TupleBus(Bus):
         """ override from cyrusbus forcing tuples, not lists.
              also changed return-value, now sends back all subscribers for <key>
         """
+        if not callable(callback):
+            raise TypeError,"Expected callback would be callable:" + str(callback)
         if key not in self.public_keys():
             self[key] = tuple([callback])
 

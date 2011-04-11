@@ -2,8 +2,8 @@
 
       The universe is an abstraction intended to unify the representation
       of aspects of the interpretter, the operating system, the "mainloop",
-      and the cortex runtime.  It should (probably) effectively be a singleton--
-      one per process.
+      the process, and the cortex runtime.  It should effectively be a
+      singleton-- one per process.
 """
 
 import os, sys
@@ -28,9 +28,12 @@ from cortex.core.service import ServiceManager
 from cortex.core.node import AGENTS #AgentManager
 from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
+from cortex.core.atoms import FaultTolerant
 
-class __Universe__(AutoReloader, OSMixin, UniverseNotation,
-                   ControllableMixin, AutonomyMixin, PerspectiveMixin, PersistenceMixin):
+class __Universe__(AutoReloader, UniverseNotation, OSMixin,
+                   ControllableMixin, AutonomyMixin,
+                   PerspectiveMixin, PersistenceMixin,
+                   FaultTolerant):
     """ """
     system_shell  = 'xterm -fg green -bg black -e '
     reactor       = reactor
@@ -48,7 +51,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
     @property
     def tumbler(self):
         from xanalogica.tumbler import Tumbler
-        return
+        return Tumbler
 
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
@@ -56,20 +59,22 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         nodeconf_err = 'Universe.nodeconf_file tests false or is not set.'
         assert hasattr(self, 'nodeconf_file') and self.nodeconf_file, nodeconf_err
         jsons = Nodeconf(self.nodeconf_file).parse()
-        #raise Exception,jsons
         return jsons
 
     @property
     def Nodes(self):
         """ nodes: static definition """
         blammo = getattr(self, '_use_nodeconf', self.read_nodeconf)
-        #, self.read_nodeconf()
         return blammo()
 
     @property
     def nodes(self):
         """ nodes: dynamic definition """
 
+    def load(self):
+        """ call load for all embedded managers """
+        self.services.load()
+        self.agents.load()
 
     def play(self):
         """
@@ -110,7 +115,6 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         # Interprets all the instructions in the nodeconf
         if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
             for node in self.Nodes:
-            #for node in self.read_nodeconf():
                 original = node
                 instruction, args = node[0], node[1:]
 
@@ -120,7 +124,6 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
                 else:
                     args = args[:-1]
                     kargs = (args and args[-1]) or {}
-                #raw_input([arguments,kargs])
 
                 handler = get_handler(instruction)
                 if not handler:
@@ -131,19 +134,15 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         for name, kls, kls_kargs in self.agents._pending:
             kls_kargs.update( { 'universe' : self } )
 
-        # TODO: invoke managers with __call__ ?
-        self.services.load()
-        self.agents.load()
+        # Call load for all embedded managers
+        self.load()
 
         # Setup threadpool
         self.threadpool = reactor.getThreadPool()
 
         # Main loop
-        #from twisted.internet.error import ReactorNotRunning
-        #try:
         reactor.run()
-        #except ReactorNotRunning:
-        #    pass
+
 
     def sleep(self):
         """ """
@@ -159,13 +158,17 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
 
     def halt(self):
         """ override controllable """
-        self.reactor.callFromThread(self.stop)
+        return self.reactor.callFromThread(self.stop)
 
     def stop(self):
         """ override autonomy """
         self.started = False
+        stopped=[]
         for service in self.services:
-            try: self.services[service].obj.stop()
+            try:
+                service = self.services[service].obj
+                service.stop()
+                stopped.append(service)
             except Exception,e:
                 err_msg = 'Squashed exception stopping service "{service}".  Original Exception follows'.format(service=service)
                 report(err_msg)
@@ -175,6 +178,7 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         for thr in self.threads:
             thr._Thread__stop()
         self.reactor.stop()
+        report("Stopped: ", [x for x in stopped] )
 
     def decide_name(self):
         """ """
@@ -185,21 +189,6 @@ class __Universe__(AutoReloader, OSMixin, UniverseNotation,
         name = 'Universe({alfa})[{bravo}:{charlie}]@{delta}'.format(**name_args)
         self.name    = name
         return name
-
-    def fault(self, error, context):
-        """ TODO: sane yet relatively automatic logging for faults.
-        """
-        console.vertical_space()
-        report("",header=console.red("--> FAULT <--"))
-        console.draw_line()
-        print ( "\n{error}".format(error=error))
-        import StringIO, pprint
-        fhandle=StringIO.StringIO()
-        pprint.pprint(context, fhandle)
-        print console.color(fhandle.getvalue())
-        console.draw_line()
-        console.vertical_space()
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
 
     def loadService(self, service, **kargs):
         """ """

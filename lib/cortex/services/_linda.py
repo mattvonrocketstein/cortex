@@ -1,11 +1,6 @@
 """ cortex.services.linda
 """
 
-import re, pickle
-import datetime
-
-from socket import socket
-
 from cortex.services import Service
 from cortex.core.ground import Memory
 from cortex.core.util import report, console
@@ -38,4 +33,4 @@ class Linda(Service):
         """ """
         super(Linda, self).stop()
         self.universe.ground.shutdown()
-        report("Stopped linda tuplespace")
+        #report("Stopped linda tuplespace")
