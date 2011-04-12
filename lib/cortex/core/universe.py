@@ -25,7 +25,7 @@ from cortex.core.atoms import PersistenceMixin
 from cortex.core.peer import PeerManager, PEERS
 from cortex.core.service import Service, SERVICES
 from cortex.core.service import ServiceManager
-from cortex.core.node import AGENTS #AgentManager
+from cortex.core.agent import AGENTS #AgentManager
 from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
 from cortex.core.atoms import FaultTolerant

@@ -1,4 +1,4 @@
-""" cortex.core.node
+""" cortex.core.agent
 """
 
 import os

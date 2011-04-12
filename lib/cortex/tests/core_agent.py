@@ -3,8 +3,8 @@
 
 from unittest import TestCase
 
-from cortex.core.node import Agent
-from cortex.core.node import AgentManager
+from cortex.core.agent import Agent
+from cortex.core.agent import AgentManager
 from cortex.core.util import report
 from cortex.tests import wait, X
 
