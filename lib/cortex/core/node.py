@@ -30,6 +30,14 @@ class AgentManager(Manager):
     class AgentPrerequisiteNotMet(Exception):
         """ Move along, nothing to see here """
 
+    def __mod__(self, other):
+        import inspect;
+        assert inspect.isclass(other),'niy'
+        out = {}
+        for key,agent in self.as_dict.items():
+            if isinstance(agent, other): out[key]=agent
+        return out
+
     def __init__(self, universe=None, **kargs):
         """ """
         super(AgentManager,self).__init__(**kargs)
@@ -145,18 +153,6 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
               times.
         """
 
-    def play(self):
-        """ Convention:
-              <play> should always return something similar to a deferred.
-              This is a representation of <self> where <self> has
-              fundamentally been *invoked* already and is waiting
-              for the universal main loop to begin.
+    # def play(self): inherited from Autonomy
 
-            NOTE: overrides AutonomyMixin.play
-        """
-        if hasattr(self, 'setup'):
-            self.setup()
-        super(Agent, self).play()
-        self.universe.reactor.callWhenRunning(self.iterate)
-        return self
 Node    = Agent         # Alias

@@ -74,7 +74,6 @@ class Manager(object):
 
     def unload(self, obj):
         if not isinstance(obj, StringTypes):
-
             # first, given any nonstring object try to find exact matches
             matches = filter(lambda x: x[1].obj == obj, self.registry.items())
             key = matches and matches[0][0]
@@ -299,12 +298,13 @@ class Manager(object):
         return iter(self.registry)
 
     def __call__(self, kls, name=None, **kargs):
-        """ shortcut for load_item"""
+        """ shortcut for load_item """
         if not hasattr(self, 'universe'):
             err = "expected manager would know the universe by the time it was asked to load something"
             raise ValueError, err
 
         defaults = self.default_kls_kargs
+        kargs.update(dict(name=name))
         for k in defaults:
             if k not in kargs:
                 kargs.update({k:defaults[k]})
@@ -323,7 +323,7 @@ class Manager(object):
     def default_kls_kargs(self):
         """ when __call__ is used, anything not appearing
             here and not in **kargs will be copied over. """
-        return dict(universe=self.universe)
+        return dict(universe=self.universe, name="DEFNAYME")
 
 DEFAULT_ASSET_CLASS = HierarchicalData
 

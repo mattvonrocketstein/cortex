@@ -10,10 +10,19 @@ from cortex.tests import wait, X
 
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
+    def test_mod_op(self):
+        Junk = Agent.subclass(name='throw-away-subclass')
+        handle = self.universe.agents(Junk)
+        partition = self.universe.agents%Junk
+        self.assertEqual(1,len(partition))
+        self.assertEqual([handle], partition.values())
+        self.universe.agents.unload(partition.values()[0])
+        self.assertEqual(0,len(self.universe.agents%Junk))
 
     def test_load_duplicates(self):
         self.assertTrue('dupetest' not in self.universe.agents.as_dict)
         # this next part is implied for test_load_duplicates2
+
         kargs = dict(universe=self.universe)
         kargs = dict(name='dupetest',
                      kls=Agent.subclass(),

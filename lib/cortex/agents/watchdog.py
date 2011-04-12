@@ -3,6 +3,7 @@
 
 import warnings
 
+from cortex.core.util import report
 from cortex.core.node import Agent
 
 class WatchDog(Agent):

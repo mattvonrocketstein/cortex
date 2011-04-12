@@ -65,11 +65,14 @@ def is_persistent(obj):
 
 class Autonomy(Mixin):
     """ """
+
     def harikari(self):
         """ Convention:
               + <stop> self,
-              + <stop> children, and
-              + ensure-garbage-collection
+              + <stop> children,
+              + <exit> children
+              + <exit> self
+              + whatever else to ensure-garbage-collection
         """
         pass
 
@@ -120,13 +123,27 @@ class Autonomy(Mixin):
 
     def play(self):
         """ Convention:
+              <play> should always return something similar to a deferred.
+              This is a representation of <self> where <self> has
+              fundamentally been *invoked* already and is waiting
+              for the universal main loop to begin.
+
+        """
+        """ Convention:
               Responsibilities:
                 + invoke <start>, but maybe not right away.
                 + never block, and
                 + always return "self"
         """
-        #report("play for " + getattr(self, 'name', 'DEFAULT-NAME'))
+        # first setup if it's around
+        # start by default does nothing but set flags, so the
+        # next line ensures that even stupid default agents get to
+        # iterate exactly once.  this makes "the trivial agent"
+        # reducible to a function.
+        if hasattr(self, 'setup'): self.setup()
         self.start()
+        self.universe.reactor.callWhenRunning(self.iterate)
+        return self
 
     def resume(self):
         """ Convention:
@@ -157,7 +174,71 @@ class ControllableMixin(Mixin):
         """ like "stop" only safe to call from anywhere """
         ABSTRACT
 
-class Threadpooler(Autonomy):
+
+class ConcreteAutonomy(Autonomy):
+    @staticmethod
+    def reentrant(func):
+        func.reentrant=True
+        return func
+
+    @property
+    def iteration_period(self):
+        """ how often to let this agent do things.
+            the default is one second.  if you need to
+            change this, set _iteration_period for your
+            agent or you agents class, or if the value isn't
+            static you can  override this property in your
+            subclass.
+
+            TODO: make getters and setters; it's better than
+                  fooling around with __init__, maybe
+
+        """
+        return getattr(self, '_iteration_period', 1)
+
+    def run_primitive(self):
+        """ run_primitive does one "tick" worth of <run>.
+
+            this is kind of like <iterate>, but it encapsulates
+            logic that would be awkward for subclassers to have
+            to put there.
+        """
+        result = self.iterate()
+        if isinstance(result, GeneratorType):
+            report("Entering generator",header='')
+            try:
+                while result: result.next()
+            except StopIteration:
+                if hasattr(self.iterate, 'reentrant'):
+                    pass
+                else:
+                    self.stop()
+
+    def iterate(self):
+        """ Just for example purposes, and to remind
+            subclassers to override this method
+        """
+        msg = "override this: default iteration for threadpooler:"
+        report(msg, self)
+        yield "arbitrary value"
+        # Next line should not block anything..
+        #   it's in the threadpool.
+        time.sleep(1)
+    iterate.reentrant=True
+
+class ReactorRecursion(ConcreteAutonomy):
+    """ """
+    def run(self):
+        self.run_primitive()
+        self.universe.reactor.callLater(self.iteration_period, self.run)
+
+    def start(self):
+        """ autonomy override """
+        Autonomy.start(self)
+        go = lambda: self.universe.reactor.callFromThread(self.run)
+        self.universe.reactor.callWhenRunning(go)
+
+class Threadpooler(ConcreteAutonomy):
     """
          will be run in a thread from the twisted threadpool
 
@@ -167,48 +248,11 @@ class Threadpooler(Autonomy):
 
          TODO: save answer in some way?
     """
-    @staticmethod
-    def reentrant(func):
-        func.reentrant=True
-        return func
-
-
-    @property
-    def iteration_period(self):
-        """
-            TODO: make getters and setters; it's better
-                 than having to do something in __init__..
-
-        """
-        return getattr(self, '_iteration_period', 1)
-
     def run(self):
         """ see docs for Threadpooler """
         while self.started:
             time.sleep(self.iteration_period)
-            result = self.iterate()
-            if isinstance(result, GeneratorType):
-                report("Entering generator",header='')
-                try:
-                    while result: result.next()
-                except StopIteration:
-                    if hasattr(self.iterate, 'reentrant'):
-                        pass
-                    else:
-                        self.stop()
-
-    def iterate(self):
-        """ Just for example purposes, and to remind
-            subclassers to override this method
-        """
-        msg = "override this: default iteration for threadpooler.."
-        report(msg)
-        yield "arbitrary value"
-        # Next line should not block anything..
-        #   it's in the threadpool.
-        time.sleep(1)
-
-    iterate.reentrant=True
+            self.run_primitive()
 
     def start(self):
         """ autonomy override """
@@ -218,13 +262,14 @@ class Threadpooler(Autonomy):
 
 class PerspectiveMixin:
     """
+    def ground(self):
+        ''' placeholder: run filters on the ground here, ie
+              + grab only some particular named subspace, or
+              + pre-processing, post-processing, misc. mutation
+        '''
+        return self.universe.ground
     """
-    #def ground(self):
-    #    """ placeholder: run filters on the ground here, ie
-    #          + grab only some particular named subspace, or
-    #          + pre-processing, post-processing, misc. mutation
-    #    """
-    #    return self.universe.ground
+
 
     def darkly(self):
         """ if this host refers to a local version, obtain an image of
