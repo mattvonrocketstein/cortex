@@ -4,7 +4,7 @@
 import warnings
 
 from cortex.core.util import report
-from cortex.core.node import Agent
+from cortex.core.agent import Agent
 
 class WatchDog(Agent):
     """ Watchdog will bark when everything in watch_list tests True.

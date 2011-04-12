@@ -1,4 +1,7 @@
 """ cortex.core.metaclasses
+
+    Support for algebra amongst class objects, subclass enumeration.
+
 """
 
 import uuid

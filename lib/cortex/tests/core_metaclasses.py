@@ -3,7 +3,7 @@
 
 from unittest import TestCase
 
-from cortex.core.node import Agent
+from cortex.core.agent import Agent
 from cortex.tests import uniq
 
 class MetaclassesTest(TestCase):
