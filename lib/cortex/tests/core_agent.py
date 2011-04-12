@@ -8,6 +8,12 @@ from cortex.core.agent import AgentManager
 from cortex.core.util import report
 from cortex.tests import wait, X
 
+def result_factory():
+    holder = type('result_holder',tuple(),dict(switch=0))
+    incrementer = lambda: setattr(holder, 'switch',
+                                  holder.switch + 1)
+    return holder, incrementer
+
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
     def test_mod_op(self):
@@ -96,35 +102,48 @@ class AgentManagerCheck(TestCase):
 class AgentIterationCheck(TestCase):
     def test_agents_iterate1(self):
         # test should be equivalent to test_agents_iterate2
-        class result_holder: switch=0
-        myiterate = lambda self: setattr(result_holder,'switch',1)
-        myiterate.reentrant=True
-        A = Agent.subclass().subclass(iterate=myiterate)
+        result_holder,incr = result_factory()
+        incr.reentrant = True
+        A = Agent.subclass().subclass(iterate=incr)
         handle = self.universe.agents(A);
-        #self.assertEqual(handle,3)
         self.assertEqual(handle.__class__, A)
-        #wait()
         self.assertTrue(handle.started)
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-        #self.assertEqual(handle.iterate, myiterate)
-        self.assertTrue(handle.iterate!=myiterate) # replaced with lambda self: ...
+        self.assertTrue(handle.iterate!=incr)
         self.assertEqual(1, result_holder.switch)
+        self.universe.agents.unload(A)
+
+    def test_agents_iterate21(self):
+        # test should be equivalent to test_agents_iterate2,
+        # except since it is reactor-recursion-concurrency-flavored,
+        # it ought to run more than once.
+
+        result_holder, incr = result_factory()
+        from cortex.core.atoms import ReactorRecursion
+        class A(Agent,ReactorRecursion):
+            def iterate(self):
+                incr()
+        A = (Agent>>ReactorRecursion).subclass(iterate=incr,
+                                               _iteration_period = .1)
+        self.universe.agents(A); wait()
+        err = "result-holder value is "+str(result_holder.switch)
+        self.assertTrue(1 <= result_holder.switch, err+', should be at least one!')
+        self.assertTrue(1 < result_holder.switch, err+', should be greater than one (because this is not the trivial agent')
         self.universe.agents.unload(A)
 
     def test_agents_iterate2(self):
         # test should be equivalent to test_agents_iterate1
-        class result_holder: switch=0
+        result_holder, incr = result_factory()
         A = Agent.subclass(name='i2', iterate=lambda self:setattr(result_holder,'switch',1) )
-        self.universe.agents(A); #wait()
-        #wait()
+        self.universe.agents(A);
+        wait() # give it a change to run a few times even though it shouldnt
         self.assertEqual(1, result_holder.switch)
         self.universe.agents.unload(A)
 
     def test_agents_iterate3(self):
         # test should be equivalent to test_agents_iterate1
-        class result_holder: switch = 0
+        result_holder, incr = result_factory()
         x = (self.universe|'postoffice').event.i3
-        def callback(*args,**kargs): result_holder.switch = 1
+        def callback(*args,**kargs): result_holder.switch += 1
         x.subscribe(callback)
         myiterate = lambda : x('arbitrary channel message')
         A = Agent.subclass(universe=self.universe, name='i2', iterate = myiterate )
@@ -132,12 +151,27 @@ class AgentIterationCheck(TestCase):
         self.assertEqual(result_holder.switch, 1)
         self.universe.agents.unload(A)
         x.destroy()
+
+    def asdtest_agents_iterate32(self):
+        # like 3, only with nontrivial agent
+        result_holder, incr = result_factory()
+        x = (self.universe|'postoffice').event.i3
+        def callback(*args,**kargs): result_holder.switch += 1
+        x.subscribe(callback)
+        myiterate = lambda : x('arbitrary channel message')
+        A = Agent.subclass(universe=self.universe, name='i2', iterate = myiterate )
+        self.universe.agents(A);
+        wait()
+        self.assertTrue(result_holder.switch > 1)
+        self.universe.agents.unload(A)
+        x.destroy()
+
     def asdf_test_Agents_iterate31(self):
         # like 3, only using context manager
         # test should be equivalent to test_agents_iterate1
-        class result_holder: switch = 0
+        result_holder, incr = result_factory()
         x = (self.universe|'postoffice').event.i3
-        def callback(*args,**kargs): result_holder.switch = 1
+        def callback(*args, **kargs): incr()
         x.subscribe(callback)
         myiterate = lambda : x('arbitrary channel message')
         with Agent.subclass(universe=self.universe,
