@@ -8,7 +8,7 @@ from types import GeneratorType
 
 from cortex.core.util import report, console
 
-class Mixin(object): pass
+class Mixin: pass
 
 class FaultTolerant(Mixin):
     """ faults are a replacement for exceptions """
@@ -142,7 +142,8 @@ class Autonomy(Mixin):
         # reducible to a function.
         if hasattr(self, 'setup'): self.setup()
         self.start()
-        self.universe.reactor.callWhenRunning(self.iterate)
+        if ConcreteAutonomy not in self.__class__.__bases__:
+            self.universe.reactor.callWhenRunning(self.iterate)
         return self
 
     def resume(self):

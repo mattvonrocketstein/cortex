@@ -3,7 +3,7 @@
     Support for algebra amongst class objects, subclass enumeration.
 
 """
-
+import copy
 import uuid
 import types
 from cortex.tests import uniq
@@ -22,16 +22,20 @@ class META(type):
         """ algebra for left-mixin:
              my_class = my_class << my_mixin
         """
+        other_kls = copy.copy(other_kls)
+        other_kls.__metaclass__ = META
         name  = dynamic_name()
-        bases = tuple([other_kls]) + kls.__bases__
+        bases = tuple([other_kls,kls])
         return META(name, bases, {})
 
     def __rshift__(kls, other_kls):
         """ algebra for right-mixin:
              my_class = my_class >> my_mixin
         """
+        other_kls = copy.copy(other_kls)
+        other_kls.__metaclass__ = META
         name  = dynamic_name()
-        bases = kls.__bases__ + tuple([other_kls])
+        bases = tuple([kls, other_kls])
         return META(name, bases, {})
 
     def subclass(kls, name=None, dct={}, **kargs):
