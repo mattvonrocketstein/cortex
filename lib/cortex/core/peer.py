@@ -2,7 +2,7 @@
 """
 import datetime
 
-from cortex.core.agent import Node
+from cortex.core.agent import Agent as Node
 from cortex.core.manager import Manager
 from cortex.core.hds import HDS
 from cortex.core.data import API_PORT
