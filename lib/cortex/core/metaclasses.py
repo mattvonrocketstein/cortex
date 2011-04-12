@@ -3,22 +3,41 @@
 
 import uuid
 import types
-
+from cortex.tests import uniq
 def metaclass_hook(func):
     func.metaclass_hook=True
     return staticmethod(func)
+
+def dynamic_name(): return 'DynMix({U})'.format(U=uniq())
 
 class META(type):
     """ the most generic metaclass..
         to avoid MRO issues, this should be the main one used,
         and everything should subclass it and define hooks.
     """
+    def __lshift__(kls,other_kls):
+        """ algebra for left-mixin:
+             my_class = my_class << my_mixin
+        """
+        name  = dynamic_name()
+        bases = tuple([other_kls]) + kls.__bases__
+        return META(name, bases, {})
+
+    def __rshift__(kls, other_kls):
+        """ algebra for right-mixin:
+             my_class = my_class >> my_mixin
+        """
+        name  = dynamic_name()
+        bases = kls.__bases__ + tuple([other_kls])
+        return META(name, bases, {})
 
     def subclass(kls, name=None, dct={}, **kargs):
+        """ dynamically generate a subclass of this class """
         dct.update(kargs)
         if hasattr(kls, '_subclass_hooks'):
-            name,dct = kls._subclass_hooks(name=name, **dct)
-        name = name or "DynamicSubclass_" + str(uuid.uuid1()).split('-')[-2]
+            name ,dct = kls._subclass_hooks(name=name, **dct)
+        name = name or "{K}*_{U}".format(K=kls.__name__,
+                                         U=str(uuid.uuid1()).split('-')[-2])
         return kls.__metaclass__(name, (kls,), dct)
 
     @staticmethod
