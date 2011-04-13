@@ -4,10 +4,6 @@
     to be inside the system that's being tested..
 """
 
-from cortex.tests.channel import *
-
-
-
 from cortex.core import api
 from cortex.services.unittesting import UnitTestService
 
