@@ -7,7 +7,7 @@ from cortex.tests import wait
 from cortex.tests import uniq
 from cortex.core.util import report
 from cortex.agents.watchdog import WatchDog
-from cortex.mixins import Threadpooler
+from cortex.mixins.flavors import Threadpooler
 
 class WatchdogTest(TestCase):
     """ """

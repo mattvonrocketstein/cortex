@@ -1,69 +1,14 @@
-""" cortex.mixins
-
+""" cortex.mixins.autonomy
 """
 
-import pickle
 import time
 from types import GeneratorType
 
-from cortex.core.util import report, console
+from cortex.core.util import report
+from cortex.mixins.mixin import Mixin
+from cortex.mixins.persistence import is_persistent
 
-class Mixin: pass
-
-class FaultTolerant(Mixin):
-    """ faults are a replacement for exceptions """
-    def fault(self, error, context):
-        """ TODO: sane yet relatively automatic logging for faults.. """
-        console.vertical_space()
-        report("",header=console.red("--> FAULT <--"))
-        console.draw_line()
-        print ( "\n{error}".format(error=error))
-        import StringIO, pprint
-        fhandle = StringIO.StringIO()
-        pprint.pprint(context, fhandle)
-        print console.color(fhandle.getvalue())
-        console.draw_line()
-        console.vertical_space()
-
-class AddressMixin:
-    """ Something that's addressable """
-
-class Persistence(Mixin):
-    """ Something that's persistent """
-    def persist(self):
-        """ Convention:
-             <persist> for "complex" structures is:
-               <persist> for self and <persist> for every nontrivial substructure
-        """
-        report('running persist')
-
-    def serialize(self):
-        """ """
-        _str = pickle.dumps(self)
-        return _str
-
-    def save(self, fname=None):
-        """ """
-        print fname
-        if not fname and hasattr(self, 'universe'):
-             fname = self.universe.tmpfile().name
-        elif not fname and hasattr(self,'tmpfile'):
-            fname = self.tmpfile().name
-        else:
-            raise Exception,'no way to derive fname'
-        report('persisting memory to', fname)
-        _str = self.serialize()
-        ___f = open(fname,'w')
-        ___f.write(_str)
-        ___f.close()
-        report('persisted memory to', fname)
-PersistenceMixin=Persistence
-
-def is_persistent(obj):
-    """ dumb helper.. """
-    return PersistenceMixin in obj.__class__.__bases__
-
-class Autonomy(Mixin):
+class AbstractAutonomy(Mixin):
     """ """
 
     def harikari(self):
@@ -142,7 +87,7 @@ class Autonomy(Mixin):
         # reducible to a function.
         if hasattr(self, 'setup'): self.setup()
         self.start()
-        if ConcreteAutonomy not in self.__class__.__bases__:
+        if Autonomy not in self.__class__.__bases__:
             self.universe.reactor.callWhenRunning(self.iterate)
         return self
 
@@ -168,15 +113,10 @@ class Autonomy(Mixin):
         report("freeze for "+self.name)
         self.stop()
         if is_persistent(self): self.persist()
-AutonomyMixin = Autonomy
+AutonomyMixin = AbstractAutonomy
 
-class ControllableMixin(Mixin):
-    def halt(self):
-        """ like "stop" only safe to call from anywhere """
-        ABSTRACT
-
-
-class ConcreteAutonomy(Autonomy):
+class Autonomy(AbstractAutonomy):
+    """ """
     @staticmethod
     def reentrant(func):
         func.reentrant=True
@@ -226,58 +166,3 @@ class ConcreteAutonomy(Autonomy):
         #   it's in the threadpool.
         time.sleep(1)
     iterate.reentrant=True
-
-class ReactorRecursion(ConcreteAutonomy):
-    """ """
-    def run(self):
-        self.run_primitive()
-        self.universe.reactor.callLater(self.iteration_period, self.run)
-
-    def start(self):
-        """ autonomy override """
-        Autonomy.start(self)
-        go = lambda: self.universe.reactor.callFromThread(self.run)
-        self.universe.reactor.callWhenRunning(go)
-
-class Threadpooler(ConcreteAutonomy):
-    """
-         will be run in a thread from the twisted threadpool
-
-         if the subclass wrote iterate() as a
-           generator, exhaust it and then decide
-             whether to stop based on self.iterate.reentrant
-
-         TODO: save answer in some way?
-    """
-    def run(self):
-        """ see docs for Threadpooler """
-        while self.started:
-            time.sleep(self.iteration_period)
-            self.run_primitive()
-
-    def start(self):
-        """ autonomy override """
-        Autonomy.start(self)
-        go = lambda: self.universe.threadpool.callInThread(self.run)
-        self.universe.reactor.callWhenRunning(go)
-
-class PerspectiveMixin:
-    """
-    def ground(self):
-        ''' placeholder: run filters on the ground here, ie
-              + grab only some particular named subspace, or
-              + pre-processing, post-processing, misc. mutation
-        '''
-        return self.universe.ground
-    """
-
-    def darkly(self):
-        """ if this agent refers to a local version, ie is a nonproxy, obtain
-            an image of self suitable for acurate transmission/storage/reinvocation
-            elsewhere
-        """
-        image = self.serialize()
-        return NY
-
-    # Aliases
-    shadow = shadowed = darkly

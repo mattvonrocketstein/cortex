@@ -3,10 +3,11 @@
 import unittest
 from unittest import TestCase, TestResult, TextTestRunner
 from cortex.core.service import Service
-from cortex.mixins import Threadpooler
+
 from cortex.core.util import report, console
 from cortex.core.metaclasses import subclass_tracker
 
+from cortex.mixins.flavors import Threadpooler
 class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
     """ Cortex Service / Agent"""
     def get_all_tests(self):

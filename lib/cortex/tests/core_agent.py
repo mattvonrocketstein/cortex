@@ -121,10 +121,15 @@ class AgentIterationCheck(TestCase):
         from cortex.core.atoms import ReactorRecursion
         class A(Agent,ReactorRecursion):
             def iterate(self):
-                incr()
+                raise Exception, incr()
         A = (Agent>>ReactorRecursion).subclass(iterate=incr,
-                                               _iteration_period = .1)
-        self.universe.agents(A); wait()
+                                               _iteration_period = .2)
+        self.assertTrue(issubclass(A,ReactorRecursion))
+        self.assertTrue(issubclass(A,Agent))
+        handle = self.universe.agents(A);
+        from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        wait()
+        wait()
         err = "result-holder value is "+str(result_holder.switch)
         self.assertTrue(1 <= result_holder.switch, err+', should be at least one!')
         self.assertTrue(1 < result_holder.switch, err+', should be greater than one (because this is not the trivial agent')
