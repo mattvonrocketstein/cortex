@@ -8,7 +8,6 @@ from cortex.mixins.autonomy import Autonomy
 class ReactorRecursion(Autonomy):
     """ """
     def run(self):
-        raise Exception,"RAN"
         self.run_primitive()
         self.universe.reactor.callLater(self.iteration_period, self.run)
 

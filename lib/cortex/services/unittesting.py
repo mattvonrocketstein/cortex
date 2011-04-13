@@ -10,6 +10,7 @@ from cortex.core.metaclasses import subclass_tracker
 from cortex.mixins.flavors import Threadpooler
 class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
     """ Cortex Service / Agent"""
+
     def get_all_tests(self):
         """ enumerate every test_* method in this instance's class """
         names = [x for x in dir(self.__class__) if x.startswith('test_')]
@@ -26,10 +27,23 @@ class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
         functions_to_test = namespace.values()
         report("Found {N} tests".format(N=len(functions_to_test)))
         test_cases = [FTC(f, **FTC_kargs) for f in functions_to_test]
+
+        TTR = TextTestRunner(verbosity=2)
         test_suite = unittest.TestSuite(test_cases)
-        TextTestRunner(verbosity=2).run(test_suite)
-        test_suite.run(TestResult()) #unittest.main()
-        yield
+        TTR.run(test_suite)
+        result = TestResult()
+        yield test_suite.run(result)
+        #for tc in test_cases:
+        #    console.draw_line()
+        #    test_suite = unittest.TestSuite([tc])
+        #    TTR.run(test_suite)
+        #    result = TestResult()
+        #    x = test_suite.run(result)
+        #    #if x.failures or x.errors:
+        #    #    report(x,)
+        #    #    break
+        #    #unittest.main()
+        #    yield
 
     @property
     def services(self):

@@ -30,7 +30,7 @@ class WatchdogTest(TestCase):
 
     def test_watchdog_bark(self):
         name = uniq()
-        from cortex.mixins import ReactorRecursion
+        from cortex.mixins.flavors import ReactorRecursion
         class A(WatchDog, ):
             bark = lambda self: report("test")
             watch_list = [lambda: True]
