@@ -13,7 +13,7 @@
 
 from cortex.core.util import report
 from cortex.core.service import Service
-from cortex.core.atoms import Threadpooler
+from cortex.mixins import Threadpooler
 from cortex.agents.watchdog import WatchDog
 
 class GoalMonitor(WatchDog, Service, Threadpooler,):

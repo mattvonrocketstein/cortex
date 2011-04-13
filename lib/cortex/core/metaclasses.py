@@ -127,10 +127,6 @@ class ClassTracking(type):
         instance=super(ClassTracking, cls).__call__(*args, **kargs)
         return instance
 
-
-    def test(cls):
-        print ummm
-
 class TokenFactory(ClassTracking):
     ''' '''
     allowed_types = types.StringTypes
@@ -153,7 +149,6 @@ class TokenFactory(ClassTracking):
 
 class test:
     __metaclass__ = ClassTracking
-    def foo(self): print 3
 """
 def subclass_tracker(*bases, **kargs):
     """ dynamically generates the subclass tracking class that extends ``bases``.

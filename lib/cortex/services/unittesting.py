@@ -3,7 +3,7 @@
 import unittest
 from unittest import TestCase, TestResult, TextTestRunner
 from cortex.core.service import Service
-from cortex.core.atoms import Threadpooler
+from cortex.mixins import Threadpooler
 from cortex.core.util import report, console
 from cortex.core.metaclasses import subclass_tracker
 

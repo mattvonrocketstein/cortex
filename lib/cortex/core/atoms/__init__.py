@@ -1,4 +1,4 @@
-""" cortex.core.atoms
+""" cortex.mixins
 
 """
 
@@ -271,11 +271,13 @@ class PerspectiveMixin:
         return self.universe.ground
     """
 
-
     def darkly(self):
-        """ if this host refers to a local version, obtain an image of
-            self sui
-            table for acurate transmission/storage elsewhere
+        """ if this agent refers to a local version, ie is a nonproxy, obtain
+            an image of self suitable for acurate transmission/storage/reinvocation
+            elsewhere
         """
-        report("darkly for "+self.name)
+        image = self.serialize()
+        return NY
+
+    # Aliases
     shadow = shadowed = darkly
