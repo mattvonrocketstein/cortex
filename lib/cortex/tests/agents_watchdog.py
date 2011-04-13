@@ -7,7 +7,7 @@ from cortex.tests import wait
 from cortex.tests import uniq
 from cortex.core.util import report
 from cortex.agents.watchdog import WatchDog
-from cortex.core.atoms import Threadpooler
+from cortex.mixins import Threadpooler
 
 class WatchdogTest(TestCase):
     """ """
@@ -30,7 +30,7 @@ class WatchdogTest(TestCase):
 
     def test_watchdog_bark(self):
         name = uniq()
-        from cortex.core.atoms import ReactorRecursion
+        from cortex.mixins import ReactorRecursion
         class A(WatchDog, ):
             bark = lambda self: report("test")
             watch_list = [lambda: True]

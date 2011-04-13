@@ -81,7 +81,7 @@ class Manager(object):
             else:
                 # given a class, try to find matches with isinstance
                 if inspect.isclass(obj):
-                    print obj, self.as_dict
+                    #print obj, self.as_dict
                     matches = [ pair for pair in self.registry.items() if isinstance(pair[1], obj)]
                     return [ self.unload(x[0]) for x in matches ]
 

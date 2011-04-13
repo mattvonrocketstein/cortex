@@ -9,11 +9,11 @@ from cortex.core.util import report
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
 from cortex.core.data import NOOP, LOOPBACK_HOST, GENERIC_LOCALHOST
-from cortex.core.atoms import AutonomyMixin, PerspectiveMixin
+from cortex.mixins import AutonomyMixin, PerspectiveMixin
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
-from cortex.core.atoms import FaultTolerant
+from cortex.mixins import FaultTolerant
 from cortex.core.manager import Manager
 
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
