@@ -118,17 +118,17 @@ class AgentIterationCheck(TestCase):
         # it ought to run more than once.
 
         result_holder, incr = result_factory()
-        from cortex.core.atoms import ReactorRecursion
+        from cortex.mixins.flavors import ReactorRecursion
         class A(Agent,ReactorRecursion):
             def iterate(self):
-                raise Exception, incr()
-        A = (Agent>>ReactorRecursion).subclass(iterate=incr,
-                                               _iteration_period = .2)
+                incr()
+            iterate.reentrant = 1
+        #A = (Agent>>ReactorRecursion).subclass(iterate=incr,
+        #                                       _iteration_period = .2)
         self.assertTrue(issubclass(A,ReactorRecursion))
         self.assertTrue(issubclass(A,Agent))
         handle = self.universe.agents(A);
-        from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-        wait()
+        #wait()
         wait()
         err = "result-holder value is "+str(result_holder.switch)
         self.assertTrue(1 <= result_holder.switch, err+', should be at least one!')

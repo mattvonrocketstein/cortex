@@ -26,7 +26,7 @@ class META(type):
         other_kls.__metaclass__ = META
         name  = dynamic_name()
         bases = tuple([other_kls,kls])
-        return META(name, bases, {})
+        return type(name, bases, {})
 
     def __rshift__(kls, other_kls):
         """ algebra for right-mixin:
@@ -36,16 +36,20 @@ class META(type):
         other_kls.__metaclass__ = META
         name  = dynamic_name()
         bases = tuple([kls, other_kls])
-        return META(name, bases, {})
+        return type(name, bases, {})
 
     def subclass(kls, name=None, dct={}, **kargs):
         """ dynamically generate a subclass of this class """
+        import new
+        import copy
+        dct=copy.copy(dct)#.copy()
         dct.update(kargs)
         if hasattr(kls, '_subclass_hooks'):
-            name ,dct = kls._subclass_hooks(name=name, **dct)
-        name = name or "{K}*_{U}".format(K=kls.__name__,
+            name,dct = kls._subclass_hooks(name=name, **dct)
+        name = name or "DynamicSubclassOf{K}_{U}".format(K=kls.__name__,
                                          U=str(uuid.uuid1()).split('-')[-2])
-        return kls.__metaclass__(name, (kls,), dct)
+        # WOAH, this behaves differently than type()
+        return new.classobj(name, (kls,), dct)
 
     @staticmethod
     def enumerate_hooks(mcls):
