@@ -6,13 +6,7 @@ from unittest import TestCase
 from cortex.core.agent import Agent
 from cortex.core.agent import AgentManager
 from cortex.core.util import report
-from cortex.tests import wait, X
-
-def result_factory():
-    holder = type('result_holder',tuple(),dict(switch=0))
-    incrementer = lambda: setattr(holder, 'switch',
-                                  holder.switch + 1)
-    return holder, incrementer
+from cortex.tests import wait, X, result_factory
 
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """

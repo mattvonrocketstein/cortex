@@ -3,7 +3,7 @@
 
 from unittest import TestCase
 from cortex.core.service import Service, ServiceManager
- 
+
 class ServiceManagerCheck(TestCase):
     """ tests for the service manager """
 
@@ -24,3 +24,4 @@ class ServiceManagerCheck(TestCase):
                                        kls_kargs=dict(universe=self.universe),)
         self.assertTrue('tmptest' in self.universe.services)
         self.assertTrue('tmptest' in self.universe.services.registry)
+        self.universe.services.unload('tmptest')

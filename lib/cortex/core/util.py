@@ -23,17 +23,17 @@ import sys, inspect
 
 import pygments
 from pygments import highlight
-from pygments.lexers import PythonLexer
+from pygments.lexers import PythonLexer, PythonTracebackLexer
 from pygments.formatters import HtmlFormatter,Terminal256Formatter
 from IPython.ColorANSI import TermColors
 
 # Pygments data
 plex  = PythonLexer()
+tblex = PythonTracebackLexer()
 hfom  = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
 colorize  = lambda code: highlight(code, plex, hfom)
 colorize2 = lambda code: highlight(code, plex, hfom2)
-
 
 class console:
     """ """
@@ -57,15 +57,22 @@ class console:
         """ TODO: generic function for this
         """
         return TermColors.Blue + string + TermColors.Normal
+    @staticmethod
+    def colortb(string):
+        return highlight(string, tblex, Terminal256Formatter())
 
     @staticmethod
     def color(string):
         return highlight(string, plex, Terminal256Formatter())
 
     @staticmethod
-    def draw_line(length=80,display=True):
-        #out = style.ERROR('-' * length)
-        out = TermColors.Red+ '-' * length + TermColors.Normal
+    def draw_line(msg='', length=80, display=True):
+        if msg and not msg.startswith(' '): msg = ' '+msg
+        if msg and not msg.endswith(' '):   msg = msg+' '
+        rlength = length - len(msg)
+        out = '-' * (rlength/2)
+        out+= msg + out
+        out = TermColors.Red+ out + TermColors.Normal
         if display:
             print out
         return out
