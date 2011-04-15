@@ -36,7 +36,10 @@ class TupleBus(Bus):
         """
         if key not in self.keys():
             return False
-        return callback in self.subscriptions[key]
+        subs=self.subscriptions[key]
+        if subs==NotFound:
+            return False
+        return callback in subs
 
     def has_any_subscriptions(self, key):
         """ HACK: sidestepping problem with NotFound """
@@ -70,11 +73,16 @@ class TupleBus(Bus):
         """
         if not callable(callback):
             raise TypeError,"Expected callback would be callable:" + str(callback)
+
         if key not in self.public_keys():
             self[key] = tuple([callback])
 
         elif force or not self.has_subscription(key, callback):
-            self[key] = self[key] + (callback,)
+            result  = self[key]
+            result  = result!=NotFound and result or tuple() # HACK
+            result += (callback,)
+            self.subscriptions[key] = result
+
         return self[key]
 
 class SelfHostingTupleBus(TupleBus):
