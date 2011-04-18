@@ -3,31 +3,52 @@
 
 from unittest import TestCase
 
-from cortex.core.node import Agent
-from cortex.core.node import AgentManager
+from cortex.core.agent import Agent
+from cortex.core.agent import AgentManager
 from cortex.core.util import report
+from cortex.tests import wait, X, result_factory
 
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
+    def test_mod_op(self):
+        # test that the mod operator can partition the agents
+        Junk = Agent.subclass(name='throw-away-subclass')
+        handle = self.universe.agents(Junk)
+        partition = self.universe.agents%Junk
+        self.assertEqual(1, len(partition))
+        self.assertEqual([handle], partition.values())
+        self.universe.agents.unload(partition.values()[0])
+        self.assertEqual(0,len(self.universe.agents%Junk))
 
     def test_load_duplicates(self):
+        # test that duplicate agents raise errors
         self.assertTrue('dupetest' not in self.universe.agents.as_dict)
-        dynclass = Agent.subclass()
-        kargs = dict(name='dupetest', kls=dynclass,
-                     kls_kargs=dict(universe=self.universe), #TODO make this implied
-                     )
+        # this next part is implied for test_load_duplicates2
+
+        kargs = dict(universe=self.universe)
+        kargs = dict(name='dupetest',
+                     kls=Agent.subclass(),
+                     kls_kargs=kargs, )
         self.universe.agents.load_item(**kargs)
 
         ## check registry two ways
         self.assertTrue('dupetest' in self.universe.agents.registry)
         self.assertTrue('dupetest' in self.universe.agents)
 
-
-        hds = self.universe.agents.registry['dupetest']
-        obj = hds.obj
         self.assertRaises(AgentManager.Duplicate,
                           lambda: self.universe.agents.load_item(**kargs))
-        self.universe.agents.unload(obj)
+        self.universe.agents.unload(self.universe.agents.registry['dupetest'].obj)
+
+    def test_load_duplicates2(self):
+        # should be equivalent to test_load_duplicates
+        self.assertTrue('dupetest' not in self.universe.agents.as_dict)
+        self.universe.agents(Agent.subclass(),name='dupetest')
+
+        ## check registry two ways
+        self.assertTrue('dupetest' in self.universe.agents.registry)
+        self.assertTrue('dupetest' in self.universe.agents)
+
+        self.universe.agents.unload(self.universe.agents.registry['dupetest'].obj)
 
 
     def test_agentmanager_load_unload(self):
@@ -65,57 +86,110 @@ class AgentManagerCheck(TestCase):
         self.assertEqual(type(self.universe.agents), AgentManager)
 
     def test_agent_manager_flush(self):
-
-        #self.universe.agents.flush()
-        #self.assertEqual(len(agents),0)
-        pass
+        agents = self.universe.agents
+        self.assertEqual(agents.registry, {})
+        agents(Agent.subclass(),name='flush-test')
+        self.assertEqual(len(agents), 1, str(agents))
+        agents.flush()
+        self.assertEqual(len(agents), 0)
 
         # NOTE: tests False when empty (it's a feature..)
         #self.assertTrue(self.universe.agents)
 
-from cortex.tests import wait, X
+
 class AgentIterationCheck(TestCase):
     def test_agents_iterate1(self):
         # test should be equivalent to test_agents_iterate2
-        class result_holder: switch=0
-        myiterate = lambda self: setattr(result_holder,'switch',1)
-        myiterate.reentrant=True
-        A = Agent.subclass().subclass(iterate=myiterate)
+        result_holder,incr = result_factory()
+        incr.reentrant = True
+        A = Agent.subclass().subclass(iterate=incr)
         handle = self.universe.agents(A);
-        #self.assertEqual(handle,3)
         self.assertEqual(handle.__class__, A)
-        #wait()
         self.assertTrue(handle.started)
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-        #self.assertEqual(handle.iterate, myiterate)
-        self.assertTrue(handle.iterate!=myiterate) # replaced with lambda self: ...
+        self.assertTrue(handle.iterate!=incr)
         self.assertEqual(1, result_holder.switch)
         self.universe.agents.unload(A)
 
+    def test_agents_iterate21(self):
+        # test should be equivalent to test_agents_iterate2,
+        # except since it is reactor-recursion-concurrency-flavored,
+        # it ought to run more than once.
+
+        result_holder, incr = result_factory()
+        from cortex.mixins.flavors import ReactorRecursion
+        name = 'tai21'
+        class A(Agent,ReactorRecursion):
+            def iterate(self):
+                incr()
+            iterate.reentrant = 1
+        #A = (Agent>>ReactorRecursion).subclass(iterate=incr,
+        #                                       _iteration_period = .2)
+        self.assertTrue(issubclass(A, ReactorRecursion))
+        self.assertTrue(issubclass(A, Agent))
+        handle = self.universe.agents(A,name=name);
+        #wait()
+        wait()
+        err = "result-holder value is "+str(result_holder.switch)
+        self.assertTrue(1 <= result_holder.switch, err+', should be at least one!')
+        self.assertTrue(1 < result_holder.switch, err+', should be greater than one (because this is not the trivial agent')
+        results = self.universe.agents.unload(A)
+        self.assertEqual(results, [name])
+        self.assertTrue(A.name not in self.universe.agents)
+
     def test_agents_iterate2(self):
         # test should be equivalent to test_agents_iterate1
-        class result_holder: switch=0
+        result_holder, incr = result_factory()
         A = Agent.subclass(name='i2', iterate=lambda self:setattr(result_holder,'switch',1) )
-        self.universe.agents(A); #wait()
-        #wait()
+        self.universe.agents(A);
+        wait() # give it a change to run a few times even though it shouldnt
         self.assertEqual(1, result_holder.switch)
         self.universe.agents.unload(A)
 
     def test_agents_iterate3(self):
         # test should be equivalent to test_agents_iterate1
-        class result_holder: switch = 0
+        result_holder, incr = result_factory()
         x = (self.universe|'postoffice').event.i3
-        def callback(*args,**kargs):
-            result_holder.switch = 1
-            #report('blam')
+        def callback(*args,**kargs): result_holder.switch += 1
         x.subscribe(callback)
-        A = Agent.subclass(name='i2', iterate = lambda : x('bang') )
+        myiterate = lambda : x('arbitrary channel message')
+        A = Agent.subclass(universe=self.universe, name='i2', iterate = myiterate )
         self.universe.agents(A);
-        self.assertTrue(result_holder.switch==1)
+        self.assertEqual(result_holder.switch, 1)
         self.universe.agents.unload(A)
         x.destroy()
 
-class AgentCheck(AgentIterationCheck):#TestCase):
+    def asdtest_agents_iterate32(self):
+        # like 3, only with nontrivial agent
+        result_holder, incr = result_factory()
+        x = (self.universe|'postoffice').event.i3
+        def callback(*args,**kargs): result_holder.switch += 1
+        x.subscribe(callback)
+        myiterate = lambda : x('arbitrary channel message')
+        A = Agent.subclass(universe=self.universe, name='i2', iterate = myiterate )
+        self.universe.agents(A);
+        wait()
+        self.assertTrue(result_holder.switch > 1)
+        self.universe.agents.unload(A)
+        x.destroy()
+
+    def asdf_test_Agents_iterate31(self):
+        # like 3, only using context manager
+        # test should be equivalent to test_agents_iterate1
+        result_holder, incr = result_factory()
+        x = (self.universe|'postoffice').event.i3
+        def callback(*args, **kargs): incr()
+        x.subscribe(callback)
+        myiterate = lambda : x('arbitrary channel message')
+        with Agent.subclass(universe=self.universe,
+                            name='i2',
+                            iterate = myiterate ) as A:
+
+            #self.universe.agents(A);
+            self.assertEqual(result_holder.switch, 1)
+            #self.universe.agents.unload(A)
+        x.destroy()
+
+class AgentCheck(AgentIterationCheck):
     """ check various aspects of a running agent
 
         (in this case, the unittestservice is the agent in question)

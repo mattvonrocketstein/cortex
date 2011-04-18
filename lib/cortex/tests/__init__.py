@@ -1,10 +1,7 @@
 """ tests for cortex
 """
 import time
-
-import uuid
-def uniq():
-    return str(uuid.uuid1()).split('-')[0]
+from cortex.core.util import uniq
 
 def wait():
     """ normally this would be obnoxious in unittests,
@@ -19,3 +16,9 @@ class X(Exception):
         utests
     """
     pass
+
+def result_factory():
+    holder = type('result_holder',tuple(),dict(switch=0))
+    incrementer = lambda: setattr(holder, 'switch',
+                                  holder.switch + 1)
+    return holder, incrementer

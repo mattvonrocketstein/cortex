@@ -10,6 +10,7 @@ class UniverseCheck(AgentManagerCheck, ServiceManagerCheck):
         for correctness. assumes universe is integrated
         with twisted reactor
     """
+
     def test_universe(self):
         # is the universe setup for this agent?
         self.assertTrue(self.universe)

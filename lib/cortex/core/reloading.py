@@ -48,25 +48,3 @@ class AutoReloader:
     __metaclass__ = MetaAutoReloader
     def change_class(self, new_class):
         self.__class__ = new_class
-"""
-class Bar(AutoReloader):
-    pass
-
-class Baz(Bar):
-    pass
-
-b = Bar()
-b2 = Baz()
-
-class Bar(AutoReloader):
-    def meth(self, arg):
-       print arg
-
-if __name__ == '__main__':
-    # now b is "upgraded" to the new Bar class:
-    b.meth(1)
-    # new in 2.3, Baz instances join the fun:
-    b2.meth(2)
-    # new Baz() instances now play too:
-    Baz().meth(3)
-"""

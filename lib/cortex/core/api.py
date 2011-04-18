@@ -33,7 +33,7 @@ def do(instructions, _api=None):
     for instruction in instructions:
         name, args, kargs = instruction
         handler = this_api[name]
-        print [handler,args,kargs]
+        # [handler,args,kargs]
         handler(*args, **kargs)
 
 def clone(file=None, nodeconf=None):

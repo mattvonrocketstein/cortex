@@ -20,15 +20,15 @@ from cortex.core.reloading import AutoReloader
 from cortex.core.parsing import Nodeconf
 from cortex.core.util import report, console
 from cortex.core.data import SERVICES_DOTPATH
-from cortex.core.atoms import AutonomyMixin, PerspectiveMixin,ControllableMixin
-from cortex.core.atoms import PersistenceMixin
+from cortex.mixins import AutonomyMixin, PerspectiveMixin,ControllableMixin
+from cortex.mixins import PersistenceMixin
 from cortex.core.peer import PeerManager, PEERS
 from cortex.core.service import Service, SERVICES
 from cortex.core.service import ServiceManager
-from cortex.core.node import AGENTS #AgentManager
+from cortex.core.agent import AGENTS #AgentManager
 from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
-from cortex.core.atoms import FaultTolerant
+from cortex.mixins import FaultTolerant
 
 class __Universe__(AutoReloader, UniverseNotation, OSMixin,
                    ControllableMixin, AutonomyMixin,
@@ -92,7 +92,8 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
             api_header = "Cortex-API @ {H}://{F}"
             api_header = api_header.format(F=API,
                                            H=platform.node(),)
-            fhandle    = StringIO.StringIO(); pprint.pprint(api, fhandle)
+            fhandle    = StringIO.StringIO();
+            pprint.pprint(api, fhandle)
             api_body   = ''# fhandle.getvalue()
             zapi   = api_header + api_body
             #api_body   = '\n'.join(([x[0] for x in api.items()]))
@@ -105,7 +106,7 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
             with api    = {api}
             """
             error  = (header + body).format(**opts)
-            print error
+            report(error)
             sys.exit()
 
         def get_handler(instruction):
