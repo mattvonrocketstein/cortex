@@ -5,7 +5,7 @@ import os
 
 from pep362 import Signature
 
-from cortex.core.util import report
+from cortex.core.util import report, uniq
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
 from cortex.core.data import NOOP, LOOPBACK_HOST, GENERIC_LOCALHOST
@@ -18,6 +18,15 @@ from cortex.core.manager import Manager
 
 class AgentManager(Manager):
     """ """
+    @classmethod
+    def choose_dynamic_name(kls):
+        """ when __call__ happens, if name is
+            not passed, then this will be used.
+        """
+        from cortex.core.util import getcaller
+        caller_info = getcaller(3)
+        func_name = caller_info.get('func_name')
+        return "{parent}_{u}".format(parent=func_name,u=uniq())
 
     # TODO: not enforced..
     load_first = ['ServiceManager']
@@ -57,7 +66,7 @@ class AgentManager(Manager):
 
     def stop_all(self):
         """ stop all services this manager knows about """
-        [ s.stop() for s in self ]
+        [ item.obj.stop() for item in self.registry.values() ]
 
     def pre_manage(self, name=None, kls=None, **kls_kargs):
         """ make an educated guess whenever 'name' is not given """

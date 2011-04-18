@@ -82,9 +82,14 @@ class Manager(object):
                 # given a class, try to find matches with isinstance
                 if inspect.isclass(obj):
                     #print obj, self.as_dict
-                    matches = [ pair for pair in self.registry.items() if isinstance(pair[1], obj)]
-                    return [ self.unload(x[0]) for x in matches ]
-
+                    matches = [ pair for pair in self.registry.items() if isinstance(pair[1].obj, obj)]
+                    results = [ self.unload(x[0]) for x in matches ]
+                    if not results:
+                        err  = " Could not unload any objects of type: "+str(obj)
+                        X = set([type(x) for x in self.registry.values()])
+                        err += " Only these types of objects were found: "+str(X)
+                        raise ValueError, err
+                    return results
                 else:
                     raise ValueError,"No value found for " + str(obj)
 
@@ -113,7 +118,9 @@ class Manager(object):
         """ will be called by Manager.load
         """
         if name in self.registry:
-            raise Manager.Duplicate("Duplicate: " +name)
+            err='Duplicate entry found for "{name}": {entry}'
+            err = err.format(entry=self[name], name=name)
+            raise Manager.Duplicate(err)
         obj = self.load_obj(kls=kls, **kls_kargs)
         self.register(name,
                       obj        = obj,
@@ -297,8 +304,15 @@ class Manager(object):
         """ list/dictionary compatibility: a dumb proxy """
         return iter(self.registry)
 
+    @classmethod
+    def choose_dynamic_name(kls):
+        import uuid
+        name = "Dynamic{k}Name{U}".format(U=str(uuid.uuid1()).split('-')[0],
+                                         k=kls.__name__)
+
     def __call__(self, kls, name=None, **kargs):
         """ shortcut for load_item """
+        from cortex.core.util import getcaller
         if not hasattr(self, 'universe'):
             err = "expected manager would know the universe by the time it was asked to load something"
             raise ValueError, err
@@ -310,8 +324,7 @@ class Manager(object):
                 kargs.update({k:defaults[k]})
 
         if name is None:
-            import uuid
-            name = "DynamicAgentName" + str(uuid.uuid1()).split('-')[0]
+            name = self.choose_dynamic_name()
         loader = lambda:\
                  self.load_item(kls=kls,
                                 name=name,

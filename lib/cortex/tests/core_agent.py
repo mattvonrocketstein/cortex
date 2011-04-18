@@ -11,15 +11,17 @@ from cortex.tests import wait, X, result_factory
 class AgentManagerCheck(TestCase):
     """ tests for the agent manager """
     def test_mod_op(self):
+        # test that the mod operator can partition the agents
         Junk = Agent.subclass(name='throw-away-subclass')
         handle = self.universe.agents(Junk)
         partition = self.universe.agents%Junk
-        self.assertEqual(1,len(partition))
+        self.assertEqual(1, len(partition))
         self.assertEqual([handle], partition.values())
         self.universe.agents.unload(partition.values()[0])
         self.assertEqual(0,len(self.universe.agents%Junk))
 
     def test_load_duplicates(self):
+        # test that duplicate agents raise errors
         self.assertTrue('dupetest' not in self.universe.agents.as_dict)
         # this next part is implied for test_load_duplicates2
 
@@ -84,10 +86,12 @@ class AgentManagerCheck(TestCase):
         self.assertEqual(type(self.universe.agents), AgentManager)
 
     def test_agent_manager_flush(self):
-
-        #self.universe.agents.flush()
-        #self.assertEqual(len(agents),0)
-        pass
+        agents = self.universe.agents
+        self.assertEqual(agents.registry, {})
+        agents(Agent.subclass(),name='flush-test')
+        self.assertEqual(len(agents), 1, str(agents))
+        agents.flush()
+        self.assertEqual(len(agents), 0)
 
         # NOTE: tests False when empty (it's a feature..)
         #self.assertTrue(self.universe.agents)
@@ -113,21 +117,24 @@ class AgentIterationCheck(TestCase):
 
         result_holder, incr = result_factory()
         from cortex.mixins.flavors import ReactorRecursion
+        name = 'tai21'
         class A(Agent,ReactorRecursion):
             def iterate(self):
                 incr()
             iterate.reentrant = 1
         #A = (Agent>>ReactorRecursion).subclass(iterate=incr,
         #                                       _iteration_period = .2)
-        self.assertTrue(issubclass(A,ReactorRecursion))
-        self.assertTrue(issubclass(A,Agent))
-        handle = self.universe.agents(A);
+        self.assertTrue(issubclass(A, ReactorRecursion))
+        self.assertTrue(issubclass(A, Agent))
+        handle = self.universe.agents(A,name=name);
         #wait()
         wait()
         err = "result-holder value is "+str(result_holder.switch)
         self.assertTrue(1 <= result_holder.switch, err+', should be at least one!')
         self.assertTrue(1 < result_holder.switch, err+', should be greater than one (because this is not the trivial agent')
-        self.universe.agents.unload(A)
+        results = self.universe.agents.unload(A)
+        self.assertEqual(results, [name])
+        self.assertTrue(A.name not in self.universe.agents)
 
     def test_agents_iterate2(self):
         # test should be equivalent to test_agents_iterate1

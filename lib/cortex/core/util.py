@@ -78,24 +78,40 @@ class console:
         return out
 console=console()
 
+import time
+import uuid
+def uniq():
+    return str(uuid.uuid1()).split('-')[0]+str(time.time())[:-3]
+
 def whoami():
     """ gives information about the caller """
     return inspect.stack()[1][3]
 
-def whosdaddy():
-    """ displays information about the caller's caller
-    """
-    x = inspect.stack()[2]
+def getcaller(level=2):
+    x = inspect.stack()[level]
     frame = x[0]
     file_name = x[1]
     flocals = frame.f_locals
     func_name = x[3]
+    file = file_name
+    self = flocals.get('self',None)
+    kls  = self and self.__class__
+    func = self and getattr(self,func_name)
+    return dict(file=file_name,
+                kls=kls,
+                self=self,
+                func=func,
+                func_name=func_name)
+
+def whosdaddy():
+    """ displays information about the caller's caller """
     # if self is a named argument in the locals, print
     # the class name, otherwise admit that we don't know
-    if 'self' in flocals:
-        header = flocals['self'].__class__.__name__
-    else:
-        header = '<??>'
+    caller_info = getcaller(3)
+    kls         = caller_info['kls']
+    file_name   = caller_info['file']
+    func_name   = caller_info['func_name']
+    header = (kls and kls.__name__) or '<??>'
     header = ' ' + header + '.' + func_name
     return ' + in ' + file_name + '\n  ' + header + ' --'
 

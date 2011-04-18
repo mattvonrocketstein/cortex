@@ -11,10 +11,6 @@ from cortex.core.ground import NotFound
 class TupleBus(Bus):
     """ a wrapper over cyrusbus to use tuples
          (by default it uses lists and dictionaries)
-
-        cyrusbus also uses a "subscriptions object",
-        which is simply a key/callback dictionary.  this
-        version simplifies that by just storing callbacks.
     """
     def unsubscribe_all(self, key):
         def declare_unplugged(cb):
