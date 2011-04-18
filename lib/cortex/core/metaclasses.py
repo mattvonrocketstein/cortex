@@ -1,25 +1,55 @@
 """ cortex.core.metaclasses
-"""
 
+    Support for algebra amongst class objects, subclass enumeration.
+
+"""
+import copy
 import uuid
 import types
-
+from cortex.tests import uniq
 def metaclass_hook(func):
     func.metaclass_hook=True
     return staticmethod(func)
+
+def dynamic_name(): return 'DynMix({U})'.format(U=uniq())
 
 class META(type):
     """ the most generic metaclass..
         to avoid MRO issues, this should be the main one used,
         and everything should subclass it and define hooks.
     """
+    def __lshift__(kls,other_kls):
+        """ algebra for left-mixin:
+             my_class = my_class << my_mixin
+        """
+        other_kls = copy.copy(other_kls)
+        other_kls.__metaclass__ = META
+        name  = dynamic_name()
+        bases = tuple([other_kls,kls])
+        return type(name, bases, {})
+
+    def __rshift__(kls, other_kls):
+        """ algebra for right-mixin:
+             my_class = my_class >> my_mixin
+        """
+        other_kls = copy.copy(other_kls)
+        other_kls.__metaclass__ = META
+        name  = dynamic_name()
+        bases = tuple([kls, other_kls])
+        return type(name, bases, {})
 
     def subclass(kls, name=None, dct={}, **kargs):
+        """ dynamically generate a subclass of this class """
+        import new
+        import copy
+        dct=copy.copy(dct)#.copy()
         dct.update(kargs)
         if hasattr(kls, '_subclass_hooks'):
             name,dct = kls._subclass_hooks(name=name, **dct)
-        name = name or "DynamicSubclass_" + str(uuid.uuid1()).split('-')[-2]
-        return kls.__metaclass__(name, (kls,), dct)
+        name = name or "DynamicSubclassOf{K}_{U}".format(K=kls.__name__,
+                                         U=str(uuid.uuid1()).split('-')[-2])
+        # WOAH, this behaves differently than type()
+        return new.classobj(name, (kls,), dct)
 
     @staticmethod
     def enumerate_hooks(mcls):
@@ -101,10 +131,6 @@ class ClassTracking(type):
         instance=super(ClassTracking, cls).__call__(*args, **kargs)
         return instance
 
-
-    def test(cls):
-        print ummm
-
 class TokenFactory(ClassTracking):
     ''' '''
     allowed_types = types.StringTypes
@@ -127,7 +153,6 @@ class TokenFactory(ClassTracking):
 
 class test:
     __metaclass__ = ClassTracking
-    def foo(self): print 3
 """
 def subclass_tracker(*bases, **kargs):
     """ dynamically generates the subclass tracking class that extends ``bases``.

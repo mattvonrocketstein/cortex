@@ -11,7 +11,7 @@ from lindypy.TupleSpace import Client, tuplespace
 
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
-from cortex.core.atoms import PersistenceMixin
+from cortex.mixins import PersistenceMixin
 
 class HierarchicalWrapper(HierarchicalData):
     """ """
