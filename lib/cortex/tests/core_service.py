@@ -18,6 +18,8 @@ class ServiceManagerCheck(TestCase):
         self.assertTrue('linda' in services)
 
     def test_service_load(self):
+        # TODO: why do i have to unload this for the test to pass..
+        #       is it running more than once?
         self.assertTrue('tmptest' not in self.universe.services.as_dict)
         self.universe.services.load_item(name='tmptest',
                                        kls=Service.subclass(),

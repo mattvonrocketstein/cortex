@@ -30,7 +30,7 @@ class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
     def get_all_tests(self):
         """ enumerate every test_* method in this instance's class """
         names = [x for x in dir(self.__class__) if x.startswith('test_')]
-        dct = dict([ [name, getattr(self, name)] for name in names ])
+        dct   = dict([ [name, getattr(self, name)] for name in names ])
         return dct
 
     def iterate(self):
@@ -64,12 +64,12 @@ class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
             yield
         msg = 'Test Results: {E} errors, {F} failures.'
         msg = msg.format(E=len(result.errors),F=len(result.failures))
-
-        print; print console.red(msg)
-        show_fails(result)
-
-        print; print console.red(msg)
-        show_errors(result)
+        if result.failures:
+            print; print console.red(msg)
+            show_fails(result)
+        if result.errors:
+            print; print console.red(msg)
+            show_errors(result)
         yield
     @property
     def services(self):
