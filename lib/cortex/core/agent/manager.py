@@ -1,23 +1,20 @@
 """ cortex.core.agent
 """
 
-import os
-
-from pep362 import Signature
+import inspect
 
 from cortex.core.util import report, uniq
-from cortex.core.metaclasses import META1
-from cortex.core.common import AgentError
-from cortex.core.data import NOOP, LOOPBACK_HOST, GENERIC_LOCALHOST
-from cortex.mixins import AutonomyMixin, PerspectiveMixin
+
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
-from cortex.core.data import DEFAULT_HOST
-from cortex.mixins import MobileCodeMixin
-from cortex.mixins import FaultTolerant
 from cortex.core.manager import Manager
+
+class AgentPrerequisiteNotMet(Exception):
+    """ Move along, nothing to see here """
 
 class AgentManager(Manager):
     """ """
+    AgentPrerequisiteNotMet = AgentPrerequisiteNotMet
+
     @classmethod
     def choose_dynamic_name(kls):
         """ when __call__ happens, if name is
@@ -28,19 +25,19 @@ class AgentManager(Manager):
         func_name = caller_info.get('func_name')
         return "{parent}_{u}".format(parent=func_name,u=uniq())
 
-    # TODO: not enforced..
-    load_first = ['ServiceManager']
+
+    load_first = ['ServiceManager'] # TODO: not enforced..
 
     # Class specifying how the objects in this
     #  container will be represented
     asset_class = HierarchicalData
 
-    class AgentPrerequisiteNotMet(Exception):
-        """ Move along, nothing to see here """
-
     def __mod__(self, other):
-        import inspect;
-        assert inspect.isclass(other),'niy'
+        """ AgentManager % kls:
+
+              partitions the registry by type
+        """
+        assert inspect.isclass(other),str(NotImplemented)
         out = {}
         for key,agent in self.as_dict.items():
             if isinstance(agent, other): out[key]=agent
@@ -98,5 +95,5 @@ class AgentManager(Manager):
 
     def post_registration(self, asset):
         """ pre_registration hook """
-        #report( asset.obj )
+
 AGENTS = AgentManager() # A cheap singleton
