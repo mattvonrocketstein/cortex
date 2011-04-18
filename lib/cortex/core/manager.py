@@ -5,6 +5,7 @@
 
 import datetime
 import inspect
+from contextlib import contextmanager
 
 from types import StringTypes
 from cortex.core.util import report
@@ -71,6 +72,12 @@ class Manager(object):
         boot_order = self.resolve_boot_order()
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
+
+    def isloaded(self,obj):
+        trivially_true = (obj in self.registry.keys()) or \
+                         (obj in self.registry.values())
+        return trivially_true or (obj in [ x.obj for x in self.registry.values() ])
+    is_loaded=isloaded
 
     def unload(self, obj):
         if not isinstance(obj, StringTypes):
@@ -319,6 +326,17 @@ class Manager(object):
         import uuid
         name = "Dynamic{k}Name{U}".format(U=str(uuid.uuid1()).split('-')[0],
                                          k=kls.__name__)
+    @contextmanager
+    def running(self, kls, **kargs):
+        """ a contextmanager where __enter__ is "load/run the agent",
+            with a return value of agent-handle and __exit__ is
+            "unload the agent"
+
+            TODO: think of a better name?
+        """
+        handle = self(kls, **kargs)
+        yield handle
+        self.unload(handle)
 
     def __call__(self, kls, name=None, **kargs):
         """ shortcut for load_item """

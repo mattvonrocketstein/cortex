@@ -37,7 +37,8 @@ class AgentManagerCheck(TestCase):
 
         self.assertRaises(AgentManager.Duplicate,
                           lambda: self.universe.agents.load_item(**kargs))
-        self.universe.agents.unload(self.universe.agents.registry['dupetest'].obj)
+        result = self.universe.agents.unload(self.universe.agents.registry['dupetest'].obj)
+        self.assertEqual(result,'dupetest')
 
     def test_load_duplicates2(self):
         # should be equivalent to test_load_duplicates
@@ -165,7 +166,7 @@ class AgentIterationCheck(TestCase):
         def callback(*args,**kargs): result_holder.switch += 1
         x.subscribe(callback)
         myiterate = lambda : x('arbitrary channel message')
-        A = Agent.subclass(universe=self.universe, name='i2', iterate = myiterate )
+        A = Agent.subclass(universe=self.universe)
         self.universe.agents(A);
         wait()
         self.assertTrue(result_holder.switch > 1)
@@ -189,11 +190,25 @@ class AgentIterationCheck(TestCase):
             #self.universe.agents.unload(A)
         x.destroy()
 
-class AgentCheck(AgentIterationCheck):
+class ContextManagerTest(TestCase):
+    def test_is_loaded(self):
+        A = Agent.subclass(universe=self.universe, name='isloadt')
+        with self.universe.agents.running(A) as handle:
+            self.assertTrue(self.universe.agents.is_loaded(handle))
+        self.assertTrue(not self.universe.agents.isloaded(handle))
+
+    def test_cm(self):
+        A = Agent.subclass(universe=self.universe )
+        with self.universe.agents.running(A) as handle:
+            self.assertTrue(self.universe.agents.is_loaded(handle))
+        self.assertEqual(self.universe.agents%A, {})
+
+class AgentCheck(AgentIterationCheck,ContextManagerTest):
     """ check various aspects of a running agent
 
         (in this case, the unittestservice is the agent in question)
     """
+
 
     def test_self_as_service(self):
         # is the unittest service installed as a service?
