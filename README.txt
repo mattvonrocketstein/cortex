@@ -1,12 +1,21 @@
 Cortex is a playground for experiments in distributed computing, AI, and language design.
 
-Installing:
+Before you get started:
+-----------------------
+  A few utilities that (might) be used by cortex.  You can also just wait until you need them,
+  but the "bzr" requirements in partciular may prevent you from pip-installing the other
+  requirements.
 
-    build venv:
+    $ sudo apt-get install bzr
+    $ sudo apt-get install nmap
+
+Installing:
+    Build venv:
+
         $ virtualenv foo --no-site-packages
         $ source foo/bin/activate
 
-    install requirements (if pip doesn't work use easy_install for every line in file?)
+    Install requirements (if pip doesn't work use easy_install for every line in file?)
         $ pip -E foo install -r cortex/requirements.txt
         $ sudo apt-get install nmap
         $ sudo apt-get install python-dev
@@ -15,48 +24,50 @@ Installing:
         $ python -c"import cortex"
 
 Running tests:
-    $ source foo/bin/activate
-    $ python cortex/lib/cortex/         # from the download directory
-    $ python -m "cortex.tests.__main__" # from the pre-installed source
+--------------
+    $ source foo/bin/activate             # activate the venv you made in the other step
+    $ python lib/cortex/tests             # from directory with cortex src clone
+    $ python -m "cortex.tests.__main__"   # from pre-installed source
 
-Look around:
-    One of the services cortex provides offers a system shell.  Typing "go" inside
-    your activated virtualenv will invoke it.  After the output from the bootup
-    procedure, you'll be dropped into something that looks more or less like a normal
-    ipython shell, but the prompt says something like:
+Looking around:
+---------------
+  One of the services cortex provides offers a system shell.  Typing "go" inside
+  your activated virtualenv will invoke it.  After the output from the bootup
+  procedure, you'll be dropped into something that looks more or less like a normal
+  ipython shell, but the prompt says something like:
 
        Universe(<ID>)[:<port>]<hostname> [1]
 
-    This terminal is just part of wider "universe", where the universe is everything
-    inside this cortex node.  In particular the terminal is a service, of which there
-    are many.  Try typing "universe.services":
+  This terminal is just part of wider "universe", where the universe is everything
+  inside this cortex node.  In particular the terminal is a service, of which there
+  are many.  Try typing "universe.services":
 
       ServiceManager(['api', 'terminal', 'postoffice', 'mapper', 'linda'])
 
-    You already met the terminal, and briefly the purposes of the rest of these services
-    go something like this.  The "postoffice" routes messages within the universe.  The
-    "mapper" actively seeks out other cortex instances and can be configured to look on
-    the same machine, or on whatever networks the universe is made aware of.  The "api"
-    exists to specify communication policies for most things external to the universe--
-    this includes other nodes but cortex boot-scripts and other things may find it useful
-    as well.  "Linda" is a tuple-space abstraction, a cortex service that uses lindypy
-    as it's backend.
+  You already met the terminal, and briefly the purposes of the rest of these services
+  go something like this.  The "postoffice" routes messages within the universe.  The
+  "mapper" actively seeks out other cortex instances and can be configured to look on
+  the same machine, or on whatever networks the universe is made aware of.  The "api"
+  exists to specify communication policies for most things external to the universe--
+  this includes other nodes but cortex boot-scripts and other things may find it useful
+  as well.  "Linda" is a tuple-space abstraction, a cortex service that uses lindypy
+  as it's backend.
 
-    Have you noticed by now red-text occasionally appearing after your cortex-shell
-    prompt?  If so, then you have already discovered the event bus.  The terminal
-    service consumes messages from this, and any other agent or service may write to
-    it.  As mentioned earlier, the postoffice is responsible for routing these messages.
-    A typical message might look like this:
+  Have you noticed by now red-text occasionally appearing after your cortex-shell
+  prompt?  If so, then you have already discovered the event bus.  The terminal
+  service consumes messages from this, and any other agent or service may write to
+  it.  As mentioned earlier, the postoffice is responsible for routing these messages.
+  A typical message might look like this:
 
       Events: [(<PostOffice-Service 38814096>,),
                ("Registered Peer:   addr = 127.0.0.1 ...)
                .... ]
 
-   The first part there is just the messenger that last handled the message, the body
-   says that a peer has been registered.  Scrutinizing the message further we would find
-   that the message originated with the Mapper service, and that it also contains a
-   dictionary with lots of details about the scan it has finished.  The terminal isn't
-   the only system component that has noticed a peer-registration event.  Try typing
-   "peers" and interacting with the peer manager:
+  The first part there is just the messenger that last handled the message, the body
+  says that a peer has been registered.  Scrutinizing the message further we would find
+  that the message originated with the Mapper service, and that it also contains a
+  dictionary with lots of details about the scan it has finished.  The terminal isn't
+  the only system component that has noticed a peer-registration event.  Try typing
+  "peers" and interacting with the peer manager:
 
      PeerManager(['localhost:1337', 'localhost:1338'])
