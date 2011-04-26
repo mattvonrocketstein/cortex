@@ -601,9 +601,9 @@ testv(RandomVacuumAgent)
 # (Tkinter is standard in all new releases), or delete the rest of this file
 # and muddle through without a GUI.
 
-import Tkinter as tk
+#import Tkinter as tk
 
-class EnvGUI (tk.Tk, object):
+class EnvGUI(object):# (tk.Tk, object):
 
     def __init__ (self, env, title = 'AIMA GUI', cellwidth=50, n=10):
 
@@ -620,7 +620,7 @@ class EnvGUI (tk.Tk, object):
             w.pack(side="bottom", fill="x", padx="3", pady="3")
 
 
-class EnvToolbar (tk.Frame, object):
+class EnvToolbar(object):# (tk.Frame, object):
 
     def __init__ (self, parent, env, canvas):
         super(EnvToolbar, self).__init__(parent, relief='raised', bd=2)
