@@ -99,7 +99,7 @@ class OSMixin(PIDMixin):
         #assert is_cortex_venv(sys.prefix), 'Expected sys.prefix would be a cortex venv'
         tmpdir = os.path.join(sys.prefix, 'tmp')
         if not os.path.exists(tmpdir):
-            report('making temporary directory:',tmpdir)
+            #report('making temporary directory:',tmpdir)
             os.mkdir(tmpdir)
         return tmpdir
 
