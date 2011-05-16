@@ -1,12 +1,15 @@
 Cortex is a playground for experiments in distributed computing, AI, and language design.
 
 Installing:
+
     build venv:
         $ virtualenv foo --no-site-packages
         $ source foo/bin/activate
 
     install requirements (if pip doesn't work use easy_install for every line in file?)
         $ pip -E foo install -r cortex/requirements.txt
+        $ sudo apt-get install nmap
+        $ sudo apt-get install python-dev
 
     see if it's installed:
         $ python -c"import cortex"
@@ -57,5 +60,3 @@ Look around:
    "peers" and interacting with the peer manager:
 
      PeerManager(['localhost:1337', 'localhost:1338'])
-
-
