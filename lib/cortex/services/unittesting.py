@@ -43,27 +43,18 @@ class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
         functions_to_test = namespace.values()
         report("Found {N} tests".format(N=len(functions_to_test)))
         test_cases = [FTC(f, **FTC_kargs) for f in functions_to_test]
-
-
-
-        TTR = TextTestRunner(verbosity=2)
-        #test_suite = unittest.TestSuite(test_cases)
-        #TTR.run(test_suite)
         result = TestResult()
-        #yield test_suite.run(result)
-        for tc in test_cases:
-            #console.draw_line()
+        for tc in set(test_cases):
             test_suite = unittest.TestSuite([tc])
-            TTR.run(test_suite)
-
             x = test_suite.run(result)
-            #if x.failures or x.errors:
-            #    report(x,)
-            #    break
-            #unittest.main()
+            if x.failures or x.errors:
+                 report(x,)
+                 if hasattr(self, 'failfast'):
+                     break
+            console.draw_line()
             yield
         msg = 'Test Results: {E} errors, {F} failures.'
-        msg = msg.format(E=len(result.errors),F=len(result.failures))
+        msg = msg.format(E=len(result.errors), F=len(result.failures))
         if result.failures:
             print; print console.red(msg)
             show_fails(result)
@@ -71,20 +62,22 @@ class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
             print; print console.red(msg)
             show_errors(result)
         yield
+
     @property
     def services(self):
         """ proxy for convenience """
         return self.universe.services.as_dict
+
     def _post_init(self, bases):
         """ """
-        report("Look ma, I rewrote my bases")
+        report("Rewriting bases to acquire all tests JIT")
         self.__class__.__bases__ += bases
 
-    def test_service_load_unloading(self):
-        """ """
-        class SimpleService(Service):
-            pass
-
+    def test_only_tested_once(self):
+        # so basic i think it can live in the test-runner itself..
+        error = "this test got run twice.  error with test runner?"
+        self.assertTrue(not hasattr(self,'some_unlikely_name'),error)
+        setattr(self,'some_unlikely_name',1)
 
 
     _testMethodName = 'WhyDoesThisNeedToBeHere?'
