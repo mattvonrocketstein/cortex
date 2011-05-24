@@ -1,6 +1,7 @@
 """ cortex.mixins.flavors
 
-      describes some different flavors of concurrency
+      Describes some different flavors of concurrency that
+      can be plugged into cortex agents.
 
 """
 import time
@@ -24,7 +25,7 @@ class Threadpooler(Autonomy):
          if the subclass wrote iterate() as a
            generator, exhaust it and then decide
              whether to stop based on self.iterate.reentrant
-         ?
+
          TODO: save answer in some way?
     """
     def run(self):
