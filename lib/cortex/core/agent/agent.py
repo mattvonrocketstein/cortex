@@ -2,6 +2,7 @@
 """
 
 import os
+import time
 
 from pep362 import Signature
 
@@ -27,6 +28,8 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP
     name          = 'default-name'
+
+    def wait(self, arg=1): time.sleep(arg)
 
     @classmethod
     def _subclass_hooks(kls, name=None, iterate=None, **dct):

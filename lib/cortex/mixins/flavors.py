@@ -39,3 +39,8 @@ class Threadpooler(Autonomy):
         Autonomy.start(self)
         go = lambda: self.universe.threadpool.callInThread(self.run)
         self.universe.reactor.callWhenRunning(go)
+
+## A few ready-made combinations
+from cortex.core.agent import Agent
+class ThreadedAgent(Threadpooler, Agent): pass
+class RecursiveAgent(ReactorRecursion, Agent): pass
