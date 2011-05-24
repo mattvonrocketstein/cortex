@@ -31,11 +31,11 @@ def initialize():
                       forkOnLeft=fork1,
                       forkOnRight=fork2)
 
-# Setup agents and load them into the universe.
-# A better way is to use an agent-manager rather than
-# using the universe itself directly, which paves the
-# way to solving the problem with an arbiter, but this
-# is the most minimal example.
+## Setup agents and load them into the universe.
+##
+## A better way would be to use an agent-manager rather than  using the
+## universe itself directly, which paves the way to solving the problem
+## with an arbiter, but this is the most minimal example possible.
 initialize()
 
 # Load services with the default (parameterless)
