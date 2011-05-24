@@ -117,7 +117,9 @@ services     = lambda: list(universe.services)
 peers        = universe.peers
 agents        = universe.agents
 
-register_service = universe.services.register
-register_peer    = universe.peers.register
-last_peer        = lambda: peers[0]
-show_last_peer   = lambda: report('most recent peer',last_peer())
+register_service  = universe.services.register
+register_peer     = universe.peers.register
+last_peer         = lambda: peers[0]
+show_last_peer    = lambda: report('most recent peer',last_peer())
+declare_agent     = universe.agents
+load_instructions = do
