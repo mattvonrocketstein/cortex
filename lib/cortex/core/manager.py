@@ -155,6 +155,10 @@ class Manager(object):
         """ dictionary compatability """
         return self.registry.items()
 
+    def values(self):
+        """ dictionary compatability """
+        return [x.obj for x in self.registry.values()]
+
     def __len__(self):
         """ list/dictionary compatibility """
         return len(self.registry)
