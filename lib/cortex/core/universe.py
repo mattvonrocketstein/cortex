@@ -164,17 +164,21 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
     def stop(self):
         """ override autonomy """
         self.started = False
-        stopped=[]
-        for service in self.services:
+        stopped = []
+
+        def failure_stopping_agent(service, e):
+            err_msg = 'Squashed exception stopping agent "{service}".  Original Exception follows'.format(service=service)
+            report(err_msg)
+            report(str(e))
+
+        ## stop any other agents
+        for agent in set(self.agents.values() + self.services.values()):
             try:
-                service = self.services[service].obj
-                service.stop()
-                stopped.append(service)
+                agent.stop()
+                stopped.append(agent)
             except Exception,e:
-                err_msg = 'Squashed exception stopping service "{service}".  Original Exception follows'.format(service=service)
-                report(err_msg)
-                report(str(e))
-                #IP.quitting=True
+                failure_stopping_agent(agent, e)
+
         self.threadpool.stop()
         for thr in self.threads:
             thr._Thread__stop()
