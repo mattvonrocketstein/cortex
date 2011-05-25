@@ -182,6 +182,48 @@ def is_cortex_node(other):
     else:
         return host_is_cortex_node(other)
 
+#
+################################################################################
+
+class classproperty(property):
+    """
+    class A (object):
+
+        _foo = 1
+
+        @classproperty
+        @classmethod
+        def foo(cls):
+            return cls._foo
+
+        @foo.setter
+        @classmethod
+        def foo(cls, value):
+            cls.foo = value
+    """
+
+    def __get__(self, obj, type_):
+        return self.fget.__get__(None, type_)()
+
+    def __set__(self, obj, value):
+        cls = type(obj)
+        return self.fset.__get__(None, cls)(value)
+
+
+#
+################################################################################
+
 # TODO: register all locks with universe for debugging, etc
 import threading
 Lock = threading.Lock
+Semaphore = threading.BoundedSemaphore
+
+#
+################################################################################
+
+from inspect import ismethod, isclass
+def isclassmethod( m ):
+ return ismethod(m) and isclass(m.__self__)
+
+#
+################################################################################
