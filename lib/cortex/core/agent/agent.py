@@ -29,6 +29,9 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     _post_init    = NOOP
     name          = 'default-name'
 
+    def __repr__(self):
+        return "<{name}>".format(name=self.name)
+
     def wait(self, arg=1): time.sleep(arg)
 
     @classmethod
