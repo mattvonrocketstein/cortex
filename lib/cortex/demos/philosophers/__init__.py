@@ -17,28 +17,26 @@ class Philosopher(ThreadedAgent, RosettaPhilosopher):
 
         NOTE: RosettaPhilosopher.run() is not used! run() is inherited from ThreadedAgent
     """
-
-    def __repr__(self):
-        return "<{name}>".format(name=self.name)
-
     def _post_init(self, forkOnLeft=None, forkOnRight=None):
-        """ replacement for rosetta's philosopher.__init__ """
+        """ replacement: RosettaPhilosopher.__init__ """
         self.forkOnLeft = forkOnLeft
         self.forkOnRight = forkOnRight
 
     def run_primitive(self):
-        """ replacement for rosetta's philosopher.run(), that loop is essentially
-            already abstracted upwards into ThreadedAgent.run()
+        """ replacement: RosettaPhilosopher.run()
+
+            the loop there is essentially already
+            abstracted upwards into ThreadedAgent.run()
         """
         self.wait() # without arguments, blocks for one second
         print('%s is hungry.' % self.name)
         self.dine()
 
-    ## Rosetta's philosopher.dine() implementation
-    ##  is fine, so we leave it untouched..
+    ## Rosetta's philosopher.dine() implementation is fine
     dine = RosettaPhilosopher.dine
 
     @property
     def running(self):
-        """ translates rosetta's "self.running" semantics to standard cortex semantics """
+        """ translation: RosettaPhilosopher.running is
+            semantically equivalent cortex's Agent.started """
         return self.started
