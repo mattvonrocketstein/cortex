@@ -6,8 +6,12 @@
 """
 import time
 from cortex.mixins.autonomy import Autonomy
+
 class ReactorRecursion(Autonomy):
-    """ """
+    """
+        will be repeatedly invoked by the reactor,
+        twisted-style, in the one true mainloop.
+    """
     def run(self):
         self.run_primitive()
         self.universe.reactor.callLater(self.iteration_period, self.run)
