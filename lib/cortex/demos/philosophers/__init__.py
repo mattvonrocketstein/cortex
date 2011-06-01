@@ -8,22 +8,24 @@
 """
 
 from cortex.mixins.flavors import ThreadedAgent
-from cortex.demos.philosophers.rosetta import Philosopher as RosettaPhilosopher
+from cortex.demos.philosophers.rosetta import Philosopher as PhilosopherTemplate
+from cortex.core.agent import Agent
 
-class Philosopher(ThreadedAgent, RosettaPhilosopher):
+
+class PhilosopherOverrides(object):
     """ This class is a thin wrapper around the rosetta example
 
         It serves as a demo for how to "agentify" any random threaded code.
 
-        NOTE: RosettaPhilosopher.run() is not used! run() is inherited from ThreadedAgent
+        NOTE: PhilosopherTemplate.run() is not used! run() is inherited from ThreadedAgent
     """
     def _post_init(self, forkOnLeft=None, forkOnRight=None):
-        """ replacement: RosettaPhilosopher.__init__ """
+        """ replacement: PhilosopherTemplate.__init__ """
         self.forkOnLeft = forkOnLeft
         self.forkOnRight = forkOnRight
 
     def run_primitive(self):
-        """ replacement: RosettaPhilosopher.run()
+        """ replacement: PhilosopherTemplate.run()
 
             the loop there is essentially already
             abstracted upwards into ThreadedAgent.run()
@@ -33,10 +35,24 @@ class Philosopher(ThreadedAgent, RosettaPhilosopher):
         self.dine()
 
     ## Rosetta's philosopher.dine() implementation is fine
-    dine = RosettaPhilosopher.dine
+    dine = PhilosopherTemplate.dine
 
     @property
     def running(self):
-        """ translation: RosettaPhilosopher.running is
+        """ translation: PhilosopherTemplate.running is
             semantically equivalent cortex's Agent.started """
         return self.started
+
+
+PhilosopherTemplate = Agent.template_from(PhilosopherTemplate)
+ThreadedPhilosopher = PhilosopherTemplate.use_concurrency_scheme(ThreadedAgent)
+
+
+
+#class PhilosopherTemplate(Agent,PhilosopherTemplate):
+#    pass #= Agent.subclass('PhilosopherTemplate',**dict(PhilosopherTemplate.__dict__))
+#class Philosopher(PhilosopherOverrides, ConcurrencyStle, PhilosopherTemplate):
+#    pass
+
+class Philosopher(PhilosopherOverrides, ThreadedPhilosopher):#.bind_to(ConcurrencyStle)):
+    pass
