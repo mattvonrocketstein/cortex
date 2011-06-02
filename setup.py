@@ -103,7 +103,7 @@ if __name__=='__main__':
         packages    = find_packages('lib'),
         entry_points = {
             'console_scripts': [
-                'go = cortex.bin.go:entry',
+                'cortex = cortex.bin.go:entry',
                 'panic = cortex.bin.panic:entry',
             ],
         },
