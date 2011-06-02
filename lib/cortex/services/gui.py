@@ -1,9 +1,6 @@
 """ cortex.services.gui
       http://ipython.scipy.org/moin/Cookbook/EmbeddingInGTK
 """
-from twisted.internet import gtk2reactor # for gtk-2.0
-gtk2reactor.install()
-
 
 import gtk
 from cortex.services import Service

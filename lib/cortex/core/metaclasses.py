@@ -92,7 +92,7 @@ class META1(META):
         """ called when initializing (configuring) class,
             this method records data about hierarchy structure
         """
-        report("subclass_registry")
+        #report("subclass_registry")
         subclass_registry = getattr(mcls, 'subclass_registry', None)
         if subclass_registry is not None:
             subclass_registry = mcls.subclass_registry

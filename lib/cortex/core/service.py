@@ -134,7 +134,7 @@ class Service(Agent):
     def stop(self):
         """ Convention:
               <stop> for services differs from your typical
-              agent because ..
+              agent because ?
         """
         #report("service::stopping")
         self.is_stopped = True
@@ -145,7 +145,9 @@ class Service(Agent):
         """
             Convention:
               services *must* define <start> and <stop>,
-              therefore the functionality of <play> is implied.
+              therefore the functionality of <play> is implied;
+              you should not need to override this method.
+
         """
         self.universe.reactor.callWhenRunning(self.start)
         return self
