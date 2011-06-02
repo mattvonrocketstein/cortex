@@ -1,0 +1,36 @@
+ Node configuration files are one of driving cortex
+
+ The formatting for these files is essentially json + simple comments.  Here is
+ an example nodeconf that just loads a bunch of services.  It is executed like
+ this: "cortex --conf ./tui.conf"
+
+     ["load_service", "postoffice"]
+     ["load_service", "network_mapper"]
+     ["load_service", "api"]
+     ["load_service", "_linda"]
+     ["load_service", "terminal"]
+
+ Here's another one called "gui.conf" that loads a gui ipython shell instead
+ of the tui one.  It is executed like this: "cortex --gtk --conf ./gui.conf"
+
+     ["load_service", "postoffice"]
+     ["load_service", "network_mapper"]
+     ["load_service", "api"]
+     ["load_service", "_linda"]
+     ["load_service", "gui"]
+
+ You would execute these by saving them to a file and then running them :
+   $ cortex --gtk
+
+ Regarding service load-order.  You should know that the order specified
+ by this file may not be preserved.  Services may not be booted in the same order
+ every time, even given the same nodeconf.  This is feature.  Services will be booted
+ in the first consistent boot-order than is computed as a solution to the
+ boot-order CSP (constraint satisfaction problem). The boot-order CSP is implicitly
+ defined by the decorators for the services <start> methods.  Here's an example, taken
+ from the network_mapper service:
+
+       @constraint(boot_first='postoffice')
+       @constraint(boot_first='api')
+       def start(self):
+          do_stuff()
