@@ -4,7 +4,6 @@ import gtk
 from cortex.services import Service
 from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
-from cortex.services.terminal.terminal import IPShellTwisted, IPY_ARGS
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 
