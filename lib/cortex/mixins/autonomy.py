@@ -17,7 +17,7 @@ class AbstractAutonomy(Mixin):
               + <stop> children,
               + <exit> children
               + <exit> self
-              + whatever else to ensure-garbage-collection (self.__del__)
+              + whatever else to ensure-garbage-collection
         """
         pass
 

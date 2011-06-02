@@ -29,28 +29,6 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     _post_init    = NOOP
     name          = 'default-name'
 
-    @classmethod
-    def use_concurrency_scheme(kls, other):
-        """ mutate this agent-subclass in place to prefer Autonomy
-            methods described in the autonomy subclass ``other``
-        """
-        assert kls!=Agent, "TODO: what's going on here?  Binding to a prototype this high will probably result in confusion"
-        kls.__bases__ = tuple([other]) + kls.__bases__
-        return kls
-
-    @classmethod
-    def template_from(this_kls, cls_template):
-        """ return a new class that has all the behaviour specified in ``cls_template``
-            as well as at least the minimum requirements of being an abstract Agent.
-
-            ``cls_template`` is a dictionary-like item that has named behaviours
-        """
-        return type('outer(inner)'.format(outer=this_kls.__name__,
-                                          inner=cls_template.__name__),
-                    (this_kls,cls_template),
-                    {})
-
-
     def __repr__(self):
         return "<{name}>".format(name=self.name)
 
