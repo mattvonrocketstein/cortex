@@ -39,6 +39,10 @@ def initialize():
           cortex.demos.philosophers.rosetta.DiningPhilosophers
     """
     forks = [ Lock() for n in range(5) ]
+    for fork in forks:
+        fork.fork_num = forks.index(fork)
+
+
     philosopherNames = ('Aristotle','Kant','Buddha','Marx', 'Russel')
     for i in range(5):
         args  = dict( forkOnLeft = forks[i%5],

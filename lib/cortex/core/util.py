@@ -215,7 +215,8 @@ class classproperty(property):
 
 # TODO: register all locks with universe for debugging, etc
 import threading
-Lock = threading.Lock
+import multiprocessing
+Lock = multiprocessing.Lock
 Semaphore = threading.BoundedSemaphore
 
 #
@@ -227,3 +228,11 @@ def isclassmethod( m ):
 
 #
 ################################################################################
+
+def alias(name):
+    """ builds an named alias for another attribute """
+    @property
+    def fxn(self):
+        return getattr(self, name)
+
+    return fxn
