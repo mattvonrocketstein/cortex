@@ -95,7 +95,7 @@ if __name__=='__main__':
 
     setup(
         name        ='cortex',
-        version     = '.1',
+        version     = '.11',
         description = 'playground for distributed computing',
         author      = 'mattvonrocketstein, in the gmails',
         url         = 'one of these days',
