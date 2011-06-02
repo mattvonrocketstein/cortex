@@ -429,9 +429,9 @@ class ConsoleView(gtk.TextView):
     return self.onKeyPressExtend(event)
 
   def onKeyPressExtend(self, event):
-    '''
+    """
     For some reason we can't extend onKeyPress directly (bug #500900).
-    '''
+    """
     pass
 
 class IPythonView(ConsoleView, IterableIPShell):
@@ -439,14 +439,14 @@ class IPythonView(ConsoleView, IterableIPShell):
   Sub-class of both modified IPython shell and L{ConsoleView} this makes
   a GTK+ IPython console.
   '''
-  def __init__(self):
+  def __init__(self,**kargs):
     '''
     Initialize. Redirect I/O to console.
     '''
     ConsoleView.__init__(self)
     self.cout = StringIO()
     IterableIPShell.__init__(self, cout=self.cout,cerr=self.cout,
-                             input_func=self.raw_input)
+                             input_func=self.raw_input, **kargs)
 #    self.connect('key_press_event', self.keyPress)
     self.execute()
     self.cout.truncate(0)

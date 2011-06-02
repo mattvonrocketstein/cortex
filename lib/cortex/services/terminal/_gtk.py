@@ -47,12 +47,13 @@ class GUI:
             ctx = 'test'
             self.fault(err, ctx)
             self.universe.stop()
+
         W = gtk.Window()
         W.set_size_request(750,550)
         W.set_resizable(True)
         S = gtk.ScrolledWindow()
         S.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
-        V = IPythonView()
+        V = IPythonView(user_ns=self.compute_terminal_namespace())
         V.modify_font(pango.FontDescription(FONT))
         V.set_wrap_mode(gtk.WRAP_CHAR)
         V.show()
