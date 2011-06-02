@@ -15,6 +15,7 @@ import simplejson
 from twisted.internet import reactor
 
 from cortex.util import Memoize
+from cortex.core.hds import HDS
 from cortex.core.util import get_mod
 from cortex.core.reloading import AutoReloader
 from cortex.core.parsing import Nodeconf
@@ -25,7 +26,7 @@ from cortex.mixins import PersistenceMixin
 from cortex.core.peer import PeerManager, PEERS
 from cortex.core.service import Service, SERVICES
 from cortex.core.service import ServiceManager
-from cortex.core.agent import AGENTS #AgentManager
+from cortex.core.agent import AGENTS
 from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
 from cortex.mixins import FaultTolerant
@@ -43,6 +44,7 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
     #clones        = CloneManager()
     #processes     = ProcessManager()
     nodeconf_file = u''
+    config        = HDS()
 
     def decide_options(self):
         """ """
