@@ -1,27 +1,30 @@
 """ cortex.services.gui
       http://ipython.scipy.org/moin/Cookbook/EmbeddingInGTK
 """
+from twisted.internet import gtk2reactor # for gtk-2.0
+gtk2reactor.install()
 
-from cortex.core import api
+
+import gtk
 from cortex.services import Service
 from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
-from cortex.core.terminal import IPShellTwisted, IPY_ARGS
+from cortex.services.terminal.terminal import IPShellTwisted, IPY_ARGS
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 
+import gtk
+from ipython_view import *
+import pango
+
+import platform
+if platform.system()=="Windows":
+    FONT = "Lucida Console 9"
+else:
+    FONT = "Luxi Mono 10"
+
 class GUI(Service):
     """ """
-
-    import gtk
-    from ipython_view import *
-    import pango
-
-    import platform
-    if platform.system()=="Windows":
-        FONT = "Lucida Console 9"
-    else:
-        FONT = "Luxi Mono 10"
 
     def start(self):
         W = gtk.Window()
@@ -36,10 +39,15 @@ class GUI(Service):
         S.add(V)
         S.show()
         W.add(S)
+        color = gtk.gdk.color_parse('#234fdb')
+        W.modify_bg(gtk.STATE_NORMAL, color)
+
         W.show()
         W.connect('delete_event',lambda x,y:False)
         W.connect('destroy',lambda x:gtk.main_quit())
-        gtk.main()
+        #gtk.main()
 
 if __name__=='__main__':
+    from twisted.internet import reactor
     GUI().start()
+    reactor.run( )

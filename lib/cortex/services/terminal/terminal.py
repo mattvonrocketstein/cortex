@@ -1,4 +1,4 @@
-""" cortex.core.terminal
+""" cortex.services.terminal.terminal
 
       Adapted from: http://code.activestate.com/recipes/410670-integrating-twisted-reactor-with-ipython/
 
@@ -67,7 +67,6 @@ class IPShellTwisted(threading.Thread):
         self.IP = make_IPython(argv, user_ns=user_ns, debug=debug,
                                shell_class=shell_class,
                                on_kill=[self.mainquit,self.controller.universe.sleep])
-
         threading.Thread.__init__(self)
 
     def run(self):
@@ -77,5 +76,4 @@ class IPShellTwisted(threading.Thread):
 
     def on_timer(self):
         self.IP.runcode()
-        print 'yellow'
         self.reactor.callLater(self.TIMEOUT, self.on_timer)
