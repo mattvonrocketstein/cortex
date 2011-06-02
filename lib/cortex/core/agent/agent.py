@@ -30,13 +30,22 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     name          = 'default-name'
 
     @classmethod
+    def using(self, template=None, flavor=None):
+        target=Agent
+        if template:
+            target = target.template_from(template)
+        if flavor:
+            target=target.use_concurrency_scheme(flavor)
+        return target
+
+    @classmethod
     def use_concurrency_scheme(kls, other):
-        """ mutate this agent-subclass in place to prefer Autonomy
+        """ uses the concurrency scheme ``other``
+            mutate this agent-subclass in place to prefer Autonomy
             methods described in the autonomy subclass ``other``
         """
-        assert kls!=Agent, "TODO: what's going on here?  Binding to a prototype this high will probably result in confusion"
-        kls.__bases__ = tuple([other]) + kls.__bases__
-        return kls
+        return type('asdasdasd', tuple([other]) + kls.__bases__, {})
+
 
     @classmethod
     def template_from(this_kls, cls_template):

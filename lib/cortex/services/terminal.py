@@ -124,7 +124,10 @@ class Terminal(Service, LocalQueue, ShellAspect):
         # Hack: this raises an exception but everything breaks
         #        without the call itself. hrm..
         try:
-            self.shell.mainloop()
+            self.shell.reactor.callWhenRunning(self.shell.on_timer)
+            self.shell.start()
+            self.shell.reactor.run()
+            self.shell.join()
         except ReactorAlreadyRunning:
             pass
         return self
@@ -138,6 +141,5 @@ class Terminal(Service, LocalQueue, ShellAspect):
 
     def play(self):
         """ """
-        self.universe.reactor.callLater(1, self.start)
-
+        self.universe.reactor.callWhenRunning(self.start)
         return self

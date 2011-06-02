@@ -5,6 +5,7 @@
 
 """
 import time
+import threading
 from cortex.mixins.autonomy import Autonomy
 
 class ReactorRecursion(Autonomy):
@@ -13,14 +14,25 @@ class ReactorRecursion(Autonomy):
         twisted-style, in the one true mainloop.
     """
     def run(self):
-        self.run_primitive()
-        self.universe.reactor.callLater(self.iteration_period, self.run)
+        #return
+        print 't',threading.enumerate()
+        from twisted.internet.task import LoopingCall
+        LoopingCall(self.run_primitive).start(.01)
+        #this speeds up startup time but breaks tests.
+        #self.universe.reactor.callLater(self.iteration_period,
+        #                                lambda: LoopingCall(self.run_primitive).start(.3))
+
+#self.universe.reactor.callFromThread(self.run_primitive)
+        #self.universe.reactor.callLater(self.iteration_period, self.run)
+        #self.run_primitive()
 
     def start(self):
         """ autonomy override """
         Autonomy.start(self)
+        # stop wont work if you don't use callFromThread?
         go = lambda: self.universe.reactor.callFromThread(self.run)
-        self.universe.reactor.callWhenRunning(go)
+        self.universe.reactor.callWhenRunning(self.run)
+
 
 class Threadpooler(Autonomy):
     """

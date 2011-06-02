@@ -7,12 +7,13 @@
 
 """
 
-from cortex.mixins.flavors import ThreadedAgent
+from cortex.mixins.flavors import ThreadedAgent, ReactorRecursion
 from cortex.demos.philosophers.rosetta import Philosopher as PhilosopherTemplate
 from cortex.core.agent import Agent
+from cortex.mixins import Mixin
+from cortex.core.util import alias
 
-
-class PhilosopherOverrides(object):
+class PhilosopherOverrides(Mixin):
     """ This class is a thin wrapper around the rosetta example
 
         It serves as a demo for how to "agentify" any random threaded code.
@@ -30,29 +31,25 @@ class PhilosopherOverrides(object):
             the loop there is essentially already
             abstracted upwards into ThreadedAgent.run()
         """
-        self.wait() # without arguments, blocks for one second
-        print('%s is hungry.' % self.name)
-        self.dine()
+        from twisted.internet.defer import Deferred
+        d = Deferred()
+        def yam():
+            self.wait() # without arguments, blocks for one second
+            print('%s is hungry.' % self.name)
+            self.dine()
+        self.universe.reactor.callLater(.1, yam)
 
     ## Rosetta's philosopher.dine() implementation is fine
     dine = PhilosopherTemplate.dine
 
-    @property
-    def running(self):
-        """ translation: PhilosopherTemplate.running is
-            semantically equivalent cortex's Agent.started """
-        return self.started
+    # PhilosopherTemplate.running is equivalent to cortex's Agent.started
+    running = alias('started')
 
 
-PhilosopherTemplate = Agent.template_from(PhilosopherTemplate)
-ThreadedPhilosopher = PhilosopherTemplate.use_concurrency_scheme(ThreadedAgent)
+ReactivePhilosopher = Agent.using(template=PhilosopherTemplate,
+                                  flavor=ReactorRecursion)
+ThreadedPhilosopher = Agent.using(template=PhilosopherTemplate,
+                                  flavor=ThreadedAgent)
 
-
-
-#class PhilosopherTemplate(Agent,PhilosopherTemplate):
-#    pass #= Agent.subclass('PhilosopherTemplate',**dict(PhilosopherTemplate.__dict__))
-#class Philosopher(PhilosopherOverrides, ConcurrencyStle, PhilosopherTemplate):
-#    pass
-
-class Philosopher(PhilosopherOverrides, ThreadedPhilosopher):#.bind_to(ConcurrencyStle)):
-    pass
+class Philosopher(PhilosopherOverrides, ThreadedPhilosopher): pass
+class Philosopher(PhilosopherOverrides, ReactivePhilosopher): iteration_period = 1

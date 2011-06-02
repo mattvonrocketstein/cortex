@@ -55,6 +55,7 @@ class IPShellTwisted(threading.Thread):
         # Make sure IPython keeps going after reactor stop.
         def reactorstop():
             pass
+
         self.reactor.stop = reactorstop
         reactorrun_orig = self.reactor.run
         self.quitting = False
@@ -74,12 +75,7 @@ class IPShellTwisted(threading.Thread):
         self.quitting = True
         self.IP.kill()
 
-    def mainloop(self):
-        self.reactor.callLater(self.TIMEOUT, self.on_timer)
-        self.start()
-        self.reactor.run()
-        self.join()
-
     def on_timer(self):
         self.IP.runcode()
+        print 'yellow'
         self.reactor.callLater(self.TIMEOUT, self.on_timer)
