@@ -59,8 +59,6 @@ class GUI:
         S.add(V)
         S.show()
         W.add(S)
-        color = gtk.gdk.color_parse('#234fdb')
-        W.modify_bg(gtk.STATE_NORMAL, color)
 
         W.show()
         W.connect('delete_event',lambda x,y:False)
