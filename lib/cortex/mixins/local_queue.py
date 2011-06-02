@@ -5,7 +5,9 @@ import Queue
 from Queue import Empty as QueueEmpty
 
 class LocalQueue:
-    """ """
+    """ currently only used by the terminal service?
+
+        TODO: parametrize 'event_q' name """
     def __len__(self):
         return self.event_q.qsize()
 

@@ -29,10 +29,6 @@ def build_parser():
                       )
     return parser
 
-
-
-
-
 def entry():
     """
     """
@@ -73,6 +69,11 @@ def entry():
     from cortex.core.reloading_helpers import run as RUN
     Universe.directives = options.directives.split(",")
 
+    # mirror command-line options in universe's config
+    olist = [x for x in dir(options) if not x.startswith('_') and x not in 'read_file read_module ensure_value'.split()]
+    [setattr(Universe.config,x,getattr(options,x)) for x in olist]
+
+    ## deserialize a saved universe and resume it
     if options.universe:
         if not os.path.exists(options.universe):
             print "Path does not exist."
@@ -80,10 +81,12 @@ def entry():
         else:
             U = pickle.loads(open(options.universe).read())
             U.play() # Invoke the Universe
-    else:
-        install_nodeconf(nodeconf_file, options, args)
-        RUN() # Invoke the Universe
-        s=Universe.play()
+        return
+
+    # Otherwise install the nodeconf that we found and run it.
+    install_nodeconf(nodeconf_file, options, args)
+    RUN() # Invoke the Universe
+    s=Universe.play()
 
 if __name__ == '__main__':
     entry()

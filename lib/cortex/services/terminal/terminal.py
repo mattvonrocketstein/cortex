@@ -2,7 +2,21 @@
 
       Adapted from: http://code.activestate.com/recipes/410670-integrating-twisted-reactor-with-ipython/
 
-      TODO: this appears to be in twshell in ipython 0.10.1 .. extend that
+      TODO: this appears to be in twshell in ipython 0.10.1 .. extend that?
+
+      see also: http://ipython.scipy.org/moin/Cookbook/JobControl
+
+        import sys
+        from IPython.Debugger import Pdb
+        from IPython.Shell import IPShell
+        from IPython import ipapi
+
+        shell = IPShell(argv=[''])
+
+        def set_trace():
+            ip = ipapi.get()
+            def_colors = ip.options.colors
+            Pdb(def_colors).set_trace(sys._getframe().f_back)
 """
 import threading
 

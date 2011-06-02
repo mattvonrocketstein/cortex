@@ -1,12 +1,46 @@
+""" cortex.services.terminal.shell
+"""
+
+from cortex.core.data import EVENT_T
+from cortex.core.util import report, console
+
 class ShellAspect:
     """ Simple mixin to hold stuff that's pretty IPython specific.
     """
     registry = {}
 
+    def set_shell(self):
+        from cortex.services.terminal.terminal import IPShellTwisted, IPY_ARGS
+        self.shell = IPShellTwisted(argv=IPY_ARGS,
+                                    user_ns=self.compute_terminal_namespace(),
+                                    controller=self)
+        self.shell.IP.set_hook('pre_prompt_hook', self.pre_prompt_hook)
+        self.shell.IP.BANNER = console.draw_line(display=False)
+        # Set IPython "autocall" to "Full"
+        self.shell.IP.magic_autocall(2)
+
     def set_prompt(self):
         """ """
         self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
         self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name)  + ' [\\#] '
+
+    def really_start(self):
+        """ TODO: defer to universe.command_line_options for whether to magic_pdb """
+
+        # This case is nasty..  nothing seems to be able to make the process exit cleanly
+        if self.universe.config.gtk_reactor==True:
+            err = "This universe is configured for the GTK reactor, but you're trying to use the console-based ipython terminal."
+            ctx = 'test'
+            self.fault(err, ctx)
+            self.universe.stop()
+            self.universe.reactor.stop()
+            import sys;sys.exit()
+
+
+        self.shell.reactor.callWhenRunning(self.shell.on_timer)
+        self.shell.start()
+        self.shell.reactor.run()
+        self.shell.join()
 
     def attach_proc(self, func, predicate):
         """ use func when predicate(source)
