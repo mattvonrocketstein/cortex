@@ -56,6 +56,8 @@ class ATerminal(Service, LocalQueue):
         report('the Terminal Service Dies.')
 
     def compute_terminal_namespace(self):
+        import inspect
         universe = {'__name__' : '__cortex_shell__',}
         universe.update(api.publish())
+        universe.update(dict(getfile=inspect.getfile))
         return universe

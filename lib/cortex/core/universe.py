@@ -199,7 +199,7 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
 
     def loadService(self, service, **kargs):
         """ """
-        if isinstance(service, types.StringTypes):
+        def handle_string(service):
             # handle dotpaths
             if "." in service:
                 service = service.split('.')
@@ -219,7 +219,6 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
                     raise Exception,'will not interpret that dotpath yet'
 
             # just one word.. where/what could it be?
-
             else:
                 errors = []
                 mod_name = service
@@ -257,6 +256,8 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
                                 ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
                 return ret_vals
 
+        if isinstance(service, types.StringTypes):
+            handle_string(service)
         # Not a string? let's hope it's already a service-like thing
         else:
             return self.start_service(service, **kargs)

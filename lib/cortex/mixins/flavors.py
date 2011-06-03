@@ -7,6 +7,9 @@
 import time
 import threading
 from cortex.mixins.autonomy import Autonomy
+class Eventful(Autonomy):
+    pass
+
 class ReactorRecursion(Autonomy):
     """ """
     def run(self):
