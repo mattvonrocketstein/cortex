@@ -3,6 +3,7 @@
 import gtk
 from cortex.services import Service
 from cortex.core.data import EVENT_T
+from cortex.core.agent import Agent
 from cortex.core.util import report, console
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
@@ -49,16 +50,17 @@ class GUI_GTK:
         S.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
         return S
 
-class GUI(GUI_GTK):
-    """ """
-
-    def set_channel(self):
+class Buffer(Agent,GUI_GTK):
+    def start(self):
         S = self.scrolled_window
         x = ConsoleView()
         x.show()
         S.add(x)
         S.show()
         return S,x
+
+class GUI(GUI_GTK):
+    """ """
 
     def set_shell(self):
         S = self.scrolled_window
@@ -71,31 +73,33 @@ class GUI(GUI_GTK):
         S.show()
         return S
 
-
-
-
-
     def really_start(self):
-        """ TODO: defer to universe.command_line_options for whether to magic_pdb """
+        """ TODO: defer to universe.command_line_options
+                  for whether to magic_pdb """
         if not self.universe.config.gtk_reactor==True:
-            err = "This universe isn't configured for GTK reactor, but you're trying to use the gtk terminal"
-            ctx = 'test'
+            err  = "This universe isn't configured for GTK reactor, "
+            err += "but you're trying to use the gtk terminal!"
+            ctx  = str(self)
             self.fault(err, ctx)
             self.universe.stop()
 
-        components  = [self.spawn_channel_watcher
-                       ,self.spawn_shell,]
-
+        components  = [ self.spawn_channel_watcher,
+                        self.spawn_shell, ]
 
         for c in components:
             c()
 
     def spawn_channel_watcher(self):
-        window = self.spawn_window
-        x,y = self.set_channel()
-        window.add(x)
-        window.show()
-        return y
+        class moo(Agent, GUI_GTK):
+            def start(self):
+                window = self.spawn_window
+                S = self.scrolled_window
+                x = ConsoleView()
+                x.show()
+                S.add(x); S.show()
+                window.add(S); window.show()
+                return x # you can call .write('str') on this thing
+        moo().start()
 
     def spawn_shell(self):
         """ interesting.. safe to call multiple times"""
