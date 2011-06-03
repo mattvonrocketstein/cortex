@@ -57,6 +57,7 @@ def entry():
 
     # use the gtk-reactor?
     if options.gtk_reactor:
+        print "using gtk reactor"
         from twisted.internet import gtk2reactor # for gtk-2.0
         gtk2reactor.install()
 
