@@ -6,6 +6,7 @@
 """
 
 from cortex.core import api
+from cortex.core.data import EVENT_T
 from cortex.services import Service
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
@@ -17,9 +18,13 @@ class ATerminal(Service, LocalQueue):
         from twisted.internet.error import ReactorAlreadyRunning
         # Hack: this raises an exception but everything breaks
         #        without the call itself. hrm..
-        try:        self.really_start()
+        self.before_start()
+        try:
+            self.really_start()
         except ReactorAlreadyRunning:
             pass
+        else:
+            self.after_start()
         return self
 
     def _post_init(self, syndicate_events_to_terminal=True):
@@ -28,8 +33,6 @@ class ATerminal(Service, LocalQueue):
         """
         self.syndicate_events  = syndicate_events_to_terminal
         self.universe.terminal = self
-        self.set_shell()
-        self.set_prompt()
 
         # initialize for LocalQueue
         self.init_q()

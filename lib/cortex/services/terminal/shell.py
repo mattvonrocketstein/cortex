@@ -9,6 +9,31 @@ class ShellAspect:
     """
     registry = {}
 
+    def before_start(self):
+        self.set_shell()
+        self.set_prompt()
+
+    def after_start(self): pass
+
+    def pre_prompt_hook(self, ip):
+        """ IPython-hook to display system notices """
+        if self.syndicate_events:
+            # extra setup for the postoffice integration..
+            #  this stuff is in here because the requires_service() functionality
+            #   isn't build yet, so it can't go in start() due to dependancy issues
+            if not hasattr(self, 'subscribed'):
+                #try:
+                (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
+                #except self.universe.services.NotFound:
+                #    pass # this service may be ready before the post office
+                #         #  is, so this might not work the first time around
+                #else:
+                self.subscribed = True
+
+            event = self.pop_q()
+            if event:
+                print console.blue('Events:'), console.color(str(event))
+
     def set_shell(self):
         from cortex.services.terminal.terminal import IPShellTwisted, IPY_ARGS
         self.shell = IPShellTwisted(argv=IPY_ARGS,
@@ -52,8 +77,6 @@ class ShellAspect:
         if first_time:
             self.registry[self.get_input_processor()] = lambda source: "DEFAULT"
             def new_method(source, IP, **kargs): #source, **kargs):
-                #raw_input(str(('new',self, args, kargs)))
-                #report('new',self, source,kargs)
                 for fxn, pred in self.registry.items():
                     test = pred(source)
                     if test and test != "DEFAULT":
@@ -76,7 +99,6 @@ class ShellAspect:
         old = self.get_input_processor() #self.shell.IP.runsource
         self.shell.IP.runsource=new_proc
         return old
-
     def pre_prompt_hook(self, ip):
         """ IPython-hook to display system notices """
         if self.syndicate_events:
