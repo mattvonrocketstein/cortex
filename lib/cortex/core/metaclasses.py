@@ -6,6 +6,7 @@
 import copy
 import uuid
 import types
+from cortex.core.util import report
 from cortex.tests import uniq
 def metaclass_hook(func):
     func.metaclass_hook=True
@@ -16,26 +17,37 @@ def dynamic_name(): return 'DynMix({U})'.format(U=uniq())
 class META(type):
     """ the most generic metaclass..
         to avoid MRO issues, this should be the main one used,
-        and everything should subclass it and define hooks.
+        and everything should subclass it.
+
+        Available hooks:
+         *
+         *
+         *
     """
-    def __lshift__(kls,other_kls):
-        """ algebra for left-mixin:
-             my_class = my_class << my_mixin
+    def __lshift__(kls,my_mixin):
+        """ algebra for left-mixin
+
+             The following are equivalent:
+              >>>  my_class = my_class << my_mixin
+              >>>  class my_class(my_mixin, my_class): pass
         """
-        other_kls = copy.copy(other_kls)
-        other_kls.__metaclass__ = META
+        my_mixin = copy.copy(my_mixin)
+        my_mixin.__metaclass__ = META
         name  = dynamic_name()
-        bases = tuple([other_kls,kls])
+        bases = tuple([my_mixin, kls])
         return type(name, bases, {})
 
-    def __rshift__(kls, other_kls):
+    def __rshift__(kls, my_mixin):
         """ algebra for right-mixin:
-             my_class = my_class >> my_mixin
+
+             The following are equivalent:
+              >>> my_class = my_class >> my_mixin
+              >>> class my_class(my_class,my_mixin): pass
         """
-        other_kls = copy.copy(other_kls)
-        other_kls.__metaclass__ = META
+        my_mixin = copy.copy(my_mixin)
+        my_mixin.__metaclass__ = META
         name  = dynamic_name()
-        bases = tuple([kls, other_kls])
+        bases = tuple([kls, my_mixin])
         return type(name, bases, {})
 
     def subclass(kls, name=None, dct={}, **kargs):
@@ -53,8 +65,11 @@ class META(type):
 
     @staticmethod
     def enumerate_hooks(mcls):
-        matches = [x for x in dir(mcls) if getattr(getattr(mcls,x,None),'metaclass_hook', False)]
-        return [ getattr(mcls,match) for match in matches ]
+        """ returns a dictionary of metaclass hooks
+            that will be run along with __new___
+        """
+        matches = [x for x in dir(mcls) if getattr(getattr(mcls, x, None),'metaclass_hook', False)]
+        return dict( [ [match, getattr(mcls, match)] for match in matches ] )
 
     def __new__(mcls, name, bases, dct):
         """ simply reproduce the usual behaviour of type.__new__
@@ -64,7 +79,7 @@ class META(type):
         hooks = getattr(mcls, 'hooks', [])
         if not hooks:
             hooks = mcls.enumerate_hooks(mcls)
-        for hook in hooks:
+        for hook in hooks.values():
             hook(mcls, name, bases, dct, class_obj)
         return class_obj
 
@@ -77,6 +92,7 @@ class META1(META):
         """ called when initializing (configuring) class,
             this method records data about hierarchy structure
         """
+        report("subclass_registry")
         subclass_registry = getattr(mcls, 'subclass_registry', None)
         if subclass_registry is not None:
             subclass_registry = mcls.subclass_registry
