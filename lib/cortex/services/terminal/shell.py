@@ -10,10 +10,14 @@ class ShellAspect:
     registry = {}
 
     def before_start(self):
+        print 'before'
         self.set_shell()
         self.set_prompt()
 
-    def after_start(self): pass
+    def after_start(self):
+        print 'after'
+
+
 
     def pre_prompt_hook(self, ip):
         """ IPython-hook to display system notices """
@@ -44,14 +48,9 @@ class ShellAspect:
         # Set IPython "autocall" to "Full"
         self.shell.IP.magic_autocall(2)
 
-    def set_prompt(self):
-        """ """
-        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
-        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name)  + ' [\\#] '
-
     def really_start(self):
         """ TODO: defer to universe.command_line_options for whether to magic_pdb """
-
+        print 'really'
         # This case is nasty..  nothing seems to be able to make the process exit cleanly
         if self.universe.config.gtk_reactor==True:
             err = "This universe is configured for the GTK reactor, but you're trying to use the console-based ipython terminal."
@@ -60,7 +59,6 @@ class ShellAspect:
             self.universe.stop()
             self.universe.reactor.stop()
             import sys;sys.exit()
-
 
         self.shell.reactor.callWhenRunning(self.shell.on_timer)
         self.shell.start()

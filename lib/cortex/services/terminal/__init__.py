@@ -7,4 +7,4 @@
 from cortex.services.terminal import abstract
 from cortex.services.terminal.shell import ShellAspect
 
-Terminal = type('Terminal', (abstract.ATerminal, shell.ShellAspect), {})
+Terminal = type('Terminal', (shell.ShellAspect,abstract.ATerminal), {})
