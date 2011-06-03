@@ -51,5 +51,5 @@ ReactivePhilosopher = Agent.using(template=PhilosopherTemplate,
 ThreadedPhilosopher = Agent.using(template=PhilosopherTemplate,
                                   flavor=ThreadedAgent)
 
+#class Philosopher(PhilosopherOverrides, ReactivePhilosopher): iteration_period = 1
 class Philosopher(PhilosopherOverrides, ThreadedPhilosopher): pass
-class Philosopher(PhilosopherOverrides, ReactivePhilosopher): iteration_period = 1
