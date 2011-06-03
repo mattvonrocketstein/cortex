@@ -5,28 +5,27 @@
 import os, sys
 from optparse import OptionParser
 
-NODE_CONF = None #'node.conf'
+ABS_NODE_CONF = '/etc/cortex/node.conf'
+ABS_NODE_CONF = os.path.exists(ABS_NODE_CONF) and ABS_NODE_CONF or None
+REL_NODE_CONF = os.path.join(os.path.realpath(os.getcwd()),
+                             'etc', 'node.conf')
 
 def build_parser():
+    nodeHelp      = "Config to use [default: %default]"
     universeHelp  = "Use universe@FILE"
     directiveHelp = "Directives"
+    confHelp      = "Node configuration file to use"
     commandHelp   = "same as python -c"
     gtkHelp       = "use the gtk-reactor?"
-    parser = OptionParser()
-    parser.add_option("-x",  '--xterm', dest="xterm", action="store_true", default=False,
-                      help=commandHelp,  metavar="XTERM")
-    parser.add_option("-c",  dest="command", default="", help=commandHelp,  metavar="COMMAND")
-    parser.add_option("--gtk",  dest="gtk_reactor", default=False,
-                      action="store_true", help=gtkHelp,  metavar="GTK-reactor")
+    parser        = OptionParser()
+
+    #parser.add_option("-x",  '--xterm', dest="xterm", action="store_true", default=False,
+    #                  help=commandHelp,  metavar="XTERM")
+    parser.add_option("-c",     dest="command", default="", help=commandHelp,  metavar="COMMAND")
+    parser.add_option("--gtk",  dest="gtk_reactor", default=False, action="store_true", help=gtkHelp)
     parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
     parser.add_option('--directives', dest="directives", default="", help=directiveHelp)
-    parser.add_option('--conf', dest="conf", default=os.path.join(
-                                                 os.path.realpath(os.getcwd()),
-                                                 'etc',
-                                                 'node.conf'
-                                             ),
-                      help="Config to use [default: %default]"
-                      )
+    parser.add_option('--conf', dest="conf", default=REL_NODE_CONF, help=confHelp)
     return parser
 
 def entry():
@@ -39,7 +38,7 @@ def entry():
     ##  to keep the bootstrap sacred
     parser        = build_parser()
     options, args = parser.parse_args()
-    nodeconf_file = NODE_CONF or options.conf
+    nodeconf_file = ABS_NODE_CONF or options.conf or REL_NODE_CONF
 
     #  python interpretter compatability, coverage usage like:
     #   shell$ cortex -c"import cortex; print cortex.__file__"

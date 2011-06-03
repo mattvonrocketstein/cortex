@@ -3,11 +3,10 @@
       This service publishes the api via json-rpc
 """
 
-from cortex.core.data import ERROR_T
+
 from cortex.core.util import report, console
 from cortex.util.decorators import constraint
 from cortex.services import Service
-from cortex.core.data import EVENT_T
 
 from twisted.internet import reactor #from txjsonrpc.netstring.jsonrpc import Proxy
 from twisted.application import service, internet
@@ -89,5 +88,15 @@ class API(Service, ApiWrapper):
                 # HACK: stimulate the universe to update it's name
                 self.universe.charlie = str(self.port)
                 self.universe.decide_name()
+
+                # HACK: stimulate the terminal (if present) to update it's prompt
+#                terminal = (self.universe|'terminal') or \
+#                           (self.universe|'gui')
+#                assert terminal,"Boot order not working?"
+#
+#                if terminal:
+#                    terminal .set_prompt()
+
+                return self
 
         return ERROR_T
