@@ -163,7 +163,7 @@ class Manager(object):
         """ list/dictionary compatibility """
         return len(self.registry)
 
-    def __getattr__(self, name):
+    def asdf__getattr__(self, name):
         """ by default attributes are lazy
         """
         # Enforces privacy and special names

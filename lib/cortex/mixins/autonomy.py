@@ -77,6 +77,7 @@ class AbstractAutonomy(Mixin):
         """ Convention:
               Responsibilities:
                 + invoke <start>, but maybe not right away.
+                + invoke <setup>, at some point if present
                 + never block, and
                 + always return "self"
         """

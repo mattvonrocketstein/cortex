@@ -10,14 +10,8 @@ class ShellAspect:
     registry = {}
 
     def before_start(self):
-        print 'before'
         self.set_shell()
         self.set_prompt()
-
-    def after_start(self):
-        print 'after'
-
-
 
     def pre_prompt_hook(self, ip):
         """ IPython-hook to display system notices """
