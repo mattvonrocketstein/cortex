@@ -6,15 +6,12 @@ import pprint,StringIO
 from cortex.core.data import EVENT_T
 from parent import GUIChild
 from console_view import ConsoleView
-from cortex.core.channels import is_declared_callback,unpack, declare_callback
+from cortex.core.channels import unpack, declare_callback
 
 class ChannelAgent(GUIChild):
     """ """
     def __init__(self, *args, **kargs):
         super(ChannelAgent,self).__init__(*args, **kargs)
-        cbs = [ getattr(self,x) for x in dir(self) if is_declared_callback(getattr(self,x)) ]
-        for cb in cbs:
-            cb.bootstrap(self)
 
     @staticmethod
     def prepare(v):
@@ -62,4 +59,3 @@ class ChannelAgent(GUIChild):
         S.add(x); S.show()
         window.add(S); window.show()
         self.buffer = x  # you can call .write('str') on this thing
-
