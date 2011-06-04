@@ -176,6 +176,9 @@ class Manager(object):
         except self.NotFound:
             return getattr(object.__getattribute__(self, 'generic_store'), name)
 
+    def __getitem__(self, x):
+        return self.registry[x].obj
+
     @property
     def last(self):
         """ All incoming assets should have been stamped;
@@ -259,6 +262,9 @@ class Manager(object):
     def __repr__(self):
         """ """
         return self.__class__.__name__ + '(' + str(self) + ')'
+
+    def children(self):
+        return [self[x].obj for x in self.as_list]
 
     def __getitem__(self, name):
         """ retrieve service by name

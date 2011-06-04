@@ -122,16 +122,16 @@ def report(*args, **kargs):
                <log>, <syndicate>,  and <call-your-moms-cell-phone>.
     """
     global console
+    import sys
+    stream = kargs.get('stream', sys.stdout)
     header = kargs.get('header', None)
     full = False
     if header is None: header=whosdaddy(); full=True
     print header
     if full:
-        print '\targs=',
-        print console.color(str(args)),
-        print '\tkargs='
+        stream.write( '\targs='+console.color(str(args))+       '\tkargs=')
         flush = kargs.pop('flush', False)
-        console.color(str(kargs))
+        stream.write(console.color(str(kargs)))
 
     #if flush:
     #    sys.stdout.flush() # is this even working with ipython?

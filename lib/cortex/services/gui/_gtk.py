@@ -13,7 +13,12 @@ from ipython_view import *
 import pango
 from console_view import ConsoleView
 
-class GUI_GTK:
+class CommonInterface:
+    def set_prompt(self):
+        """ ugh copied from ATerminal"""
+        self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
+        self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name)  + ' [\\#] '
+
     def handle_control_d(self):
         self.universe.stop()
 
@@ -49,24 +54,14 @@ class GUI_GTK:
         S = gtk.ScrolledWindow()
         S.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
         return S
-
-class Buffer(Agent,GUI_GTK):
-    def start(self):
-        S = self.scrolled_window
-        x = ConsoleView()
-        x.show()
-        S.add(x)
-        S.show()
-        return S,x
-
-class GUI(GUI_GTK):
+from cortex.services.terminal import abstract
+class GUI(CommonInterface):
     """ """
-
     def set_shell(self):
         S = self.scrolled_window
         from cortex.core.data import IPY_ARGS
         self.shell = IPythonView(argv=IPY_ARGS,
-                        user_ns=self.compute_terminal_namespace())
+                        user_ns=abstract.ATerminal .compute_terminal_namespace())
 
         self.shell.show()
         S.add(self.shell)
@@ -88,25 +83,77 @@ class GUI(GUI_GTK):
 
         for c in components:
             c()
+        self.load()
 
     def spawn_channel_watcher(self):
-        class moo(Agent, GUI_GTK):
-            def start(self):
-                window = self.spawn_window
-                S = self.scrolled_window
-                x = ConsoleView()
-                x.show()
-                S.add(x); S.show()
-                window.add(S); window.show()
-                return x # you can call .write('str') on this thing
-        moo().start()
+        report('spawnc')
+        self.manage(kls=ChannelAgent, kls_kargs=dict(universe=self.universe),
+                    name='ChannelAgent')
 
     def spawn_shell(self):
         """ interesting.. safe to call multiple times"""
+        report('spawns')
+        self.manage(kls=Shell, kls_kargs=dict(universe=self.universe), name='ShellAgent')
+
+class GUIChild(Agent, GUI):
+    pass
+
+import pprint,StringIO
+# standard unpacking method: special name "args" and everything but "args"
+unpack = lambda data: ( data['args'],
+                        dict([ [d,data[d]] for d in data if d!='args']) )
+class ChannelAgent(GUIChild):
+    def subscribe(self):
+        """ subscribe to the first channel """
+        exchange = (self.universe|'postoffice')
+        exchange.event.subscribe(self.callback)
+
+    def callback(self, ctx, **data):
+        """ called whenever "event" channel is
+            subscribed to, outputs it to gtk
+            buffer
+        """
+        self.buffer.write("Sender: " + str(ctx)+'\n')
+        args, kargs = unpack(data)
+
+        def doit(v):
+            """prepare value for pprint to buffer"""
+            x = StringIO.StringIO()
+            pprint.pprint(v, x)
+            x.seek(0)
+            x = x.read()
+            x=x.split('\n',) #'\n    ')
+            x = [' '*4 + y for y in x]
+            x = ''.join(x)+'\n'
+            return x
+        rendered_args = doit(args)
+        rendered_kargs = doit(kargs)
+        if args:
+            self.buffer.write(rendered_args)
+        if kargs:
+            self.buffer.write(rendered_kargs)
+
+        #self.buffer.write(str(x))
+#report(x.read(),stream=self.buffer)
+
+
+    def start(self):
+        window = self.spawn_window
+        S = self.scrolled_window
+        x = ConsoleView()
+        x.show()
+        S.add(x); S.show()
+        window.add(S); window.show()
+        self.buffer = x  # you can call .write('str') on this thing
+        self.subscribe()
+
+class Shell(GUIChild):
+    def start(self):
         window = self.spawn_window
         window.add(self.set_shell())
         window.show()
         self.set_prompt()
+
 
 if __name__=='__main__':
     from twisted.internet import reactor
