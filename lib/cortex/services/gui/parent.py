@@ -22,11 +22,7 @@ class GUI(CommonInterface):
         S.add(self.shell)
         S.show()
         return S
-
-    def really_start(self):
-        """ TODO: defer to universe.command_line_options
-                  for whether to magic_pdb
-        """
+    def sanity(self):
         if not self.universe.config.gtk_reactor==True:
             err  = "This universe isn't configured for GTK reactor, "
             err += "but you're trying to use the gtk terminal!"
@@ -34,28 +30,34 @@ class GUI(CommonInterface):
             self.fault(err, ctx)
             self.universe.stop()
 
+    def really_start(self):
+        """ TODO: defer to universe.command_line_options
+                  for whether to magic_pdb
+        """
+        self.sanity()
 
-        from cortex.services.gui.channel_window import ChannelAgent
+        # Build an agent/window suitable for monitoring
+        # the event channel (which handles peer-discovery)
+        from cortex.core.data import EVENT_T
+        from cortex.services.gui.channel_window import channel_agent_factory
+        dyn_agent = channel_agent_factory(EVENT_T)
+
+        # an agent/window that publishes the api via
+        # ipython instance, which is embedded in a gtk gui
         from cortex.services.gui.shell import Shell
 
-        components  = [
-            dict(kls=ChannelAgent,
-                 kls_kargs=dict(universe=self.universe),
-                 name='ChannelAgent'),
-            dict(kls=Shell,
-                kls_kargs=dict(universe=self.universe),
-                 name='ShellAgent')
-            ]
+        # pretty much the minimal requirements for agent's __init__
+        # in this case it's sort of implied, so how best to remove
+        # that boiler plate?
+        ctx = dict(universe=self.universe)
 
-        for c in components:
-            self.manage(**c)
+
+        components  = [ dict(kls=Shell,     kls_kargs=ctx, name='ShellAgent'),
+                        dict(kls=dyn_agent, kls_kargs=ctx, name='ChannelAgent'), ]
+
+        # NOTE: code below is using the manager protocol
+        for c in components: self.manage(**c)
         self.load()
-
-
-    def spawn_shell(self):
-        """ interesting.. safe to call multiple times"""
-        report('spawns')
-
 
 from cortex.core.agent import Agent
 class Window(Agent, GUI): pass
