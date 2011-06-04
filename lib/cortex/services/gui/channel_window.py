@@ -8,25 +8,21 @@ from parent import GUIChild
 from console_view import ConsoleView
 from cortex.core.channels import unpack, declare_callback
 
-class ChannelAgent(GUIChild):
-    """ """
-    def __init__(self, *args, **kargs):
-        super(ChannelAgent,self).__init__(*args, **kargs)
+def prepare(v):
+    """prepare value for pprint to buffer"""
+    x = StringIO.StringIO()
+    pprint.pprint(v, x)
+    x.seek(0)
+    x = x.read()
+    x=x.split('\n',) #'\n    ')
+    #x = [' '*4 + y for y in x]
+    x = [' ' + y for y in x]
+    x = ''.join(x)+'\n'
+    return x
 
-    @staticmethod
-    def prepare(v):
-        """prepare value for pprint to buffer"""
-        x = StringIO.StringIO()
-        pprint.pprint(v, x)
-        x.seek(0)
-        x = x.read()
-        x=x.split('\n',) #'\n    ')
-        x = [' '*4 + y for y in x]
-        x = ''.join(x)+'\n'
-        return x
-
-    @declare_callback(channel=EVENT_T)
-    def callback(self, ctx, **data):
+def handler_factory(CHAN):
+    @declare_callback(channel=CHAN)
+    def event_handler(self, ctx, **data):
         """ called whenever "exchange" channel is
             subscribed to, outputs it to gtk
             buffer
@@ -40,15 +36,18 @@ class ChannelAgent(GUIChild):
             "write args, kargs"
             args, kargs = unpack(data)
             if args:
-                rendered_args = self.prepare(args)
+                rendered_args = prepare(args)
                 self.buffer.write(rendered_args)
             if kargs:
-                rendered_kargs = self.prepare(kargs)
+                rendered_kargs = prepare(kargs)
                 self.buffer.write(rendered_kargs)
 
         write_ctx(ctx)
         write_data(data)
+    return event_handler
 
+class ChannelAgent(GUIChild):
+    """ """
     def start(self):
         """ agent protocol """
         super(ChannelAgent,self).start()
@@ -59,3 +58,8 @@ class ChannelAgent(GUIChild):
         S.add(x); S.show()
         window.add(S); window.show()
         self.buffer = x  # you can call .write('str') on this thing
+
+def channel_agent_factory(CHAN):
+    return type('AnonymousChannelAgent',
+                (ChannelAgent,),
+                dict(event_handler=handler_factory(CHAN)))
