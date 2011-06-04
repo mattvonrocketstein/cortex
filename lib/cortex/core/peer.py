@@ -36,8 +36,36 @@ class Peer(HDS):
         report('failure in peer',dict(self=self, type=failure.type, value=failure.value, tb=failure.tb))
         #failure.printTraceback()
 
-class CortexPeer(Peer):
+    @property
+    def _cortex(self):
+        c = CortexPeer()
+        import copy
+        c.addr=self.addr
+        c.host=self.host
+        return c
+
+class gah(object):
+    def __init__(self,callabl):
+        self.callable=callabl
+
+    def __call__(self, *args, **kargs):
+        return self.callable(*args, **kargs)
+
+class CortexPeer(object):
     """ abstraction representing a peer that speaks cortex """
+
+    def __getattr__(self,x):
+        #if isinstance(out, HDS):
+        return gah(lambda *args, **kargs: self._eager_api(x, *args,**kargs))
+        #return out
+
+    @staticmethod
+    def factory(fxn,x):
+        class xx(object):
+            def __call__(self, *args, **kargs):
+                return fxn(x, *args, **kargs)
+        return xx()
+
     def _lazy_api(self):
         """ just in time! """
         class DynamicApiProxy(object):
@@ -64,7 +92,7 @@ class CortexPeer(Peer):
         """ the real api, spoken thru a jsonrpc client,
             to a remote jsonrpc server
         """
-        #report('dialing@{name}'.format(name=name), args, kargs)
+        report('dialing@{name}'.format(name=name), args, kargs)
         return self._proxy.callRemote(name, *args,
                                       **kargs).addCallbacks(self._log_last_connection,
                                                                          self._report_err)
@@ -113,8 +141,12 @@ class PeerManager(Manager):
              (called by Manager.register when present) """
         (self.universe|'postoffice').event(peer)
 
-    def printValue(self, value): report("Result:", str(value))
-    def printError(self, error): report('error', error)
+    def printValue(self, value):
+        if value:
+            report("Result:", str(value))
+    def printError(self, error):
+        if error:
+            report('error', error)
     def __iter__(self):
         """ dumb proxy """
         return Manager.__iter__(self)
