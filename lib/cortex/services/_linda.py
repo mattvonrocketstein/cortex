@@ -25,7 +25,8 @@ class Linda(Service):
         """ placeholder for invoking lindypy multiprocessing,
             for now we just use the underlying datastructures.
         """
-        Service.start(self)
+        #Service.start(self)
+        super(Linda,self).start()
         #report("Starting linda tuplespace")
         self.universe.reactor.callLater(1, self.monitor)
 

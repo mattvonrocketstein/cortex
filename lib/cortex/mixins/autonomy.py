@@ -11,6 +11,9 @@ from cortex.mixins.persistence import is_persistent
 class AbstractAutonomy(Mixin):
     """ """
 
+    is_stopped  = False
+    started     = False
+
     def harikari(self):
         """ Convention:
               + <stop> self,
@@ -37,7 +40,7 @@ class AbstractAutonomy(Mixin):
 
         self.exit()
         return "Wakeup-Handle Placeholder"
-    is_stopped  = False
+
     def start(self):
         """ Convention:
               <start> is an invoker, or a mainloop.

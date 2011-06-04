@@ -17,10 +17,7 @@ from cortex.util.decorators import constraint
 NOT_FOUND_T = 'NOTFound'
 port_range  = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
 
-class AbstractMapper(Service):
-    pass
-
-class Mapper(AbstractMapper):
+class Mapper(Service):
     """ NMap Service:
           start: brief description of service start-up here
           stop:  brief description service shutdown here

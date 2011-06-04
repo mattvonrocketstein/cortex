@@ -55,7 +55,7 @@ class API(Service, ApiWrapper):
 
     def __init__(self, *args, **kargs):
         self.port = kargs.pop('port', None)
-        Service.__init__(self, *args, **kargs)
+        super(Service,self).__init__(*args, **kargs)
         ApiWrapper.__init__(self)
         from cortex.core import api
 

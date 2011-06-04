@@ -16,7 +16,7 @@ from cortex.core.bus import SelfHostingTupleBus
 from cortex.core.channels import channel, ChannelManager
 
 
-class PostOffice(Service, Keyspace, SelfHostingTupleBus,ChannelManager):
+class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
     """ PostOffice Service:
 
           A wrapper over cyrusbus's basic layout that uses a
@@ -38,7 +38,8 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus,ChannelManager):
 
     def __init__(self, *args, **kargs):
         """ """
-        Service.__init__(self, *args, **kargs)
+        super(PostOffice,self).__init__( *args, **kargs)
+        #Service.__init__(self, *args, **kargs)
         default_name   = 'PostOffice::{_id}::keyspace'.format(_id=str(id(self)))
         keyspace_name  = self.universe or default_name
         keyspace_owner = self
@@ -64,5 +65,6 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus,ChannelManager):
 
     def start(self):
         """ """
-        super(Service, self).start()
+        super(PostOffice, self).start()
+        from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         self.reset()
