@@ -66,5 +66,4 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
     def start(self):
         """ """
         super(PostOffice, self).start()
-        from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         self.reset()
