@@ -59,6 +59,10 @@ class ChannelType(type):
     def bound(self):
         return self._bound
 
+    @property
+    def name(kls):
+        return kls.__name__.split('.')[-1]
+
 def F(msg):
     """ makes a call-only-if-bound classmethodified
         function that, if the channel is unbound, displays
@@ -139,7 +143,11 @@ def verify_callback(callback):
     """
     import pep362
     import inspect
-    s=pep362.signature(callback)
+    try:
+      s=pep362.signature(callback)
+    except AttributeError: #used declare_channel?
+      s=pep362.signature(callback.fxn)
+
     #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
     not_more_than2 = lambda s: len(s._parameters) < 3
     if2then_self_is_one = lambda s: ( len(s._parameters)!=2 and \
@@ -153,3 +161,36 @@ def verify_callback(callback):
            if2then_self_is_one(s) and \
            at_least_one(s) and \
            s.var_kw_args, 'callback@{name} needs to accept *args and **kargs'.format(name=s.name)
+
+# TODO: move this into core.channels and formalize it
+# standard unpacking method: special name "args" and everything but "args"
+unpack = lambda data: ( data['args'],
+                        dict([ [d,data[d]] for d in data if d!='args']) )
+
+def declare_callback(channel=None):
+    assert channel
+    def decorator(fxn):
+        fxn.declared_callback=1
+        def bootstrap(self):
+            if hasattr(self, 'subscribed'):
+                return False
+            else:
+                from cortex.core.channels import ChannelType
+                exchange = ChannelType.registry[channel]
+                self.subscribed = 1
+                k=new.instancemethod(fxn, self, self.__class__)
+                setattr(self,fxn.__name__,k)
+                exchange.subscribe(k)
+                return self
+
+        def new_function(self, ctx, **data):
+            return fxn(self, ctx, **data)
+
+        new_function.bootstrap=bootstrap
+        new_function.declared_callback=1
+        return new_function
+    return decorator
+
+def is_declared_callback(fxn):
+    return hasattr(fxn, 'declared_callback')
+import new
