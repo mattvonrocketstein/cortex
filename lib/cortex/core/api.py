@@ -123,3 +123,11 @@ last_peer         = lambda: peers[0]
 show_last_peer    = lambda: report('most recent peer',last_peer())
 declare_agent     = universe.agents
 load_instructions = do
+
+class constants:
+    """ TODO: name is a little misleading.."""
+    @property
+    def channels(self):
+        from cortex.core.channels import ChannelType
+        return ChannelType.registry
+constants=constants()
