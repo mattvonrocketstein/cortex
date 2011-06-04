@@ -8,7 +8,7 @@ from cortex.core.hds import HDS
 from cortex.core.data import API_PORT
 from cortex.core.util import report
 
-class Peer(HDS):
+class _Peer(object):
     """ an abstraction representing a generic peer
     """
     def __repr__(self):
@@ -43,6 +43,7 @@ class Peer(HDS):
         c.addr=self.addr
         c.host=self.host
         return c
+class Peer(_Peer,HDS): pass
 
 class gah(object):
     def __init__(self,callabl):
@@ -51,7 +52,7 @@ class gah(object):
     def __call__(self, *args, **kargs):
         return self.callable(*args, **kargs)
 
-class CortexPeer(object):
+class CortexPeer(_Peer):
     """ abstraction representing a peer that speaks cortex """
 
     def __getattr__(self,x):

@@ -173,7 +173,7 @@ unpack = lambda data: ( data['args'],
                         dict([ [d,data[d]] for d in data if d!='args']) )
 
 def declare_callback(channel=None):
-    assert channel
+    assert channel,"requires declare_callback decorator requires 'channel' argument"
     def decorator(fxn):
         fxn.declared_callback=1
         def bootstrap(self):
