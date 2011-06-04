@@ -55,7 +55,8 @@ class ATerminal(Service, LocalQueue):
         self.postoffice.unsubscribe(EVENT_T, self.push_q)
         report('the Terminal Service Dies.')
 
-    def compute_terminal_namespace(self):
+    @staticmethod
+    def compute_terminal_namespace():
         import inspect
         universe = {'__name__' : '__cortex_shell__',}
         universe.update(api.publish())

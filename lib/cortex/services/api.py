@@ -19,10 +19,11 @@ from cortex.core.data import CORTEX_PORT_RANGE
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
 def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lambda: publish()):
+    """ """
 
     # if _dict is not a dict then it should be a callable that returns one.
     if hasattr(_dict,'__call__'):
-        _dict=_dict()
+        _dict = _dict()
 
     # build a test for whether the given name is callable
     test    = lambda k: hasattr(_dict[k], '__call__') and not k.startswith('_')
@@ -71,6 +72,12 @@ class API(Service, ApiWrapper):
     @constraint(boot_first='gui')
     def start(self):
         """ """
+
+# TODO: unittest like this
+#       terminal = (self.universe|'terminal') or \
+#                  (self.universe|'gui')
+#       assert terminal,"Boot order not working?"
+#
         from twisted.internet.error import CannotListenError
         factory = jsonrpc.RPCFactory(API)
 
@@ -84,19 +91,6 @@ class API(Service, ApiWrapper):
                 count += 1
             else:
                 self.port = count
-
-                # HACK: stimulate the universe to update it's name
-                self.universe.charlie = str(self.port)
-                self.universe.decide_name()
-
-                # HACK: stimulate the terminal (if present) to update it's prompt
-#                terminal = (self.universe|'terminal') or \
-#                           (self.universe|'gui')
-#                assert terminal,"Boot order not working?"
-#
-#                if terminal:
-#                    terminal .set_prompt()
-
                 return self
 
         return ERROR_T

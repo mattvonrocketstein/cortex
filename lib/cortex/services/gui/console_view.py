@@ -86,14 +86,17 @@ class ConsoleView(gtk.TextView):
     start_mark = self.text_buffer.create_mark(None,
                                               self.text_buffer.get_end_iter(),
                                               True)
-    self.text_buffer.insert(self.text_buffer.get_end_iter(), segment)
+    one = self.text_buffer.insert(self.text_buffer.get_end_iter(), segment)
 
     if segments:
       ansi_tags = self.color_pat.findall(text)
       for tag in ansi_tags:
         i = segments.index(tag)
-        self.text_buffer.insert_with_tags_by_name(self.text_buffer.get_end_iter(),
-                                             segments[i+1], tag)
+        #try:
+        two = self.text_buffer.insert_with_tags_by_name(self.text_buffer.get_end_iter(),
+                                             segments[i+1], str(tag))
+        #except:
+        #    print 'could not write text',text
         segments.pop(i)
     if not editable:
       self.text_buffer.apply_tag_by_name('notouch',

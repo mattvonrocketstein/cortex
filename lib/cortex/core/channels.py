@@ -70,6 +70,23 @@ def F(msg):
         return classmethod(new)
     return ifbound2
 
+def verify_callback(callback):
+        import pep362
+        import inspect
+        s=pep362.signature(callback)
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        not_more_than2 = lambda s: len(s._parameters) < 3
+        if2then_self_is_one = lambda s: ( len(s._parameters)!=2 and \
+                                          True ) or \
+                                        ( len(s._parameters)==2 and  \
+                                          'self' in s._parameters ) or \
+                                        False
+        at_least_one = lambda s: len(s._parameters)>0
+        assert (not s.var_args) and \
+               not_more_than2(s) and\
+               if2then_self_is_one(s) and \
+               at_least_one(s) and \
+               s.var_kw_args, 'callback@{name} needs to accept *args and **kargs'.format(name=s.name)
 
 class Channel(object):
     """ inspired by promela
@@ -81,11 +98,12 @@ class Channel(object):
 
     @F("cannot subscribe to an unbound channel")
     def subscribe(kls, callback):
+        verify_callback(callback)
         return kls._postoffice.subscribe(kls._label, callback)
 
     @F("cannot publish to a unbound channel")
     def _publish(kls, *args, **kargs):
-        kargs.update(dict(__args=args))
+        kargs.update(dict(args=args))
         return kls._postoffice.publish(kls._label, **kargs)
 
     @classmethod
