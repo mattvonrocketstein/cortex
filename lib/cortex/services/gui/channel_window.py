@@ -6,8 +6,8 @@ import pprint,StringIO
 from cortex.core.data import EVENT_T
 from parent import GUIChild
 from console_view import ConsoleView
-
 from cortex.core.channels import is_declared_callback,unpack, declare_callback
+
 class ChannelAgent(GUIChild):
     """ """
     def __init__(self, *args, **kargs):
@@ -15,13 +15,6 @@ class ChannelAgent(GUIChild):
         cbs = [ getattr(self,x) for x in dir(self) if is_declared_callback(getattr(self,x)) ]
         for cb in cbs:
             cb.bootstrap(self)
-
-    #def subscribe(self, exchange='event'):
-    #    """ subscribe to the first channel """
-    #    branch = (self.universe|'postoffice')
-    #    assert branch,"Cannot subscribe until you can articulate a branch"
-    #    exchange = getattr(branch, exchange)
-    #    exchange.subscribe(self.callback)
 
     @staticmethod
     def prepare(v):
@@ -69,4 +62,4 @@ class ChannelAgent(GUIChild):
         S.add(x); S.show()
         window.add(S); window.show()
         self.buffer = x  # you can call .write('str') on this thing
-        #self.subscribe()
+
