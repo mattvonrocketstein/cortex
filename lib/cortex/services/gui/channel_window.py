@@ -1,6 +1,6 @@
 """ cortex/services/gui/channel_window.py
 """
-
+import gtk
 import pprint,StringIO
 
 from cortex.core.data import EVENT_T
@@ -25,7 +25,9 @@ def handler_factory(CHAN):
     def event_handler(self, ctx, **data):
         """ called whenever "exchange" channel is
             subscribed to, outputs it to gtk
-            buffer
+            buffer. see channels.py for a
+            description of conventions involving
+            the usage of ctx / data
         """
         def write_ctx(ctx):
             'write context/path'
@@ -52,11 +54,14 @@ class ChannelAgent(GUIChild):
         """ agent protocol """
         super(ChannelAgent,self).start()
         window = self.spawn_window
+        vbox = self.vbox
         S = self.scrolled_window
-        x = ConsoleView()
-        x.show()
+        x = ConsoleView(); x.show()
         S.add(x); S.show()
-        window.add(S); window.show()
+        vbox.pack_start(self.menu, gtk.FALSE, gtk.FALSE, 2)
+        vbox.pack_end(S, True, True, 2); vbox.show()
+        window.add(vbox); window.show()
+        #window.add(S); window.show()
         self.buffer = x  # you can call .write('str') on this thing
 
 def channel_agent_factory(CHAN):
