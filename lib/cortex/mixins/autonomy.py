@@ -37,7 +37,7 @@ class AbstractAutonomy(Mixin):
 
         self.exit()
         return "Wakeup-Handle Placeholder"
-
+    is_stopped  = False
     def start(self):
         """ Convention:
               <start> is an invoker, or a mainloop.

@@ -3,45 +3,65 @@
 
 import pprint,StringIO
 
+from cortex.core.data import EVENT_T
 from parent import GUIChild
 from console_view import ConsoleView
 
-# standard unpacking method: special name "args" and everything but "args"
-unpack = lambda data: ( data['args'],
-                        dict([ [d,data[d]] for d in data if d!='args']) )
-
+from cortex.core.channels import is_declared_callback,unpack, declare_callback
 class ChannelAgent(GUIChild):
-    def subscribe(self):
-        """ subscribe to the first channel """
-        exchange = (self.universe|'postoffice')
-        exchange.event.subscribe(self.callback)
+    """ """
+    def __init__(self, *args, **kargs):
+        super(ChannelAgent,self).__init__(*args, **kargs)
+        cbs = [ getattr(self,x) for x in dir(self) if is_declared_callback(getattr(self,x)) ]
+        for cb in cbs:
+            cb.bootstrap(self)
 
+    #def subscribe(self, exchange='event'):
+    #    """ subscribe to the first channel """
+    #    branch = (self.universe|'postoffice')
+    #    assert branch,"Cannot subscribe until you can articulate a branch"
+    #    exchange = getattr(branch, exchange)
+    #    exchange.subscribe(self.callback)
+
+    @staticmethod
+    def prepare(v):
+        """prepare value for pprint to buffer"""
+        x = StringIO.StringIO()
+        pprint.pprint(v, x)
+        x.seek(0)
+        x = x.read()
+        x=x.split('\n',) #'\n    ')
+        x = [' '*4 + y for y in x]
+        x = ''.join(x)+'\n'
+        return x
+
+    @declare_callback(channel=EVENT_T)
     def callback(self, ctx, **data):
-        """ called whenever "event" channel is
+        """ called whenever "exchange" channel is
             subscribed to, outputs it to gtk
             buffer
         """
-        self.buffer.write("Sender: " + str(ctx)+'\n')
-        args, kargs = unpack(data)
+        def write_ctx(ctx):
+            'write context/path'
+            #unpack_ctx(ctx)
+            self.buffer.write("Sender: " + str(ctx)+'\n')
 
-        def doit(v):
-            """prepare value for pprint to buffer"""
-            x = StringIO.StringIO()
-            pprint.pprint(v, x)
-            x.seek(0)
-            x = x.read()
-            x=x.split('\n',) #'\n    ')
-            x = [' '*4 + y for y in x]
-            x = ''.join(x)+'\n'
-            return x
-        rendered_args = doit(args)
-        rendered_kargs = doit(kargs)
-        if args:
-            self.buffer.write(rendered_args)
-        if kargs:
-            self.buffer.write(rendered_kargs)
+        def write_data(data):
+            "write args, kargs"
+            args, kargs = unpack(data)
+            if args:
+                rendered_args = self.prepare(args)
+                self.buffer.write(rendered_args)
+            if kargs:
+                rendered_kargs = self.prepare(kargs)
+                self.buffer.write(rendered_kargs)
+
+        write_ctx(ctx)
+        write_data(data)
 
     def start(self):
+        """ agent protocol """
+        super(ChannelAgent,self).start()
         window = self.spawn_window
         S = self.scrolled_window
         x = ConsoleView()
@@ -49,4 +69,4 @@ class ChannelAgent(GUIChild):
         S.add(x); S.show()
         window.add(S); window.show()
         self.buffer = x  # you can call .write('str') on this thing
-        self.subscribe()
+        #self.subscribe()

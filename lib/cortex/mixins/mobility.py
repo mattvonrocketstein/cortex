@@ -1,5 +1,7 @@
 """ cortex.mixins.mobility
 """
+LOOPBACK_HOST = '127.0.0.1'
+GENERIC_LOCALHOST = 'localhost'
 
 class MobileCodeMixin(object):
     """ """
