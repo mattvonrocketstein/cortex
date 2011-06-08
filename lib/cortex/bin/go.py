@@ -17,12 +17,14 @@ def build_parser():
     confHelp      = "Node configuration file to use"
     commandHelp   = "same as python -c"
     gtkHelp       = "use the gtk-reactor?"
+    testHelp       = "run cortex unittest suite"
     parser        = OptionParser()
 
     #parser.add_option("-x",  '--xterm', dest="xterm", action="store_true", default=False,
     #                  help=commandHelp,  metavar="XTERM")
     parser.add_option("-c",     dest="command", default="", help=commandHelp,  metavar="COMMAND")
     parser.add_option("--gtk",  dest="gtk_reactor", default=False, action="store_true", help=gtkHelp)
+    parser.add_option("--test",  dest="run_tests", default=False, action="store_true", help=testHelp)
     parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
     parser.add_option('--directives', dest="directives", default="", help=directiveHelp)
     parser.add_option('--conf', dest="conf", default=REL_NODE_CONF, help=confHelp)
@@ -31,6 +33,7 @@ def build_parser():
 def entry():
     """
     """
+
     ## Phase 1:
     ##  cortex should not have been imported anywhere, so
     ##  we should not have already chosen a twisted reactor.
@@ -55,6 +58,10 @@ def entry():
         return
 
     # use the gtk-reactor?
+    if options.run_tests:
+        from cortex.tests import main
+        return main()
+
     if options.gtk_reactor:
         print "using gtk reactor"
         from twisted.internet import gtk2reactor # for gtk-2.0

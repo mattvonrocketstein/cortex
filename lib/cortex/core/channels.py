@@ -55,6 +55,7 @@ class ChannelType(type):
     def __call__(kls, *args, **kargs):
         """ shortcut for _publish """
         return kls._publish(*args, **kargs)
+
     @property
     def bound(self):
         return self._bound
@@ -69,7 +70,11 @@ def F(msg):
         error message ``msg`` instead of running ``func`` """
     def ifbound2(func):
         def new(kls, *args, **kargs):
-            if kls._bound: return func(kls, *args, **kargs)
+            if kls._bound:
+                try:
+                    return func(kls, *args, **kargs)
+                except Exception,e:
+                    raise
             else:          raise UnboundChannel, msg
         return classmethod(new)
     return ifbound2

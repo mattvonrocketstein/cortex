@@ -35,3 +35,38 @@ IPY_ARGS          = ['-noconfirm_exit']
 # cortex.services.contrib
 ################################################################################
 AVAHI_TYPE = "_http._tcp" # used in the old (avahi/dbus) peer-discovery strategy
+
+class _session(object):
+    """ """
+    def __init__(self):
+        self.interactive=False
+        self.iset = []
+
+    @property
+    def instructions(self):
+        return self.iset
+
+    def add_instruction(self,x):
+        assert len(x)==3, str(x)
+        self.iset.append(x)
+    def filter_by_name(self,n):
+        return [x for x in self.iset if x[0]!=n]
+
+    def set_interactive(self,v=True):
+        """ """
+        self._interactive = v
+        term_args   = {}                                     # Cortex-Terminal arguments
+        terminal_instruction = [ "load_service", ("terminal",),       term_args  ]
+        if v and terminal_instruction not in self.iset:
+            self.iset.append(terminal_instruction)
+        else:
+            try:
+                self.iset.remove(terminal_instruction)
+            except ValueError:
+                pass
+
+class _standardsession(_session):
+    def __init__(self):
+        super(_standardsession,self).__init__()
+        self.add_instruction([ "load_service", ("_linda",), {} ])
+        self.add_instruction([ "load_service", ("postoffice",), {} ])

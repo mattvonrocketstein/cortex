@@ -236,3 +236,12 @@ def alias(name):
         return getattr(self, name)
 
     return fxn
+
+def service_is_stopped(name):
+    """ returns a function of no arguments that
+        if safe to be called periodically and knows
+        whether the service corresponding to ``name``
+        has halted
+    """
+    from cortex.core import api
+    return lambda:  (api.universe|name).stopped

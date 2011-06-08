@@ -11,7 +11,8 @@ from cortex.core.util import report
 from cortex.core.hds import HDS
 
 def publish(**kargs):
-    """ return a dictionary of the namespace for this module """
+    """ return a dictionary of the namespace for this module,
+        after a small bit of postprocessing """
 
     from cortex.core import api
     from cortex.util.namespaces import NamespacePartition
@@ -30,10 +31,18 @@ def publish(**kargs):
 def do(instructions, _api=None):
     """ do: execute a set of instructions wrt api <_api> """
     this_api = _api or publish()
+
+    def unpack(i):
+        ''' potentially unserialize/unencrypt? '''
+        try:
+            name, args, kargs = i
+        except ValueError:
+            raise Exception,"Error unpacking instruction: "+str(i)
+        return name,args,kargs
+
     for instruction in instructions:
-        name, args, kargs = instruction
+        name, args, kargs = unpack(instruction)
         handler = this_api[name]
-        # [handler,args,kargs]
         handler(*args, **kargs)
 
 def clone(file=None, nodeconf=None):
@@ -53,7 +62,11 @@ def clone(file=None, nodeconf=None):
         universe._procs.append(p)
 
 def declare_goals(list_of_callables):
-    #list_of_callables
+    """ load without waiting a specific instruction
+        that wakes up the goal-monitor.
+
+        universe will stop when all the goals are complete.
+    """
     from cortex.services.goalmonitor import GoalMonitor
     do( [[ "load_service",
           ("GoalMonitor",),

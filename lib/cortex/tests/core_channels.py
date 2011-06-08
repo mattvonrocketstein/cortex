@@ -6,13 +6,13 @@ import unittest
 from unittest import TestCase
 
 from cortex.tests import wait, result_factory
+from cortex.core.channels import unpack, declare_callback
 
 class ChannelCheck(TestCase):
     """ test the channel abstraction """
 
     def test_channels(self):
-        result_holder,incr=result_factory()
-        def callback(*args, **kargs): incr()
+        result_holder,incr = result_factory()
 
         # grab postoffice service handle from universe
         poffice = (self.universe|'postoffice')
@@ -24,6 +24,11 @@ class ChannelCheck(TestCase):
 
         # create a subchannel, make sure we can see it
         chan_sandwich = poffice.event.sandwich
+
+        @declare_callback(channel=chan_sandwich)
+        def callback(*args, **kargs): incr()
+
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         self.assertTrue(poffice.event.subchannels(), [chan_sandwich])
 
         # test subscriptions
