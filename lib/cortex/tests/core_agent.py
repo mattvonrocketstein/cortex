@@ -150,6 +150,7 @@ class AgentIterationCheck(TestCase):
         # test should be equivalent to test_agents_iterate1
         result_holder, incr = result_factory()
         x = (self.universe|'postoffice').event.i3
+
         def callback(*args,**kargs): result_holder.switch += 1
         x.subscribe(callback)
         myiterate = lambda : x('arbitrary channel message')
