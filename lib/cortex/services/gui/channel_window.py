@@ -14,7 +14,7 @@ def prepare(v):
     pprint.pprint(v, x)
     x.seek(0)
     x = x.read()
-    x=x.split('\n',) #'\n    ')
+    x=x.split('\n',)
     #x = [' '*4 + y for y in x]
     x = [' ' + y for y in x]
     x = ''.join(x)+'\n'

@@ -27,6 +27,7 @@ def build_parser():
     parser.add_option("--test",  dest="run_tests", default=False, action="store_true", help=testHelp)
     parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
     parser.add_option('--directives', dest="directives", default="", help=directiveHelp)
+    parser.add_option('--services', dest="services", default="", help=directiveHelp)
     parser.add_option('--conf', dest="conf", default=REL_NODE_CONF, help=confHelp)
     return parser
 
@@ -59,16 +60,12 @@ def entry():
         exec(options.command)
         return
 
-
-    if options.run_tests:
-        from cortex.tests import main
-        return main()
-
     # use the gtk-reactor?
     if options.gtk_reactor:
         print "using gtk reactor"
         from twisted.internet import gtk2reactor # for gtk-2.0
         gtk2reactor.install()
+
 
 
     ## Phase 2:
@@ -82,6 +79,16 @@ def entry():
     # reflect command-line options in universe's config
     olist = [x for x in dir(options) if not x.startswith('_') and x not in 'read_file read_module ensure_value'.split()]
     [setattr(Universe.config,x,getattr(options,x)) for x in olist]
+
+    if options.services:
+        from cortex.core import api
+        services = options.services.split(',')
+        for s in services:
+            api.do([['load_service',(s,),{}]])
+
+    if options.run_tests:
+        from cortex.tests import main
+        return main()
 
     ## deserialize a saved universe and resume it
     if options.universe:
