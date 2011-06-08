@@ -100,17 +100,6 @@ class CommonInterface:
         vbox.show()
         return vbox
 
-        # Create a button to which to attach menu as a popup
-        #button = gtk.Button("press me")
-        #button.connect_object("event", self.button_press, menu)
-        #vbox.pack_end(button, True, True, 2)
-        #button.show()
-
-
-        # always display the window as the last step so it all splashes on
-        # the screen at once.
-        window.show()
-
 
     @property
     def scrolled_window(self):

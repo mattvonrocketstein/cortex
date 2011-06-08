@@ -7,6 +7,7 @@ from cortex.core.util import report, console
 
 class GUI(CommonInterface):
     """ """
+
     def set_shell(self):
         """ get a gtk-embedded ipython thingy
             this function might seem like it has a
@@ -32,49 +33,36 @@ class GUI(CommonInterface):
             self.universe.stop()
 
     def really_start(self):
-        """ TODO: defer to universe.command_line_options
-                  for whether to magic_pdb
-        """
         self.sanity()
-
-        ctx = dict(universe=self.universe)
-
-        # Build an agent/window suitable for monitoring
-        # the event channel (which handles peer-discovery)
-        from cortex.core.data import EVENT_T
-        from cortex.services.gui.channel_window import channel_agent_factory
-        from cortex.core.channels import ChannelType
-        dyn_agents = [ dict(kls=channel_agent_factory(name),
-                            name='ChannelAgent:'+name,
-                            kls_kargs=ctx) \
-                       for name,chan in ChannelType.registry.items()
-                       ]
-
-        #dyn_agent = channel_agent_factory(EVENT_T)
-
-        # an agent/window that publishes the api via
-        # ipython instance, which is embedded in a gtk gui
-        from cortex.services.gui.shell import Shell
 
         # pretty much the minimal requirements for agent's __init__
         # in this case it's sort of implied, so how best to remove
         # that boiler plate?
+        ctx = dict(universe=self.universe)
 
-
-
-        components  = [ dict(kls=Shell,
-                             kls_kargs=ctx,
-                             name='ShellAgent'), ]
-        #dyn_agents = [ dict(kls=dyn_agent,
-        #                    kls_kargs=ctx,
-        #                    name='ChannelAgent'+str(dyn_agents.index(dyn_agent)))
-        #            for dyn_agent in dyn_agents ]
-
+        # Build an agent/window suitable for monitoring
+        # the event channel (which handles peer-discovery)
+        from cortex.services.gui.channel_window import channel_agent_factory
+        from cortex.core.channels import ChannelType
 
 
         # NOTE: code below is using the manager protocol
-        for c in components + dyn_agents:
-            self.manage(**c)
+        # NOTE: side-effect.. last element to be manage()'d
+        #       here actually gets wm focus
+        if False:
+            #getattr(self,'window_per_channel',True):
+            for name, chan in ChannelType.registry.items():
+                self.manage(kls=channel_agent_factory(name),
+                            name='ChannelAgent:'+name,
+                            kls_kargs=ctx)
+        # an agent/window that publishes the api via
+        # ipython instance, which is embedded in a gtk gui
+        from cortex.services.gui.shell import Shell
+
+        self.manage(kls=Shell,
+                    kls_kargs=ctx,
+                    name='ShellAgent')
+
         self.load()
 
 from cortex.core.agent import Agent

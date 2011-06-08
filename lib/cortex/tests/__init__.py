@@ -47,7 +47,9 @@ class testsession(_standardsession):
         from cortex.tests import get_bases
         from cortex.services.unittesting import UnitTestService
         self.add_instruction([ "load_service", ("unittestservice",),    get_bases()  ])
+        #self.end_when_finished_with_tests()
 
+    def end_when_finished_with_tests(self):
         # Specify terminating conditions to declare as goals
         from cortex.core.util import service_is_stopped
         from cortex.core import api

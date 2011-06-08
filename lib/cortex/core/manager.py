@@ -344,9 +344,10 @@ class Manager(object):
         if not hasattr(self, 'universe'):
             err = "expected manager would know the universe by the time it was asked to load something"
             raise ValueError, err
-
+        #def uniq_name():
+        #    raise Exception,'come on.. for now just pass the name'
         defaults = self.default_kls_kargs
-        kargs.update(dict(name=name))
+        kargs.update(dict(name=name))# or uniq_name()))
         for k in defaults:
             if k not in kargs:
                 kargs.update({k:defaults[k]})
