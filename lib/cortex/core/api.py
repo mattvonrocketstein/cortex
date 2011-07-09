@@ -46,7 +46,13 @@ def do(instructions, _api=None):
         handler(*args, **kargs)
 
 def clone(file=None, nodeconf=None):
-    """ """
+    """ makes a clone of this universe as a subprocess.
+
+        the original universe will be able to pass messages
+        back and forth with the clone.. if you're using the
+        network-mapper service, the new universe should be
+        discovered automatically and added to the peer list.
+    """
 
     # tell the universe to clone itself using the new nodedef
     line = '{shell} "{prog} {args} {file}"&'.format(shell = universe.system_shell,
@@ -62,10 +68,9 @@ def clone(file=None, nodeconf=None):
         universe._procs.append(p)
 
 def declare_goals(list_of_callables):
-    """ load without waiting a specific instruction
-        that wakes up the goal-monitor.
-
-        universe will stop when all the goals are complete.
+    """ loads without waiting a specific instruction
+        that wakes up the goal-monitor.  the universe
+        will stop when all the goals are complete.
     """
     from cortex.services.goalmonitor import GoalMonitor
     do( [[ "load_service",
