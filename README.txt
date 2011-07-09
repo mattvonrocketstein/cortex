@@ -26,8 +26,11 @@ Installing:
 Running tests:
 --------------
     $ source foo/bin/activate             # activate the venv you made in the other step
-    $ python lib/cortex/tests             # from directory with cortex src clone
-    $ python -m "cortex.tests.__main__"   # from pre-installed source
+
+    Now you can choose one of:
+     $ python lib/cortex/tests             # from directory with cortex src clone
+     $ python -m "cortex.tests.__main__"   # from pre-installed source
+     $ cortex --test --gtk --services=gui  # ..
 
 Looking around:
 ---------------
@@ -44,14 +47,19 @@ Looking around:
 
       ServiceManager(['api', 'terminal', 'postoffice', 'mapper', 'linda'])
 
-  You already met the terminal, and briefly the purposes of the rest of these services
-  go something like this.  The "postoffice" routes messages within the universe.  The
-  "mapper" actively seeks out other cortex instances and can be configured to look on
-  the same machine, or on whatever networks the universe is made aware of.  The "api"
-  exists to specify communication policies for most things external to the universe--
-  this includes other nodes but cortex boot-scripts and other things may find it useful
-  as well.  "Linda" is a tuple-space abstraction, a cortex service that uses lindypy
-  as it's backend.
+  You already met the terminal-service.  Briefly the purposes of the rest of these are:
+
+     1) The "postoffice" routes messages within the universe.
+
+     2) The "mapper" actively seeks out other cortex instances and can be configured to
+        look on the same machine, or on whatever networks the universe is made aware of.
+
+     3) The "api" service exists to specify communication policies for most things external
+        to the universe-- this includes other nodes but cortex boot-scripts and other things
+        may find it useful as well.
+
+     4) The "linda" service is a tuple-space abstraction; it is backed by the lindypy module.
+
 
   Have you noticed by now red-text occasionally appearing after your cortex-shell
   prompt?  If so, then you have already discovered the event bus.  The terminal
