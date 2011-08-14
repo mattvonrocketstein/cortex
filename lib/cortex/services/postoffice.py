@@ -1,8 +1,17 @@
 """ cortex.services.postoffice
 
-      a simple service that exposes a message bus.
+      a service that exposes a message bus.
 
-      TODO: (for json, pickles) annotate messages with data necessary to decode them?
+      # get a list of subscribers by name
+      >>> postoffice['EVENT_T']
+      (<bound method Terminal.push_q of <Terminal-Service 176000620>>,)
+
+      # get a specific channel object
+      >>> events=postoffice.event
+      >>> events
+      <CHAN-(EVENT_T)>
+
+      see cortex.core.channels for further documentation on what channels can do.
 
 """
 

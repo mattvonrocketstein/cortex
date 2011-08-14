@@ -145,8 +145,7 @@ show_last_peer    = lambda: report('most recent peer',last_peer())
 declare_agent     = universe.agents
 load_instructions = do
 
-class constants:
-    """ TODO: name is a little misleading.."""
+class cortex:
     @property
     def channels(self):
         from channel import ChannelType
