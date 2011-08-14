@@ -40,11 +40,10 @@ class ShellAspect:
         self.shell.IP.set_hook('pre_prompt_hook', self.pre_prompt_hook)
         self.shell.IP.BANNER = console.draw_line(display=False)
         # Set IPython "autocall" to "Full"
-        self.shell.IP.magic_autocall(2)
+        #self.shell.IP.magic_autocall(2)
 
     def really_start(self):
         """ TODO: defer to universe.command_line_options for whether to magic_pdb """
-        print 'really'
         # This case is nasty..  nothing seems to be able to make the process exit cleanly
         if self.universe.config.gtk_reactor==True:
             err = "This universe is configured for the GTK reactor, but you're trying to use the console-based ipython terminal."
