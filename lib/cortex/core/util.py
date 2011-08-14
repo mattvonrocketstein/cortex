@@ -1,5 +1,6 @@
 """ cortex.core.util
 """
+import inspect
 from report import report, console
 
 from cortex.core.data import SERVICES_DOTPATH
