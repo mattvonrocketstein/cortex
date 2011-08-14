@@ -1,5 +1,7 @@
 """ cortex.core.util
 """
+from report import report, console
+
 from cortex.core.data import SERVICES_DOTPATH
 
 def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
@@ -16,67 +18,6 @@ def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
         val = getattr(mod, name)
         out[name] = val
     return out
-
-# Patterns in reporting
-####################################################################
-import sys, inspect
-
-import pygments
-from pygments import highlight
-from pygments.lexers import PythonLexer, PythonTracebackLexer
-from pygments.formatters import HtmlFormatter,Terminal256Formatter
-from IPython.ColorANSI import TermColors
-
-# Pygments data
-plex  = PythonLexer()
-tblex = PythonTracebackLexer()
-hfom  = HtmlFormatter()
-hfom2 = HtmlFormatter(cssclass="autumn")
-colorize  = lambda code: highlight(code, plex, hfom)
-colorize2 = lambda code: highlight(code, plex, hfom2)
-
-class console:
-    """ """
-    def __getattr__(self,name):
-        x = getattr(TermColors, name.title(),None)
-        if x!=None:
-            def func(string,_print=False):
-                z = x + string + TermColors.Normal
-                if _print:
-                    print z
-                return z
-            return func
-        else:
-            raise AttributeError,name
-
-    def vertical_space(self):
-        print
-
-    @staticmethod
-    def blue(string):
-        """ TODO: generic function for this
-        """
-        return TermColors.Blue + string + TermColors.Normal
-    @staticmethod
-    def colortb(string):
-        return highlight(string, tblex, Terminal256Formatter())
-
-    @staticmethod
-    def color(string):
-        return highlight(string, plex, Terminal256Formatter())
-
-    @staticmethod
-    def draw_line(msg='', length=80, display=True):
-        if msg and not msg.startswith(' '): msg = ' '+msg
-        if msg and not msg.endswith(' '):   msg = msg+' '
-        rlength = length - len(msg)
-        out = '-' * (rlength/2)
-        out+= msg + out
-        out = TermColors.Red+ out + TermColors.Normal
-        if display:
-            print out
-        return out
-console=console()
 
 import time
 import uuid
@@ -102,39 +43,6 @@ def getcaller(level=2):
                 self=self,
                 func=func,
                 func_name=func_name)
-
-def whosdaddy():
-    """ displays information about the caller's caller """
-    # if self is a named argument in the locals, print
-    # the class name, otherwise admit that we don't know
-    caller_info = getcaller(3)
-    kls         = caller_info['kls']
-    file_name   = caller_info['file']
-    func_name   = caller_info['func_name']
-    header = (kls and kls.__name__) or '<??>'
-    header = ' ' + header + '.' + func_name
-    return ' + in ' + file_name + '\n  ' + header + ' --'
-
-def report(*args, **kargs):
-    """ the global reporting mechanism.
-
-          TODO: clean this up and allow subscribers like
-               <log>, <syndicate>,  and <call-your-moms-cell-phone>.
-    """
-    global console
-    import sys
-    stream = kargs.get('stream', sys.stdout)
-    header = kargs.get('header', None)
-    full = False
-    if header is None: header=whosdaddy(); full=True
-    print header
-    if full:
-        stream.write( '\targs='+console.color(str(args))+       '\tkargs=')
-        flush = kargs.pop('flush', False)
-        stream.write(console.color(str(kargs)))
-
-    #if flush:
-    #    sys.stdout.flush() # is this even working with ipython?
 
 # Patterns in files, directories
 ####################################################################
