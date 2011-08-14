@@ -1,15 +1,15 @@
 """ cortex.services.terminal.abstract
      stuff that all terminal services have in common.
 
-     this is actually useless until it's bound to the ipython
-     console or gui aspect.
+     this is useless until it's bound to the concrete
+     ipython console or gui aspect.
 """
 
 from cortex.core import api
-from cortex.core.data import EVENT_T
-from cortex.core.util import report, console
 from cortex.services import Service
 from cortex.mixins import LocalQueue
+from cortex.core.data import EVENT_T
+from cortex.core.util import report, console
 from cortex.util.decorators import constraint
 
 class ATerminal(Service, LocalQueue):
@@ -19,7 +19,7 @@ class ATerminal(Service, LocalQueue):
         print 'start'
         from twisted.internet.error import ReactorAlreadyRunning
         # Hack: this raises an exception but everything breaks
-        #        without the call itself. hrm..
+        #        without the call itself. hrm.
         self.before_start()
         try:
             self.really_start()
@@ -28,10 +28,13 @@ class ATerminal(Service, LocalQueue):
         else:
             self.after_start()
         return self
-    def before_start(self):
-        print 'abstract before'
 
-    def after_start(self):  pass
+    def before_start(self):
+        report('abstract before_start')
+
+    def after_start(self):
+        pass
+
     def set_prompt(self):
         """ """
         self.shell.IP.outputcache.prompt1.p_template = console.blue(self.universe.name) + ' [\\#] '
@@ -57,6 +60,7 @@ class ATerminal(Service, LocalQueue):
 
     @staticmethod
     def compute_terminal_namespace():
+        """ populates the namespace that is available within the shell """
         import inspect
         universe = {'__name__' : '__cortex_shell__',}
         universe.update(api.publish())

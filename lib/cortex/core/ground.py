@@ -73,9 +73,9 @@ class Memory(TSpace, PersistenceMixin):
 
         TSpace.__init__(self)
 
-        self.john_hancock()
+        self._john_hancock()
 
-    def john_hancock(self):
+    def _john_hancock(self):
         """ Sign it. """
         self.add(('__name__',  self.name))
         self.add(('__stamp__', str(datetime.datetime.now())))
@@ -90,9 +90,6 @@ class Memory(TSpace, PersistenceMixin):
         k = type('dynamicKeyspace',(Keyspace,),{})(self,name=name)
         k.__dict__ = self.__dict__ #copy.copy(self.__dict__)
         return k
-
-    def asdf__getattr__(self,name):
-        print 'mem: getattr fail', name
 
     def shutdown(self):
         """ TODO: proxy to TSpace shutdown? """
@@ -206,7 +203,7 @@ class Keyspace(Memory, DefaultKeyMapper):
         if matching_tuples:
             first_match = matching_tuples[0]
             return self.tuple2value(first_match)
-        return NotFound #"NOT FOUND"
+        return NotFound
 
     def subspace(self, name):
         """ return a nested keyspace with name <name> """

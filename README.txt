@@ -30,7 +30,7 @@ Running tests:
     Now you can choose one of:
      $ python lib/cortex/tests             # from directory with cortex src clone
      $ python -m "cortex.tests.__main__"   # from pre-installed source
-     $ cortex --test --gtk --services=gui  # ..
+     $ cortex --test --gtk --services=gui  # runs tests in terminal, launches gtk shell
 
 Looking around:
 ---------------

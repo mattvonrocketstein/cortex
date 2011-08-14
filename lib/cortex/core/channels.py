@@ -1,4 +1,33 @@
 """ cortex.core.channels
+
+      # build a subchannel on the fly:
+      >>> event.foo
+      <CHAN-(EVENT_T::foo)>
+
+      # channels work via an exchange
+      >>> event._exchange
+      <PostOffice-Service 174661484>
+      >>> event._exchange[event.__name__]
+      (<bound method Terminal.push_q of <Terminal-Service 175386220>>,)
+
+      # for a bound channel, both the channel and the
+      # exchange can answer questions about the subscribers
+      >>> event.subscribers()
+      (<bound method Terminal.push_q of <Terminal-Service 176017164>>,)
+      >>> event._exchange[event.__name__]
+      (<bound method Terminal.push_q of <Terminal-Service 176017164>>,)
+
+      # subchannels are cached
+      >>> foo_channel = event.foo
+      >>> foo_channel == event.foo
+      True
+
+      # channels can enumerate their subchannels
+      #   (this is not done recursively)
+      >>> event.subchannels()
+      [<CHAN-(EVENT_T::foo)>]
+
+
 """
 
 class UnboundChannel(Exception): pass
@@ -8,12 +37,14 @@ class ChannelType(type):
 
     def __getattr__(kls, name):
         """ only attributes not starting with
-            "_" are organinzed in the tree """
+            "_" are organinzed in the tree
+        """
         ## This is the main channel class, accesses
         ## to it mean the accessor wants a new channel
         #  named ``name``.
+        FORBIDDEN = ['subscribers']
         if kls.__name__=='Channel':
-            if not name.startswith("_"):
+            if name not in FORBIDDEN and not name.startswith("_"):
                 namespace = dict(_label=name,)
                 bases     = (channel, )
                 mcls      = kls.__metaclass__
@@ -29,9 +60,8 @@ class ChannelType(type):
                              'subchannels','_getAttributeNames']
                 if name in FORBIDDEN or '(' in name:
                     raise AttributeError("ChannelType: %r has no attribute %s" % (kls.__name__, name))
-                    #return kls.__dict__.get(name)
                 subchan = getattr(channel, kls._label +'::'+name)
-                subchan._bind(kls._postoffice)
+                subchan._bind(kls._exchange)
                 return subchan
             else:
                 raise UnboundChannel,"cannot subchannel an unbound channel"
@@ -64,6 +94,9 @@ class ChannelType(type):
     def name(kls):
         return kls.__name__.split('.')[-1]
 
+    def __repr__(self):
+        return '<CHAN-({c})>'.format(c=self.__name__)
+
 def F(msg):
     """ makes a call-only-if-bound classmethodified
         function that, if the channel is unbound, displays
@@ -87,19 +120,23 @@ class Channel(object):
 
     __metaclass__ = ChannelType
 
+    @F("cannot publish subscribers for an unbound channel")
+    def subscribers(kls):
+        return kls._exchange[kls.__name__]
+
     @F("cannot subscribe to an unbound channel")
     def subscribe(kls, callback):
         verify_callback(callback)
-        return kls._postoffice.subscribe(kls._label, callback)
+        return kls._exchange.subscribe(kls._label, callback)
 
     @F("cannot publish to a unbound channel")
     def _publish(kls, *args, **kargs):
         kargs.update(dict(args=args))
-        return kls._postoffice.publish(kls._label, **kargs)
+        return kls._exchange.publish(kls._label, **kargs)
 
     @classmethod
     def unsubscribe(kls):
-        kls._postoffice.unsubscribe(kls._label)
+        kls._exchange.unsubscribe(kls._label)
 
     @classmethod
     def destroy(kls):
@@ -115,8 +152,8 @@ class Channel(object):
     @classmethod
     def _bind(kls, postoffice):
         """ a channel must be bound to operate """
-        kls._bound=True
-        kls._postoffice = postoffice
+        kls._bound      = True
+        kls._exchange = postoffice
         return kls
 
 channel=Channel
@@ -173,7 +210,7 @@ unpack = lambda data: ( data['args'],
                         dict([ [d,data[d]] for d in data if d!='args']) )
 
 def declare_callback(channel=None):
-    assert channel,"requires declare_callback decorator requires 'channel' argument"
+    assert channel,"declare_callback decorator requires 'channel' argument"
     def decorator(fxn):
         fxn.declared_callback=1
         def bootstrap(self):
@@ -183,8 +220,8 @@ def declare_callback(channel=None):
                 from cortex.core.channels import ChannelType
                 exchange = ChannelType.registry[channel]
                 self.subscribed = 1
-                k=new.instancemethod(fxn, self, self.__class__)
-                setattr(self,fxn.__name__,k)
+                k = new.instancemethod(fxn, self, self.__class__)
+                setattr(self, fxn.__name__, k)
                 exchange.subscribe(k)
                 return self
 

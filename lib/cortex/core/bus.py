@@ -59,7 +59,7 @@ class TupleBus(Bus):
         if subscribers==NotFound:
             return N
         for subscriber in subscribers:
-            report(subscriber)
+            #report(subscriber)
             subscriber(self, *args, **kwargs)
             N+=1
         return N
