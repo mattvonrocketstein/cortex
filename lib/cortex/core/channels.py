@@ -1,10 +1,9 @@
 """ cortex.core.channels
 
-      # build a subchannel on the fly:
-      >>> event.foo
-      <CHAN-(EVENT_T::foo)>
-
-      # channels work via an exchange
+      # channels work via an "exchange", and can't do much until
+      # they are bound.  a channel is bound using chan.bind(some_exchange).
+      # .  an exchange can be any
+      # object, provided it obeys the dictionary protocol.
       >>> event._exchange
       <PostOffice-Service 174661484>
       >>> event._exchange[event.__name__]
@@ -17,17 +16,27 @@
       >>> event._exchange[event.__name__]
       (<bound method Terminal.push_q of <Terminal-Service 176017164>>,)
 
+      # you can build a subchannel on the fly
+      >>> event.foo
+      <CHAN-(EVENT_T::foo)>
+
       # subchannels are cached
       >>> foo_channel = event.foo
       >>> foo_channel == event.foo
       True
 
-      # channels can enumerate their subchannels
-      #   (this is not done recursively)
+      # by default subchannels get the same exchange their parent has
+      >>> event.foo._exchange==event._exchange
+      True
+
+      # channels can non-recursively enumerate their subchannels
       >>> event.subchannels()
       [<CHAN-(EVENT_T::foo)>]
 
-
+      # push a message into the channel by simply calling it. by default,
+      # channels should accept any number of arguments of any type.
+      >>> event("testing")
+      >>> event(str,object)
 """
 
 class UnboundChannel(Exception): pass
@@ -37,12 +46,16 @@ class ChannelType(type):
 
     def __getattr__(kls, name):
         """ only attributes not starting with
-            "_" are organinzed in the tree
+            "_" are organized in the tree
         """
+        FORBIDDEN = ['trait_names', # used by ipython tab completion
+                     'bound','bind',
+                     'subscribe', 'subscribers',
+                     'subchannels',
+                     '_getAttributeNames']
         ## This is the main channel class, accesses
         ## to it mean the accessor wants a new channel
         #  named ``name``.
-        FORBIDDEN = ['subscribers']
         if kls.__name__=='Channel':
             if name not in FORBIDDEN and not name.startswith("_"):
                 namespace = dict(_label=name,)
@@ -55,16 +68,13 @@ class ChannelType(type):
         ## if it's bound, then make a bound subchannel, otherwise yell
         else:
             if kls._bound:
-                FORBIDDEN = ['trait_names','bound','bind',
-                             'subscribe',
-                             'subchannels','_getAttributeNames']
                 if name in FORBIDDEN or '(' in name:
                     raise AttributeError("ChannelType: %r has no attribute %s" % (kls.__name__, name))
-                subchan = getattr(channel, kls._label +'::'+name)
-                subchan._bind(kls._exchange)
+                subchan = getattr(channel, kls._label + '::' + name)
+                subchan.bind(kls._exchange)
                 return subchan
             else:
-                raise UnboundChannel,"cannot subchannel an unbound channel"
+                raise UnboundChannel("cannot subchannel an unbound channel")
 
     def __new__(mcls, name, bases, dct):
         """ called when initializing (configuring)
@@ -75,6 +85,7 @@ class ChannelType(type):
         if name=='Channel':
             return type.__new__(mcls, name, bases, dct)
 
+        # For everything else, create it or grab it from the cache
         reg = getattr(mcls, 'registry', {})
         dct.update(dict(_bound=False))
         if name not in reg: reg[name] = type.__new__(mcls, name, bases, dct)
@@ -100,21 +111,22 @@ class ChannelType(type):
 def F(msg):
     """ makes a call-only-if-bound classmethodified
         function that, if the channel is unbound, displays
-        error message ``msg`` instead of running ``func`` """
-    def ifbound2(func):
+        error message ``msg`` instead of running ``func``
+    """
+    def if_bound(func):
         def new(kls, *args, **kargs):
             if kls._bound:
                 try:
                     return func(kls, *args, **kargs)
                 except Exception,e:
                     raise
-            else:          raise UnboundChannel, msg
+            else:
+                raise UnboundChannel, msg
         return classmethod(new)
-    return ifbound2
+    return if_bound
 
 class Channel(object):
-    """ inspired by promela
-
+    """
         TODO: channel type declarations.. use linda?
     """
 
@@ -131,6 +143,7 @@ class Channel(object):
 
     @F("cannot publish to a unbound channel")
     def _publish(kls, *args, **kargs):
+        assert 'args' not in kargs,"'args' is reserved for internal use"
         kargs.update(dict(args=args))
         return kls._exchange.publish(kls._label, **kargs)
 
@@ -150,7 +163,7 @@ class Channel(object):
                  if item[0].startswith(kls._label+'::') ]
 
     @classmethod
-    def _bind(kls, postoffice):
+    def bind(kls, postoffice):
         """ a channel must be bound to operate """
         kls._bound      = True
         kls._exchange = postoffice
@@ -175,7 +188,7 @@ class ChannelManager(object):
 
     def bind_embedded_channels(self):
         for chan in self.enumerate_embedded_channels():
-            chan._bind(self)
+            chan.bind(self)
 
 def verify_callback(callback):
     """ ensure callback has a signature similar
