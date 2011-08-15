@@ -55,7 +55,9 @@ class ATerminal(Service, LocalQueue):
             from the postoffice.
         """
         super(ATerminal,self).stop()
-        self.postoffice.unsubscribe(EVENT_T, self.push_q)
+        postoffice=(self.universe|'postoffice')
+        if postoffice:
+            postoffice.unsubscribe(EVENT_T, self.push_q)
         report('the Terminal Service Dies.')
 
     @staticmethod

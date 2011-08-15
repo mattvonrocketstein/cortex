@@ -11,8 +11,7 @@ class TupleBus(Bus):
          (by default it uses lists and dictionaries)
     """
     def unsubscribe_all(self, key):
-        def declare_unplugged(cb):
-            cb.unplugged=True
+        declare_unplugged = lambda cb: setattr(cb, 'unplugged', True)
         [ declare_unplugged(callback) for callback in self.subscriptions[key] ]
         print type(self.subscriptions)
         del self.subscriptions[key]
