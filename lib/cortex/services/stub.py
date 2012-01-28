@@ -28,6 +28,9 @@ class Stub(Service):
         Service.stop(self)
         report('Custom stop for', self)
 
+    # toggle the decorator below to register constraints,
+    # e.g. which named services this service will depend on
+    @constraint(boot_first='postoffice')
     def start(self):
         """ <start> is an operation, called once (and typically by <play>), which may or
             may not return and so may be blocking or non-blocking.

@@ -58,7 +58,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
         self.publish(label, pickle.dumps(data))
 
     def msg(self, *args, **kargs):
-        """ push a caller labeled message on to the stack.
+        """ pushes a caller-labeled message on to the stack.
             determines caller function and dispatches to publish """
         caller = whosdaddy()
         self.publish(caller['name'], (args, kargs))
