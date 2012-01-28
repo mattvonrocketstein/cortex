@@ -31,7 +31,7 @@ DEFAULT_HOST      = LOOPBACK_HOST
 
 # cortex.services.terminal
 ################################################################################
-IPY_ARGS          = ['-noconfirm_exit']
+IPY_ARGS          = ['-noconfirm_exit', '-rcfile=~/.ipython/msh.rc']
 
 # cortex.services.contrib
 ################################################################################
