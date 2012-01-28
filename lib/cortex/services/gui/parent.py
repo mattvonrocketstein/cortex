@@ -43,7 +43,7 @@ class GUI(CommonInterface):
         # Build an agent/window suitable for monitoring
         # the event channel (which handles peer-discovery)
         from cortex.services.gui.channel_window import channel_agent_factory
-        from cortex.core.channels import ChannelType
+        from channel import ChannelType
 
 
         # NOTE: code below is using the manager protocol
