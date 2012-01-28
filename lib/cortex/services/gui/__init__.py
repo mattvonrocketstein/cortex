@@ -3,7 +3,7 @@
       see also: http://ipython.scipy.org/moin/Cookbook/EmbeddingInGTK
 """
 from cortex.services.terminal import abstract
-from cortex.services.gui.parent import GUI
+from cortex.services.gui.parent import GUI as _GUI
 from cortex.core.agent.manager import AgentManager
 
 def __init__(self, **kargs):
@@ -11,7 +11,12 @@ def __init__(self, **kargs):
     abstract.ATerminal(self, **kargs)
 
 
-GUI = type('GUI',
-           ( abstract.ATerminal,
-             AgentManager, GUI ),
-           dict(__init__=__init__))
+class GUI(abstract.ATerminal,
+          AgentManager, _GUI ):
+
+    __init__=__init__
+
+    def shell_contribute_to_ns(self, **kargs):
+        ipythonview = self.registry['ShellAgent'].obj.shell
+        ip = ipythonview.IP
+        ip.user_ns.update(**kargs)
