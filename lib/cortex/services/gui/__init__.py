@@ -1,5 +1,6 @@
 """ cortex.services.gui
-      http://ipython.scipy.org/moin/Cookbook/EmbeddingInGTK
+
+      see also: http://ipython.scipy.org/moin/Cookbook/EmbeddingInGTK
 """
 from cortex.services.terminal import abstract
 from cortex.services.gui.parent import GUI
