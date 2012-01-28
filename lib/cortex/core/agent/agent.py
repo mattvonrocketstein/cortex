@@ -12,7 +12,7 @@ from cortex.core.common import AgentError
 from cortex.core.data import NOOP, LOOPBACK_HOST, GENERIC_LOCALHOST
 from cortex.mixins import AutonomyMixin, PerspectiveMixin
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
-from cortex.core.channels import is_declared_callback,unpack, declare_callback
+from channel import is_declared_callback,unpack, declare_callback
 from cortex.core.data import DEFAULT_HOST
 from cortex.mixins import MobileCodeMixin
 from cortex.mixins import FaultTolerant

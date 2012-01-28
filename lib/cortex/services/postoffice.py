@@ -13,7 +13,7 @@ from cortex.core.data import EVENT_T, ERROR_T
 from cortex.core.ground import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus
-from cortex.core.channels import channel, ChannelManager
+from channel import channel, ChannelManager
 
 
 class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):

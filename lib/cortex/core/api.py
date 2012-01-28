@@ -146,6 +146,6 @@ class constants:
     """ TODO: name is a little misleading.."""
     @property
     def channels(self):
-        from cortex.core.channels import ChannelType
+        from channel import ChannelType
         return ChannelType.registry
 constants=constants()

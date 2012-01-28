@@ -6,7 +6,7 @@ import pprint,StringIO
 from cortex.core.data import EVENT_T
 from parent import GUIChild
 from console_view import ConsoleView
-from cortex.core.channels import unpack, declare_callback
+from channel import unpack, declare_callback
 
 def prepare(v):
     """prepare value for pprint to buffer"""

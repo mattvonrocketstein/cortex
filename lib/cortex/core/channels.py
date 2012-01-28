@@ -180,7 +180,7 @@ def declare_callback(channel=None):
             if hasattr(self, 'subscribed'):
                 return False
             else:
-                from cortex.core.channels import ChannelType
+                from channel import ChannelType
                 exchange = ChannelType.registry[channel]
                 self.subscribed = 1
                 k=new.instancemethod(fxn, self, self.__class__)

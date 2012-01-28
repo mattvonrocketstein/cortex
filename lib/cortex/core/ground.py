@@ -178,6 +178,9 @@ class DefaultKeyMapper(object):
         #if key in self.keys():
             # enforce the rule by pruning, then add
         #    old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        if isinstance(value,list):
+            value = tuple(value)
         self.add( (key, value) )
 
     def __delitem__(self, key):
