@@ -99,10 +99,10 @@ def entry():
 
     # Otherwise install the nodeconf that we found and run it.
     install_nodeconf(nodeconf_file, options, args)
-    RUN() # Invoke the Universe
-    s=Universe.play()
+    s=Universe.play() # Invoke the Universe
 
 def verify_file(f):
+    """ """
     if not os.path.exists(f):
         print "Path does not exist."
         sys.exit()
