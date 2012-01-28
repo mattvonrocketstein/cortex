@@ -27,7 +27,7 @@ class Mapper(Service):
         """ will be called by the postoffice, with type PEER_T
         """
         data = simplejson.loads(pickled_data)
-        name = data['host']+':'+str(data['port'])
+        name = data['host'] + ':' + str(data['port'])
         self.universe.peers.register(name, **data)
 
     def iterate(self, host):
@@ -75,11 +75,14 @@ class Mapper(Service):
     @constraint(boot_first='postoffice')
     @constraint(boot_first='api')
     def start(self):
-        """ i'd like to use the asynchronous portscanner but this
-              scan_data = nmap.PortScannerAsync().scan('127.0.0.1','10-100','--system-dns',callback=foo)
-
-            fails with:
-              PortScannerError: 'mass_dns: warning Unable to determine any DNS servers.
+        """ TODO:
+              it'd be nice to use the asynchronous portscanner but this:
+                 >>> nmap.PortScannerAsync().scan('127.0.0.1','10-100',
+                                                  '--system-dns',
+                                                  callback=foo)
+               fails with:
+                 PortScannerError:
+                   'mass_dns: warning Unable to determine any DNS servers.
         """
 
         #assert (self.universe|'api').started, 'postoffice isnt started'
