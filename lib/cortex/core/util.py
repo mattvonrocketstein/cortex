@@ -3,8 +3,18 @@
 import inspect
 import time, uuid
 
+# TODO: move some of this back into the real report lib
 from report import report, console
 report.console = console
+from StringIO import StringIO
+from pprint import pprint
+def rpprint(obj,pad=' '*4):
+    s = StringIO();
+    pprint(obj,s);
+    s.seek(0);
+    report.console.draw_line('',display=False)
+    print console.color('\n'.join(['\n']+map(lambda x: pad + x, s.read().split('\n'))))
+report.pprint = rpprint
 
 from StringIO import StringIO
 from pprint import pprint
