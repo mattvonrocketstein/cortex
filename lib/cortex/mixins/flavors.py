@@ -32,8 +32,39 @@ class ReactorRecursion(Autonomy):
         go = lambda: self.universe.reactor.callFromThread(self.run)
         self.universe.reactor.callWhenRunning(self.run)
 
+class Threaded(Autonomy):
 
-class ThreadedIterator(Autonomy):
+    @classmethod
+    def from_function(kls, func):
+        """ turns a function into an agent.  you might think
+            that you can do this with any agent, but it's a
+            little more tricky than that.. functions return,
+            so in order to keep those semantics, we insist
+            that ``self.parent`` exists and has a bus.  it's
+            not really limited to the threaded agent, or even
+            a *single* parent (multiple-return is no different
+            than multiple-subscribers)
+        """
+        from cortex.core.agent import Agent
+        class TMP(kls, Agent):
+            def _post_init(self, **kargs):
+                print 'post_init'
+                self.fun_kargs = kargs
+
+            def run(self):
+                print 'run'
+                r = func(**self.fun_kargs)
+                self.parent.bus(r)
+        return TMP
+
+    def start(self):
+        """ autonomy override """
+        Autonomy.start(self)
+        go = lambda: self.universe.threadpool.callInThread(self.run)
+        self.universe.reactor.callWhenRunning(go)
+
+class ThreadedIterator(Threaded):
+
     """
          will be run in a thread from the twisted threadpool
 
@@ -48,12 +79,6 @@ class ThreadedIterator(Autonomy):
         while self.started:
             time.sleep(self.iteration_period)
             self.run_primitive()
-
-    def start(self):
-        """ autonomy override """
-        Autonomy.start(self)
-        go = lambda: self.universe.threadpool.callInThread(self.run)
-        self.universe.reactor.callWhenRunning(go)
 
 ## A few ready-made combinations
 from cortex.core.agent import Agent
