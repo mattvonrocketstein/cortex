@@ -7,7 +7,7 @@ from cortex.core.service import Service
 from cortex.core.util import report, console
 from cortex.core.metaclasses import subclass_tracker
 
-from cortex.mixins.flavors import Threadpooler
+from cortex.mixins.flavors import ThreadedIterator
 def show_tb(tbstr):
             print console.colortb(tbstr)
             console.draw_line()
@@ -24,7 +24,7 @@ def show_errors(result):
                 print '\n',console.red(str(x[0]))
                 show_tb(x[1])
 
-class UnitTestService(subclass_tracker(Threadpooler, Service, TestCase)):
+class UnitTestService(subclass_tracker(ThreadedIterator, Service, TestCase)):
     """ Cortex Service / Agent"""
 
     def get_all_tests(self):

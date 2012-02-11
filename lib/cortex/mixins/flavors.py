@@ -33,7 +33,7 @@ class ReactorRecursion(Autonomy):
         self.universe.reactor.callWhenRunning(self.run)
 
 
-class Threadpooler(Autonomy):
+class ThreadedIterator(Autonomy):
     """
          will be run in a thread from the twisted threadpool
 
@@ -44,7 +44,7 @@ class Threadpooler(Autonomy):
          TODO: save answer in some way?
     """
     def run(self):
-        """ see docs for Threadpooler """
+        """ see docs for ThreadedIterator """
         while self.started:
             time.sleep(self.iteration_period)
             self.run_primitive()
@@ -57,5 +57,5 @@ class Threadpooler(Autonomy):
 
 ## A few ready-made combinations
 from cortex.core.agent import Agent
-class ThreadedAgent(Threadpooler, Agent): pass
+class ThreadedAgent(ThreadedIterator, Agent): pass
 class RecursiveAgent(ReactorRecursion, Agent): pass
