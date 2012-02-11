@@ -1,6 +1,7 @@
 """ cortex.core.api
 
       TODO: make "alias" decorator
+      NB: unused imports in this file are normal and desirable
 """
 
 import os, sys
@@ -77,7 +78,7 @@ def declare_goals(list_of_callables):
           ("GoalMonitor",),
           dict(goals=list_of_callables)  ],])
 
-def load_file(fname, adl=False, python=True):
+def load_file(fname, adl=False, pdl=False, python=True):
     """ loads a local file
           known formats:
             python code
@@ -86,7 +87,7 @@ def load_file(fname, adl=False, python=True):
     """
     from cortex.util.namespaces import NamespacePartition
     fileerror = "No such file"
-    assert os.path.exists(fname), filerror
+    assert os.path.exists(fname), fileerror
 
     # handler for agent description language
     if adl:

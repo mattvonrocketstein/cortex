@@ -1,7 +1,7 @@
 """ cortex.core.parsing
 """
 import simplejson
-from cortex.core.util import report, console
+from cortex.core.util import report
 
 class Nodeconf:
     """ currently just a json parser that respects comments """

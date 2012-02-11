@@ -340,7 +340,7 @@ class Manager(object):
 
     def __call__(self, kls, name=None, **kargs):
         """ shortcut for load_item """
-        from cortex.core.util import getcaller
+        # from cortex.core.util import getcaller
         if not hasattr(self, 'universe'):
             err = "expected manager would know the universe by the time it was asked to load something"
             raise ValueError, err

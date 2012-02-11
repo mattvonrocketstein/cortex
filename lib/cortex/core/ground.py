@@ -2,12 +2,10 @@
 
       smart datastructures for storage
 """
-
-import copy
 import datetime
+import pickle
 
 from lindypy.TupleSpace import TSpace
-from lindypy.TupleSpace import Client, tuplespace
 
 from cortex.core.util import report
 from cortex.core.hds import HierarchicalData
@@ -212,8 +210,8 @@ class Keyspace(Memory, DefaultKeyMapper):
         return NotFound #"NOT FOUND"
 
     def subspace(self, name):
-        """ return a nested keyspace with name <name> """
-        NIY
+        """ returns a nested keyspace with name <name> """
+        raise Exception,"Not implemented"
 
     def __contains__(self,other):
         """ dictionary compatibility """
