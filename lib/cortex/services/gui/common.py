@@ -1,7 +1,9 @@
 """ cortex.services.gui.common
 """
 import gtk
-from cortex.core.util import report, console
+from cortex.core.util import report
+
+console = report.console
 
 class CommonInterface:
 
@@ -11,7 +13,14 @@ class CommonInterface:
         self.shell.IP.outputcache.prompt2.p_template = console.red(self.universe.name)  + ' [\\#] '
 
     def handle_control_d(self):
+        """ """
         self.universe.stop()
+
+    def clear_screen(self):
+        self.shell.get_buffer().set_text('')
+        self.shell._processLine()
+
+    handle_control_l = clear_screen
 
     def on_key_press(self, widget, event):
         keyname = gtk.gdk.keyval_name(event.keyval)
@@ -23,8 +32,9 @@ class CommonInterface:
           if str(keyname)=='Return':
               report("spawning a new gtk-ipython session")
               self.spawn_shell()
-          if str(keyname)=='d':
-              self.handle_control_d()
+          handler = getattr(self,'handle_control_' + keyname, None)
+          if handler: handler()
+
         if event.state & gtk.gdk.MOD1_MASK:
             report("Alt was being held down")
         if event.state & gtk.gdk.SHIFT_MASK:

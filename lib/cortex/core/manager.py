@@ -73,7 +73,7 @@ class Manager(object):
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
 
-    def isloaded(self,obj):
+    def isloaded(self, obj):
         trivially_true = (obj in self.registry.keys()) or \
                          (obj in self.registry.values())
         return trivially_true or (obj in [ x.obj for x in self.registry.values() ])
