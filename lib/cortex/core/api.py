@@ -56,10 +56,12 @@ def clone(file=None, nodeconf=None):
     """
 
     # tell the universe to clone itself using the new nodedef
-    line = '{shell} "{prog} {args} {file}"&'.format(shell = universe.system_shell,
+    system_shell  = 'xterm -fg green -bg black -e '
+    options = "--directives=do_not_clone"
+    line = '{shell} "{prog} {args} {file}"&'.format(shell = system_shell,
                                                     file  = file,
                                                     prog  = universe.command_line_prog,
-                                                    args  = universe.decide_options())
+                                                    args  = options)
 
     # hack to avoid infinite recursion, see also universe.decide_options
     if "do_not_clone" in universe.directives:
