@@ -7,31 +7,27 @@
 """
 
 import os, sys
-import multiprocessing
-import inspect, types
-from tempfile import NamedTemporaryFile
+import types
+import platform, pprint, StringIO
 
-import simplejson
 from twisted.internet import reactor
 
-from cortex.util import Memoize
 from cortex.core.hds import HDS
 from cortex.core.util import get_mod
 from cortex.core.reloading import AutoReloader
 from cortex.core.parsing import Nodeconf
-from cortex.core.util import report, console
-from cortex.core.data import SERVICES_DOTPATH
+from cortex.core.util import report
 from cortex.mixins import AutonomyMixin, PerspectiveMixin,ControllableMixin
 from cortex.mixins import PersistenceMixin
-from cortex.core.peer import PeerManager, PEERS
-from cortex.core.service import Service, SERVICES
-from cortex.core.service import ServiceManager
+from cortex.core.peer import PEERS
+from cortex.services import Service, SERVICES
 from cortex.core.agent import AGENTS
 from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
 from cortex.mixins import FaultTolerant
 
-class __Universe__(AutoReloader, UniverseNotation, OSMixin,
+class __Universe__(AutoReloader, UniverseNotation,
+                   OSMixin, PIDMixin,
                    ControllableMixin, AutonomyMixin,
                    PerspectiveMixin, PersistenceMixin,
                    FaultTolerant):
@@ -90,7 +86,7 @@ class __Universe__(AutoReloader, UniverseNotation, OSMixin,
         _api = publish()
 
         def parse_error(error, instruction, args, kargs, api=_api):
-            import platform, inspect, pprint, StringIO
+
             api_header = "Cortex-API @ {H}://{F}"
             api_header = api_header.format(F=API,
                                            H=platform.node(),)

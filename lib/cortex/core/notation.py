@@ -1,9 +1,8 @@
 """ cortex.core.notation
 """
-
-import os
 import types
 
+from cortex.services import Service
 from cortex.core.util import report
 
 class UniverseNotation:
@@ -15,9 +14,7 @@ class UniverseNotation:
 
                (universe ^ '~cortex/etc/master.conf')
         """
-        #new_command_line_invocation = self.system_shell + '"' + self.command_line_prog + ' --conf='+other + '"&'
-        #os.system(new_command_line_invocation)
-        print other #os.system(other)
+
 
     def __or__(self, other):
         """ syntactic sugar for grabbing a service by name,

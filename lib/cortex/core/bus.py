@@ -4,8 +4,6 @@
 from cyrusbus.bus import Bus
 
 from cortex.core.util import report
-from cortex.core.ground import Keyspace
-from cortex.services import Service
 from cortex.core.ground import NotFound
 
 class TupleBus(Bus):

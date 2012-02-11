@@ -5,9 +5,10 @@
 """
 import copy
 import uuid
-import types
+
 from cortex.core.util import report
 from cortex.tests import uniq
+
 def metaclass_hook(func):
     func.metaclass_hook=True
     return staticmethod(func)
