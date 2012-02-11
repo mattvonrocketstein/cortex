@@ -79,7 +79,9 @@ class ServiceManager(AgentManager):
         self.build_constraint_table()
 
         names = [x[0] for x in self._pending]
-        # neighbors: every service participates in the constraints of the other self except itself
+
+        # neighbors: every service participates in the
+        # constraints of the other selfs except itself
         neighbors = dict([ [service, [service2 for service2 in names if \
                                       service2!=service]] for service in names ])
 
@@ -145,9 +147,6 @@ class Service(Agent):
               <stop> for services differs from your typical
               agent because ?
         """
-        #report("service::stopping")
-        self.is_stopped = True
-        self.started    = False
         super(Service, self).stop()
 
     def play(self):

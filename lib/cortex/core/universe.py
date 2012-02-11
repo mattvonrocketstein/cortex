@@ -5,9 +5,9 @@
       the process, and the cortex runtime.  It should effectively be a
       singleton-- one per process.
 """
-
-import os, sys
 import types
+import inspect
+import os, sys
 import platform, pprint, StringIO
 
 from twisted.internet import reactor
@@ -31,25 +31,14 @@ class __Universe__(AutoReloader, UniverseNotation,
                    ControllableMixin, AutonomyMixin,
                    PerspectiveMixin, PersistenceMixin,
                    FaultTolerant):
-    """ """
-    system_shell  = 'xterm -fg green -bg black -e '
+    """
+        TODO: clones,processes = CloneManager(), ProcessManager()
+    """
+    agents, services = AGENTS, SERVICES
     reactor       = reactor
-    services      = SERVICES
     peers         = PEERS
-    agents        = AGENTS
-    #clones        = CloneManager()
-    #processes     = ProcessManager()
     nodeconf_file = u''
     config        = HDS()
-
-    def decide_options(self):
-        """ """
-        return "--directives=do_not_clone"
-
-    @property
-    def tumbler(self):
-        from xanalogica.tumbler import Tumbler
-        return Tumbler
 
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
@@ -147,8 +136,8 @@ class __Universe__(AutoReloader, UniverseNotation,
         """ """
         self.stop()
         for pid in self.pids['children']:
+            # TODO: use os/pid mixins.
             os.system('kill -KILL '+str(pid))
-            #proc.terminate()
 
         # hack for terminal to exit cleanly
         try: sys.exit()
@@ -165,7 +154,10 @@ class __Universe__(AutoReloader, UniverseNotation,
         stopped = []
 
         def failure_stopping_agent(service, e):
-            err_msg = 'Squashed exception stopping agent "{service}".  Original Exception follows'.format(service=service)
+            err_msg = ('Squashed exception stopping agent'
+                       ' "'+service+'".  '
+                       'Original Exception follows')
+
             report(err_msg)
             report(str(e))
 
