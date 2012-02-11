@@ -94,7 +94,12 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
         self.universe = universe
         self.host     = host or DEFAULT_HOST
         self.name     = name
-        cbs = [ getattr(self,x) for x in dir(self) if is_declared_callback(getattr(self,x)) ]
+        cbs = []
+        for x in dir(self):
+            if not isinstance(getattr(self.__class__, x, None), property) and \
+                is_declared_callback(getattr(self,x)):
+                    cbs.append(getattr(self,x))
+
         for cb in cbs:
             cb.bootstrap(self)
         self._post_init(**kargs)
@@ -116,6 +121,6 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
               times.
         """
 
-    # def play(self): inherited from Autonomy
+    # play(self):: inherited from Autonomy
 
 Node    = Agent         # Alias
