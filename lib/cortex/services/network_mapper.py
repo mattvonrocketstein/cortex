@@ -4,12 +4,12 @@
 
 """
 
-import time, copy
+import copy
 import nmap, simplejson
 
 from cortex.core.util import report
 from cortex.services import Service
-from cortex.core.peer import Peer
+#from cortex.core.peer import Peer
 from cortex.core.data import PEER_T
 from cortex.core.data import CORTEX_PORT_RANGE
 from cortex.util.decorators import constraint

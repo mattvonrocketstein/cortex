@@ -2,7 +2,7 @@
 """
 import inspect
 from report import report, console
-
+report.console = console
 from cortex.core.data import SERVICES_DOTPATH
 
 def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):

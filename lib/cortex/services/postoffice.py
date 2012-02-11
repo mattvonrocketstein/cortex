@@ -53,10 +53,6 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
         """ publish as json """
         self.publish(label, simplejson.dumps(data))
 
-    def publish_pickle(self, label, data):
-        """ publish as pickle """
-        self.publish(label, pickle.dumps(data))
-
     def msg(self, *args, **kargs):
         """ pushes a caller-labeled message on to the stack.
             determines caller function and dispatches to publish """

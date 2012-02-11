@@ -1,7 +1,7 @@
 """ cortex.services.unittesting
 """
 import unittest
-from unittest import TestCase, TestResult, TextTestRunner
+from unittest import TestCase, TestResult #, TextTestRunner
 from cortex.core.service import Service
 
 from cortex.core.util import report, console
