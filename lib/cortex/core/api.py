@@ -150,4 +150,4 @@ class cortex:
     def channels(self):
         from channel import ChannelType
         return ChannelType.registry
-constants=constants()
+cortex=cortex()
