@@ -3,7 +3,7 @@
 
 from cortex.services import Service
 from cortex.core.ground import Memory
-from cortex.core.util import report, console
+from cortex.core.util import report
 from cortex.mixins import PersistenceMixin
 
 class Linda(Service):

@@ -14,7 +14,7 @@ from cortex.core.util import report, console
 from cortex.core.data import NOOP#, IDENTITY
 from cortex.core.agent import Agent, AgentManager
 from cortex.core.manager import Manager
-from cortex.contrib.aima.csp import CSP, AC3, min_conflicts, backtracking_search
+from cortex.contrib.aima import csp
 
 
 class ServiceManager(AgentManager):
@@ -93,8 +93,8 @@ class ServiceManager(AgentManager):
         csp_definition = dict( vars = vars, domains = domains, neighbors = neighbors,
                                constraint = self._boot_order_constraint )
         # compute solution
-        csp_problem    = CSP(vars, domains, neighbors, self._boot_order_constraint)
-        csp_algorithm  = min_conflicts #backtracking_search #AC3 #
+        csp_problem    = csp.CSP(vars, domains, neighbors, self._boot_order_constraint)
+        csp_algorithm  = csp.min_conflicts #backtracking_search #AC3 #
         answer         = csp_algorithm(csp_problem, **kargs)
         nassigns       = csp_problem.nassigns
 

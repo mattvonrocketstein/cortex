@@ -8,10 +8,7 @@ from cortex.core.util import report, console
 from cortex.util.decorators import constraint
 from cortex.services import Service
 
-from twisted.internet import reactor #from txjsonrpc.netstring.jsonrpc import Proxy
-from twisted.application import service, internet
 from txjsonrpc.netstring import jsonrpc
-from peak.util.imports import lazyModule
 
 from cortex.core.api import publish
 from cortex.core.data import CORTEX_PORT_RANGE

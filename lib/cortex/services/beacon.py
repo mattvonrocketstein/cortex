@@ -3,7 +3,7 @@
 
 from cortex.core.util import report
 from cortex.services import Service
-from cortex.core.util import report, console
+from cortex.core.util import report
 from cortex.core.data import EVENT_T
 
 

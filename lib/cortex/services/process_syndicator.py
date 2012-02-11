@@ -1,5 +1,8 @@
 """
 """
+
+from cortex.core.util import report, console
+
 class ProcessReadSyndication(Service, protocol.ProcessProtocol):
     """ ProcessReaderSyndication Service:
           start:
