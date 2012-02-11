@@ -3,7 +3,7 @@
 from ipython_view import *
 from common import CommonInterface
 from cortex.services.terminal import abstract
-from cortex.core.util import report, console
+from cortex.core.util import report
 
 class GUI(CommonInterface):
     """ """

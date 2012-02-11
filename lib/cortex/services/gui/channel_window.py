@@ -57,6 +57,7 @@ class ChannelAgent(GUIChild):
         vbox = self.vbox
         S = self.scrolled_window
         x = ConsoleView(); x.show()
+        self.console_view = x
         S.add(x); S.show()
         vbox.pack_start(self.menu, gtk.FALSE, gtk.FALSE, 2)
         vbox.pack_end(S, True, True, 2); vbox.show()
