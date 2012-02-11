@@ -24,7 +24,9 @@
 
 import os
 from collections import defaultdict
-from cortex.contrib.which import which
+
+def which(name):
+    return os.popen('which '+name).readlines()[0].strip()
 
 class pyack(object):
     """ thin wrapper on ack to get some of the data into python
@@ -60,7 +62,7 @@ class pyack(object):
 
     @property
     def weights(self):
-        return sorted( [ [len(self[k]), k ] for k in self.record.keys() ] )
+        return [x for x in reversed(sorted([ [len(self.record[r]),r] for r in self.record ]))]
 
     @property
     def files(self):
