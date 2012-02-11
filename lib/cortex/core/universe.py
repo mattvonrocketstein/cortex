@@ -155,7 +155,7 @@ class __Universe__(AutoReloader, UniverseNotation,
 
         def failure_stopping_agent(service, e):
             err_msg = ('Squashed exception stopping agent'
-                       ' "'+service+'".  '
+                       ' "' + str(service) + '".  '
                        'Original Exception follows')
 
             report(err_msg)
