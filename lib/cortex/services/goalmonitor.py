@@ -13,10 +13,10 @@
 
 from cortex.core.util import report
 from cortex.core.service import Service
-from cortex.mixins.flavors import Threadpooler
+from cortex.mixins.flavors import ThreadedIterator
 from cortex.agents.watchdog import WatchDog
 
-class GoalMonitor(WatchDog, Service, Threadpooler,):
+class GoalMonitor(WatchDog, Service, ThreadedIterator,):
     """ the Goal Service is a watchdog who shuts down the
         universe when all it's goals are completed.
     """
