@@ -58,8 +58,8 @@ class Manager(object):
         return [ pending[0] for pending in self._pending ]
 
     def load(self):
-        """ Determines prerequisites with <solve_boot_order>, and fees that
-            value to load_items.
+        """ Determines prerequisites with <solve_boot_order>, and feeds that
+            value to <load_items>.
 
             Convention:
               calling <load> means that all the declarative "setup" calls
@@ -74,12 +74,14 @@ class Manager(object):
         self.load_items(boot_order)
 
     def isloaded(self, obj):
+        """ """
         trivially_true = (obj in self.registry.keys()) or \
                          (obj in self.registry.values())
         return trivially_true or (obj in [ x.obj for x in self.registry.values() ])
     is_loaded=isloaded
 
     def unload(self, obj):
+        """ """
         if not isinstance(obj, StringTypes):
             # first, given any nonstring object try to find exact matches
             matches = filter(lambda x: x[1].obj == obj, self.registry.items())
@@ -110,7 +112,9 @@ class Manager(object):
 
 
     def load_items(self, items):
-        """ load_items """
+        """ load_items calls load_item repeatedly for all the items
+            pass in, but additionally enforces the bootstrapping order
+        """
         for name in items:
             search = filter(lambda x: name == x[0], self._pending)
             if search:
@@ -122,27 +126,35 @@ class Manager(object):
                                index=items.index(name))
 
     def load_item(self, name=None, kls=None, kls_kargs=None, index=None):
-        """ will be called by Manager.load
+        """ loads an object from it's description, then registers it.
+
+            load_item is called by Manager.load.
         """
+
         if name in self.registry:
             err='Duplicate entry found for "{name}": {entry}'
             err = err.format(entry=self[name], name=name)
             raise Manager.Duplicate(err)
         obj = self.load_obj(kls=kls, **kls_kargs)
         self.register(name,
-                      obj        = obj,
-                      index      = index,
-                      kargs      = kls_kargs)
+                      obj = obj,
+                      index = index,
+                      kargs = kls_kargs)
         return obj
 
     def pre_load_obj(self, kls=None, **kls_kargs):
         """ pre_load_obj hook:
+            must return description of (kls, kargs)
         """
         return kls, kls_kargs
 
     def load_obj(self, kls=None, **kls_kargs):
-        """ load_obj """
-        #report("load_obj",kls)
+        """ load_obj: runs hooks and creates an object from the
+            description of (kls, kargs).
+
+            NOTE: if this is called directly, the object will not
+                  be registered! you probably want to use <load_item>.
+        """
         kls, kls_kargs = self.pre_load_obj(kls=kls, **kls_kargs)
         obj = kls(**kls_kargs)
         obj = self.post_load_obj(obj)
@@ -150,8 +162,12 @@ class Manager(object):
 
     def post_load_obj(self, obj):
         """ post_load_obj hook:
-              .. used for agent.play()
+
+            passed the object created by load_obj,
+            this is a hook for manipulating it before
+            it's returned.
         """
+        # NOTE: this is used for agent.play()
         return obj
 
     def keys(self):
@@ -342,7 +358,8 @@ class Manager(object):
         """ shortcut for load_item """
         # from cortex.core.util import getcaller
         if not hasattr(self, 'universe'):
-            err = "expected manager would know the universe by the time it was asked to load something"
+            err = ("expected manager would know the universe by "
+                   "the time it was asked to load something")
             raise ValueError, err
         #def uniq_name():
         #    raise Exception,'come on.. for now just pass the name'
