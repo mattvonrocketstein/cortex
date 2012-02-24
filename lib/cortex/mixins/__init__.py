@@ -17,18 +17,22 @@ from cortex.mixins.mixin import Mixin
 
 class FaultTolerant(Mixin):
     """ faults are a replacement for exceptions """
-    def fault(self, error, context):
+
+    def fault(self, error, context={}, **kargs):
         """ TODO: sane yet relatively automatic logging for faults.. """
-        console.vertical_space()
-        report("",header=console.red("--> FAULT <--"))
-        console.draw_line()
-        print ( "\n{error}".format(error=error))
+        context.update(kargs)
         import StringIO, pprint
+        context = context or dict(agent=self)
+        console.vertical_space()
+        console.draw_line()
+        print "FAULT:"
+        print error
         fhandle = StringIO.StringIO()
         pprint.pprint(context, fhandle)
         print console.color(fhandle.getvalue())
         console.draw_line()
         console.vertical_space()
+        self.stop()
 
 class AddressMixin:
     """ Something that's addressable """

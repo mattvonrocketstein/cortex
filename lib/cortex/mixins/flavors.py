@@ -1,7 +1,7 @@
 """ cortex.mixins.flavors
 
-      Describes some different flavors of concurrency that
-      can be plugged into cortex agents.
+    Describes some different flavors of concurrency that
+    can be plugged into cortex agents.
 
 """
 import time
@@ -46,16 +46,41 @@ class Threaded(Autonomy):
             than multiple-subscribers)
         """
         from cortex.core.agent import Agent
-        class TMP(kls, Agent):
-            def _post_init(self, **kargs):
-                print 'post_init'
-                self.fun_kargs = kargs
+        from cortex.core.util import getcaller
+        def _post_init(self, **kargs):
+            self.fun_kargs = kargs
 
-            def run(self):
-                print 'run'
-                r = func(**self.fun_kargs)
-                self.parent.bus(r)
-        return TMP
+        def run(self):
+            r = func(**self.fun_kargs)
+            self._return_bus(r)
+
+        def fault(self, *args, **kargs):
+            super(self.__class__, self).fault(*args, **kargs)
+            raise
+
+        def start(self):
+            parent = getattr(self,'parent',None)
+            bus = getattr(parent,'bus',None)
+            if parent is None:
+                try:
+                    # You should really make sure that parent is
+                    # set, because this magic might not work for you
+                    parent = getcaller(3)['self']
+                    bus = parent.bus
+                except:
+                    self.fault('agents created with .from_function() '
+                               'need to have a parent with a "bus" attribute '
+                               'in order to return results!',)
+            if bus is None:
+                self.fault('the parent of agents created with '
+                           'Threaded.from_function should have a bus')
+            self._return_bus = bus
+            super(self.__class__, self).start()
+        name = 'Agentized:'+func.__name__
+        bases = (kls,Agent)
+        namespace = dict(_post_init = _post_init, run=run,
+                         fault      = fault, start = start)
+        return type(name, bases, namespace)
 
     def start(self):
         """ autonomy override """
@@ -66,13 +91,13 @@ class Threaded(Autonomy):
 class ThreadedIterator(Threaded):
 
     """
-         will be run in a thread from the twisted threadpool
+        will be run in a thread from the twisted threadpool
 
-         if the subclass wrote iterate() as a
-           generator, exhaust it and then decide
-             whether to stop based on self.iterate.reentrant
+        if the subclass wrote iterate() as a
+            generator, exhaust it and then decide
+                whether to stop based on self.iterate.reentrant
 
-         TODO: save answer in some way?
+        TODO: save answer in some way?
     """
     def run(self):
         """ see docs for ThreadedIterator """
