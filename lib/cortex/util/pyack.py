@@ -61,7 +61,7 @@ class pyack(object):
             self.record[_file][lineno]=match
 
     @property
-    def weights(self):
+    def weighted(self):
         return [x for x in reversed(sorted([ [len(self.record[r]),r] for r in self.record ]))]
 
     @property
