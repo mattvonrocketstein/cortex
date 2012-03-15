@@ -1,0 +1,28 @@
+{%extends "objects/agent.html"%}
+
+
+{%block page_title%}{{obj.name}}{%endblock%}
+{%block obj_type%}UNIVERSE(AGENT){%endblock%}
+
+{%block obj_nav%}
+<a href=javascript:$('#services').show()>Services</a>
+{{super()}}
+{%endblock%}
+
+{%block obj_namespace%}
+  {{super()}}
+{%endblock%}
+{%block obj_main%}
+  <table id=services>
+    <tr>
+      <td align=right>
+        <strong>Services</strong> <hr/>
+        <ul>{% for x in obj.services%}
+        <li><a href="services/registry[{{x}}]/obj">{{x}}</a>
+        {%endfor%}
+          </ul>
+      </td>
+    </tr>
+  </table>
+  {{super()}}
+{%endblock%}

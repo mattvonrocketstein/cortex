@@ -1,6 +1,6 @@
 """ cortex.services.web.resource
 """
-
+import re
 import time
 import types
 import inspect
@@ -19,6 +19,8 @@ from twisted.internet.task import deferLater
 from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
 from twisted.internet import reactor
+
+from cortex.services.web.resource.root import Root
 
 class ClockPage(Resource):
     def _delayedRender(self, request):
@@ -59,20 +61,14 @@ class ClockPage2(Resource):
             p.write('&lt;b&gt;%s&lt;/b&gt;' % (time.ctime(),))
 
 
-class Root(Resource):
-    def getChild(self, name, request):
-        if name == '': return self
-        return Resource.getChild(self, name, request)
-
-    def render_GET(self, request):
-        """ """
-        children = self.children.copy()
-        children.pop('static','')
-        children.pop('favicon.ico','')
-        ctx = dict(children=children,
-                   contents=dir(self))
-        return str(template('root').render(**ctx))
-
+def get_source(obj):
+    if obj==type:
+        return 'Could not retrieve source.'
+    try:
+        return inspect.getsource(obj)
+    except:
+        return get_source(obj.__class__)
+from cortex.core.universe import Universe
 class ObjectResource(Resource):
     isLeaf = True
 
@@ -89,31 +85,37 @@ class ObjectResource(Resource):
 
     @property
     def template(self):
-        if isinstance(self.target, Agent):
-            return [template('objects/agent'),
-                    dict(source=inspect.getsource(self.target.__class__))]
-        elif isinstance(self.target, types.MethodType):
-            return [template('objects/method'),
-                    dict(source=inspect.getsource(self.target))]
-        elif self.is_atom:
-            return [template('objects/primitive'),{}]
+        ##
+        ctx = {}
+        if self.is_atom:
+            T = template('objects/primitive')
         else:
-            return [template('objects/abstract'),
-                    dict(source=inspect.getsource(self.target))]
+            ctx.update(source=get_source(self.target))
+            if isinstance(self.target, Agent):
+                T = template('objects/agent')
+            elif self.target == Universe:
+                T = template('objects/universe')
+
+            elif isinstance(self.target, types.MethodType):
+                T = template('objects/method')
+            else: T = template('objects/abstract')
+        return T,ctx
+
 
     def render_GET(self, request):
         """ """
         obj_path = filter(None, request.postpath)
-        self.target = self._obj
-        while obj_path: self.target = getattr(self.target, obj_path.pop(0))
+        self.target = self.resolve_object(obj_path)
         ctx = dict(obj=self.target, path=request.postpath, request=request,)
+        rsorted = lambda x: reversed(sorted(x))
         if self.is_complex:
             ns = NSPart(self.target)
-            ctx.update(all_namespace=sorted(ns.namespace.keys()),
-                       methods=sorted(ns.methods.keys()),
-                       private=sorted(ns.private.keys()))
+            ctx.update(all_namespace=rsorted(ns.namespace.keys()),
+                       methods=rsorted(ns.methods.keys()),
+                       private=rsorted(ns.private.keys()))
         obj_name = getattr(self.target, '__name__', str(self.target))
         obj_name = obj_name.replace('<','(').replace('>',')')
+        obj_name = obj_name.replace('object at','@')
         ctx.update(obj_name=obj_name)
         t,extra_ctx=self.template
         ctx.update(**extra_ctx)
@@ -122,7 +124,15 @@ class ObjectResource(Resource):
     def resolve_object(self, obj_path, target=None):
         target   = target or self._obj
         while obj_path:
-            target = getattr(target, obj_path.pop(0))
+            component = obj_path.pop(0)
+            if '[' in component:
+                x = '\[.*\]'
+                m = re.search(x, component)
+                if not m: raise RuntimeError,"bad url?"
+                index  = component.__getslice__(*m.span())[1:-1]
+                target = target.__getitem__(index)
+            else:
+                target = getattr(target, component)
         return target
 
     def obj_name(self, target):
