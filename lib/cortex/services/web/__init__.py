@@ -35,10 +35,10 @@ class Web(Service):
             or, b) they may responsibly manage their own mainloop using some combination
             of this function and iterate()
         """
-        d = os.path.dirname(__file__)
-        code_dir = os.path.dirname(cortex.__file__)
+        d          = os.path.dirname(__file__)
+        code_dir   = os.path.dirname(cortex.__file__)
         static_dir = os.path.join(d, 'static')
-        favicon = os.path.join(static_dir, 'favicon.ico')
+        favicon    = os.path.join(static_dir, 'favicon.ico')
 
         root = Root()
         root.putChild('static',      static.File(static_dir))

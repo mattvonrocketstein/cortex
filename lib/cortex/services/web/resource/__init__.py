@@ -20,6 +20,7 @@ from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
 from twisted.internet import reactor
 
+from cortex.core.universe import Universe
 from cortex.services.web.resource.root import Root
 
 class ClockPage(Resource):
@@ -68,7 +69,20 @@ def get_source(obj):
         return inspect.getsource(obj)
     except:
         return get_source(obj.__class__)
-from cortex.core.universe import Universe
+
+
+def classtree(cls, indent=0, out='', base_url='', pfx=[]):
+    cname = cls.__name__
+    if cname=='object': return ''
+    link = '<a class="adepth_{0}" href="{1}">{2}</a>'
+    link = link.format(indent, '/'.join(map(str, pfx)), cname)
+    out += ('<br/>' if indent else '') + '.'*indent + ' ' + link
+    for supercls in cls.__bases__:
+        rellink  = base_url + ('/__class__/' if not indent else '')
+        rellink += '__bases__[{0}]'.format(cls.__bases__.index(supercls))
+        out += classtree(supercls, indent+1, pfx=pfx + [rellink])
+    return out
+
 class ObjectResource(Resource):
     isLeaf = True
 
@@ -77,7 +91,7 @@ class ObjectResource(Resource):
 
     @property
     def is_atom(self):
-        return isinstance(self.target, ( int, str ))
+        return isinstance(self.target, ( tuple, int, str ))
 
     @property
     def is_complex(self):
@@ -85,7 +99,7 @@ class ObjectResource(Resource):
 
     @property
     def template(self):
-        ##
+        """ """
         ctx = {}
         if self.is_atom:
             T = template('objects/primitive')
@@ -95,18 +109,31 @@ class ObjectResource(Resource):
                 T = template('objects/agent')
             elif self.target == Universe:
                 T = template('objects/universe')
-
             elif isinstance(self.target, types.MethodType):
                 T = template('objects/method')
             else: T = template('objects/abstract')
-        return T,ctx
+        return T, ctx
+
+    def breadcrumbs(self,request):
+        out = filter(None,request.path.split('/'))
+        z = []
+        for x in out:
+            z.append([x,out[:out.index(x)+1]])
+        result = ['<a href={0}> {1} </a>'.format('/' + '/'.join(x[1]),x[0]) for x in z]
+        if len(result) > 6: result = result[-6:]
+        return result
 
 
     def render_GET(self, request):
         """ """
         obj_path = filter(None, request.postpath)
         self.target = self.resolve_object(obj_path)
-        ctx = dict(obj=self.target, path=request.postpath, request=request,)
+        breadcrumbs = self.breadcrumbs(request)
+        ctx = dict(obj=self.target, path=request.postpath,
+                   breadcrumbs=breadcrumbs,
+                   ancestry=classtree(getattr(self.target,'__class__',object),
+                                      base_url=request.path),
+                   request=request,)
         rsorted = lambda x: reversed(sorted(x))
         if self.is_complex:
             ns = NSPart(self.target)
@@ -129,8 +156,12 @@ class ObjectResource(Resource):
                 x = '\[.*\]'
                 m = re.search(x, component)
                 if not m: raise RuntimeError,"bad url?"
-                index  = component.__getslice__(*m.span())[1:-1]
-                target = target.__getitem__(index)
+                span     = m.span()
+                index    = component.__getslice__(*span)[1 : -1]
+                jst_name = component[:span[0]]
+                target   = getattr(target, jst_name)
+                if isinstance(target,(list,tuple)): index = int(index)
+                target   = target[index]
             else:
                 target = getattr(target, component)
         return target
