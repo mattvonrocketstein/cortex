@@ -9,6 +9,7 @@ from cortex.core.util import report
 from cortex.services import Service
 #from cortex.util.decorators import constraint
 from cortex.services.web.resource import Root, ObjResource
+from cortex.services.web.resource import ClockPage
 
 class Web(Service):
     """ Stub Service:
@@ -45,7 +46,22 @@ class Web(Service):
         root.putChild('favicon.ico', static.File(favicon))
         root.putChild('web',         ObjResource(self))
         root.putChild("_code",       static.File(code_dir))
-        self.universe.reactor.listenTCP(1338, server.Site(root))
+
+        site = server.Site(root)
+
+        from nevow import appserver
+        from twisted.application import service, internet
+        from twisted.internet import reactor
+
+        from .eventdemo import rootpage
+        foo = rootpage.RootPage()
+        root.putChild('bonk',rootpage.RootPage2())
+        foo.putChild('bonk',rootpage.RootPage2())
+        site2 = appserver.NevowSite(foo)
+        #webService = internet.TCPServer(1339, site2)
+        self.universe.reactor.listenTCP(1339, site2)
+
+        self.universe.reactor.listenTCP(1338, site)
         Service.start(self)
         report('Finished bootstrapping', self)
 

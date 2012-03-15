@@ -46,9 +46,15 @@
         <div class="container">
           <div class="sixteen columns">
             {%block title%}
-            <h2 class="remove-bottom" style="margin-top:10px">{%block page_title%}page_title{%endblock%}</h2>
+            <table width=100%>
+              <tr><td>
+                  <h2 class="remove-bottom" style="margin-top:10px">{%block page_title%}page_title{%endblock%}</h2>
 
-              <h5>{%block page_subtitle%}subtitle{%endblock%}</h5>
+                  <h5>{%block page_subtitle%}subtitle{%endblock%}</h5>
+                </td><td style="vertical-align:bottom;">
+                  {%block nav%}default nav{%endblock%}
+            </td>
+            </tr></table>
             {%endblock%}
             <hr />
           </div>
