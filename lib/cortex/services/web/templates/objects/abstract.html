@@ -2,22 +2,10 @@
 
 {%block page_title%}{{obj_name}}{%endblock%}
 {%block obj_type%}unknown object type{%endblock%}
-
-{%block one%}
-<strong>Everything:</strong><br/>
-{%with namespace=all_namespace%}{%include "objects/_namespace.html"%}{%endwith%}
-{%endblock%}
-
-
-{%block two%}
-<strong>Methods:</strong><br/>
-{%with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
-{%endblock%}
-
-
-{%block three%}
-<strong>Private:</strong><br/>
-{%with namespace=private%}{%include "objects/_namespace.html"%}{%endwith%}
-<hr/>
-</html>
+{%block obj_namespace%}
+{{super()}}
+<td>
+  <strong>Methods:</strong><br/>
+  {% with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
+</td>
 {%endblock%}

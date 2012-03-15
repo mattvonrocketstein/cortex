@@ -79,7 +79,6 @@ class ObjectResource(Resource):
     def __init__(self, obj):
         self._obj = obj
 
-<<<<<<< HEAD
     @property
     def is_atom(self):
         return isinstance(self.target, ( int, str ))
@@ -91,13 +90,16 @@ class ObjectResource(Resource):
     @property
     def template(self):
         if isinstance(self.target, Agent):
-            return template('objects/agent'),{}
+            return [template('objects/agent'),
+                    dict(source=inspect.getsource(self.target.__class__))]
         elif isinstance(self.target, types.MethodType):
-            return template('objects/method'),dict(source=inspect.getsource(self.target))
+            return [template('objects/method'),
+                    dict(source=inspect.getsource(self.target))]
         elif self.is_atom:
-            return template('objects/primitive'),{}
+            return [template('objects/primitive'),{}]
         else:
-            return template('objects/abstract'),{}
+            return [template('objects/abstract'),
+                    dict(source=inspect.getsource(self.target))]
 
     def render_GET(self, request):
         """ """
@@ -116,7 +118,7 @@ class ObjectResource(Resource):
         t,extra_ctx=self.template
         ctx.update(**extra_ctx)
         return str(t.render(**ctx))
-=======
+
     def resolve_object(self, obj_path, target=None):
         target   = target or self._obj
         while obj_path:
@@ -128,11 +130,8 @@ class ObjectResource(Resource):
         obj_name = obj_name.replace('<','(').replace('>',')')
         return obj_name
 
-    def is_atom(self, target):
-        return isinstance(target, (int,str))
+    """ def render_GET(self, request):
 
-    def render_GET(self, request):
-        """ """
         obj_path  = filter(None, request.postpath)
         target    = self.resolve_object(obj_path)
         ctx       = dict(path=request.postpath, request=request)
@@ -146,5 +145,5 @@ class ObjectResource(Resource):
                        methods=ns.methods.keys(),
                        private=ns.private.keys())
         ctx.update(obj_name=self.obj_name(target))
-        return str(_template.render(**ctx))
+        return str(_template.render(**ctx))"""
 ObjResource = ObjectResource

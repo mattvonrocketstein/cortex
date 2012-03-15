@@ -4,23 +4,10 @@
 {%block page_title%}{{obj_name}}{%endblock%}
 {%block obj_type%}AGENT{%endblock%}
 
-{%block main%}
-
-
-<table>
-  <tr>
-    <td>
-      <strong>Everything:</strong><hr/>
-      {% with namespace=all_namespace%}{%include "objects/_namespace.html"%}{%endwith%}
-    </td>
-    <td>
-      <strong>Methods:</strong><hr/>
-      {% with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
-    </td>
-    <td>
-      <strong>Private:</strong><hr/>
-      {%with namespace=private%}{%include "objects/_namespace.html"%}{%endwith%}
-    </td>
-  </tr>
-</table>
+{%block obj_namespace%}
+  {{super()}}
+  <td>
+    <strong>Behaviours:</strong><hr/>
+    {% with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
+  </td>
 {%endblock%}
