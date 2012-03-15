@@ -1,0 +1,62 @@
+h1, h2, h3, ul, li, form, img, p {
+    border: medium none;
+    margin: 0;
+    padding: 0;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.nav, .nav2 {
+    float: right;
+    margin: 35px 0px 0px 0px;
+}
+.nav2 {
+    float: left;
+}
+.nav2 span {
+    float: left;
+}
+.nav a {
+    background-color: #E5EBF8;
+    border-color: #888888 #888888 -moz-use-text-color;
+    border-radius: 3px;
+    border-style: solid solid none;
+    border-width: 1px 1px medium;
+    color: #333333;
+    display: block;
+    float: right;
+    font-size: 14px;
+    font-weight: 400;
+    height: 25px;
+    line-height: 30px;
+    margin-left: 10px;
+    padding: 0 12px 3px;
+    text-decoration: none;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+.nav2 a {
+    background-color: #E5EBF8;
+    border-color: #888888 #888888 -moz-use-text-color;
+    border-style: solid solid none;
+    border-width: 1px 1px medium;
+    color: #333333;
+    display: block;
+    float: left;
+    font-size: 10px;
+    font-weight: 400;
+    height: 12px;
+    line-height: 15px;
+    margin-left: 5px;
+    padding: 0 6px 1px;
+    text-decoration: none;
+}
+
+.nav2 a:hover {
+    text-decoration: underline;
+}
