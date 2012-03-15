@@ -27,7 +27,6 @@ class Web(Service):
         Service.stop(self)
         report('Custom stop for', self)
 
-    #@constraint(boot_first='postoffice')
     def start(self):
         """ <start> is an operation, called once (and typically by <play>), which may or
             may not return and so may be blocking or non-blocking.
@@ -48,6 +47,7 @@ class Web(Service):
         root.putChild("_code",       static.File(code_dir))
 
         site = server.Site(root)
+        self.universe.reactor.listenTCP(1338, site)
 
         from nevow import appserver
         from twisted.application import service, internet
@@ -55,13 +55,13 @@ class Web(Service):
 
         from .eventdemo import rootpage
         foo = rootpage.RootPage()
-        root.putChild('bonk',rootpage.RootPage2())
-        foo.putChild('bonk',rootpage.RootPage2())
-        site2 = appserver.NevowSite(foo)
-        #webService = internet.TCPServer(1339, site2)
-        self.universe.reactor.listenTCP(1339, site2)
 
-        self.universe.reactor.listenTCP(1338, site)
+        foo.putChild('bonk',  rootpage.RootPage2())
+        root.putChild('bonk', rootpage.RootPage2())
+
+        event_hub = appserver.NevowSite(foo)
+        self.universe.reactor.listenTCP(1339, event_hub)
+
         Service.start(self)
         report('Finished bootstrapping', self)
 

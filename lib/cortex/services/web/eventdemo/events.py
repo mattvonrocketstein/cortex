@@ -1,3 +1,5 @@
+"""
+"""
 from nevow import loaders, tags as T, inevow, rend
 
 class EventHandler():
@@ -17,7 +19,7 @@ class EventCreator(rend.Page):
 
     def render_body ( self, ctx, data ):
         request = inevow.IRequest ( ctx )
-        eventID = request.prepath [ 1 ]
+        eventID = str(request.path)
         self.eventHandler.fireEvent(eventID)
         return "Event Created with ID: %s" % (eventID,)
 
@@ -25,7 +27,7 @@ class EventCreator(rend.Page):
         T.html [ T.head [T.title["Event Created"]],
                  T.body [ render_body ]
         ])
-    
+
 class CreateEventPage(rend.Page):
     def __init__(self, eventHandler):
         self.eventHandler = eventHandler
@@ -37,4 +39,3 @@ class CreateEventPage(rend.Page):
 
     def locateChild ( self, ctx, segments ):
         return ( EventCreator(self.eventHandler), () )
-            
