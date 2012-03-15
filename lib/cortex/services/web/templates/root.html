@@ -14,28 +14,11 @@
 {%endblock%}
 <hr/>
 {%block main%}
- <h1>WebSocket example: echo service</h1>
-    <script type="text/javascript">
-        var ws = new WebSocket("ws://127.0.0.1:8080/ws/echo");
-        ws.onmessage = function(evt) {
-            var data = evt.data;
-            var target = document.getElementById("received");
-            target.value = target.value + data;
-        };
-        window.send_data = function() {
-            alert('yo');
-            ws.send(document.getElementById("send_input").value);
-        };
-    </script>
-    <form>
-      <label for="send_input">Text to send</label>
-      <input type="text" name="send_input" id="send_input"/>
-      <input type="submit" name="send_submit" id="send_submit" value="Send"
-             onclick="send_data(); return false"/>
-      <br>
-      <label for="received">Received text</label>
-      <textarea name="received" id="received"></textarea>
-    </form>
-    <hr/>
-    {{contents}}
+<iframe style="width:100%;height:150px;border:1px solid red;" src="http://localhost:1339/alerts"></iframe>
+
+<script>
+  function send_data(){alert($('#send_input').val());}
+</script>
+<hr/>
+{{contents}}
 {%endblock%}
