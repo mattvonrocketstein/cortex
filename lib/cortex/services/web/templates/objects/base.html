@@ -2,16 +2,40 @@
 
 {%block page_title%}{{obj_name}}{%endblock%}
 
+
+{%block page_subtitle%}
+&nbsp;&nbsp;&nbsp;
+{%for breadcrumb in breadcrumbs%}{{breadcrumb}}{%if not loop.last%}..{%endif%}{%endfor%}
+
+&nbsp;&nbsp;&nbsp;
+<font color=red>
+  <small>({%block obj_type%}{%endblock%})</small>
+</font>
+{%endblock%}
+
+
+
+
 {%block main%}
 
 <div class=nav2>
   {%block obj_nav%}
   <a href="javascript:$('#source_code').toggle();">Source</a>
+  <a href="javascript:$('#obj_type').toggle();">Type</a>
   <a href="javascript:$('#namespace').toggle();">Namespace</a>
   {%endblock%}
 </div><hr/>
 
+
+
 {%block obj_main%}
+
+<div class=hidden id=obj_type>
+  {{request.path}}<br/>
+  {{obj.__class__}}<br/>
+  {{ancestry}}
+</div>
+
 <table id=namespace class=hidden>
   <tr>
     {%block obj_namespace%}
@@ -37,14 +61,4 @@
 {%endblock%}
 
 {%endblock%}
-{%endblock%}
-
-
-{%block page_subtitle%}
-&nbsp;&nbsp;&nbsp;
-{{request.path}}
-&nbsp;&nbsp;&nbsp;
-<font color=red>
-  <small>({%block obj_type%}{%endblock%})</small>
-</font>
 {%endblock%}

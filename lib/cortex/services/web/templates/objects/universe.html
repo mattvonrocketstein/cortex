@@ -4,23 +4,28 @@
 {%block page_title%}{{obj.name}}{%endblock%}
 {%block obj_type%}UNIVERSE(AGENT){%endblock%}
 
+
 {%block obj_nav%}
-<a href=javascript:$('#services').show()>Services</a>
+<a href="javascript:$('#services').toggle()">Services</a>
 {{super()}}
 {%endblock%}
+
 
 {%block obj_namespace%}
   {{super()}}
 {%endblock%}
+
+
 {%block obj_main%}
-  <table id=services>
+  <table class=hidden id=services>
     <tr>
       <td align=right>
         <strong>Services</strong> <hr/>
-        <ul>{% for x in obj.services%}
-        <li><a href="services/registry[{{x}}]/obj">{{x}}</a>
-        {%endfor%}
-          </ul>
+        <ul>
+          {% for x in obj.services%}
+          <li><a href="{{request.path}}/services/registry[{{x}}]/obj">{{x}}</a></li>
+          {%endfor%}
+        </ul>
       </td>
     </tr>
   </table>
