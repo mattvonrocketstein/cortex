@@ -1,0 +1,28 @@
+{%extends "index.html"%}
+
+
+{%block page_title%}{{obj_name}}{%endblock%}
+{%block page_subtitle%}&nbsp;&nbsp;&nbsp;{{request.path}}{%endblock%}
+
+{%block one%}
+<strong>Everything:</strong><br/>
+<ul>{% for x in all_namespace%}
+  <li>{{x}}
+    {%endfor%}
+</ul>
+{%endblock%}
+
+{%block two%}
+<strong>Methods:</strong><br/>
+<ul>{% for x in methods%}
+  <li>{{x}}
+    {%endfor%}
+</ul>
+
+{%endblock%}
+{%block three%}
+<strong>Private:</strong><br/>
+{{private}}
+<hr/>
+</html>
+{%endblock%}
