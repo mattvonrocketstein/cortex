@@ -1,13 +1,13 @@
 """ cortex.util.namespaces
-      (previously django_debugging.inspection)
-"""
 
+      TODO: abstract this out into its own package
+
+"""
+import types
 from copy import copy
 from inspect import isclass, ismethod, getsource
 from inspect import isfunction, getargvalues
 
-# begin helper functions
-################################################################################
 def summarize(namespace,func):
     """ summarize: a very common pattern over dictionaries """
     out = [ func(name,val) for name, val in namespace.items() ]
@@ -29,35 +29,27 @@ def classname(thing):
         _ty = str(type(thing))
         raise AssertionError('Must pass class or instance object, got'+_ty)
 
-# begin classes
-################################################################################
 class NamespaceTests:
     """ Various boolean tests over objects, packaged thus to be resuable
           TODO: NamespaceTests(StaticMethodsOnly)
     """
+
     @staticmethod
     def name_startswith(obj, pattern):
-            """ """
-            return hasattr(obj,'__name__') and obj.__name__.startswith(pattern)
+        """ """
+        return hasattr(obj,'__name__') and obj.__name__.startswith(pattern)
 
     @staticmethod
     def dictionaryish(obj):
-            """ """
-            return hasattr(obj,'keys') and hasattr(obj.keys,'__call__')
+        """ """
+        return isinstance(obj,dict) #type#hasattr(obj, 'keys') and hasattr(obj.keys,'__call__')
 
     @staticmethod
     def is_unittest_testcase_class(obj):
         """ """
         import unittest
         return isclass(obj) and issubclass(obj, unittest.TestCase)
-
-    @staticmethod
-    def is_django_testcase_class(obj):
-        """ """
-        from django.test import TestCase
-        return isclass(obj) and issubclass(obj, TestCase) and not TestCase==obj
-
-
+class ValueNotFound(Exception): pass
 class NamespacePartition(object):
     """ NamespacePartion: introspective operations over dictionary-like objects
 
@@ -67,13 +59,18 @@ class NamespacePartition(object):
 
           NOTE: This does not work in-place. (see the copy import up there?)
     """
-    def __init__(self, namespace,dictionaries=True):
+    def __init__(self, obj, dictionaries=True):
         """ """
-        if not NamespaceTests.dictionaryish(namespace):
-            if not hasattr(namespace,'__dict__'):
-                err = "Namespace Partitioner really expects something like a dictionary, got {type}".format(type=type(namespace).__name__)
+        if not NamespaceTests.dictionaryish(obj):
+            if not hasattr(obj,'__dict__'):
+                err = ("Namespace Partitioner really expects something "
+                       "like a dictionary, got {0}".format(type(obj).__name__))
                 raise TypeError, err
-            namespace = namespace.__dict__
+            namespace={}
+            namespace.update(**dict([[k, getattr(obj, k, ValueNotFound)] for k in dir(obj)]))
+            namespace.update(obj.__dict__)
+        else:
+            namespace = obj
         self.namespace = namespace
         self.dictionaries = dictionaries
 
@@ -118,6 +115,7 @@ class NamespacePartition(object):
          """ """
          return self.clean()
 
+
     @property
     def unittest_testcases(self):
         """ Filter unittest test cases """
@@ -137,6 +135,10 @@ class NamespacePartition(object):
     def methods(self):
         """ Filter methods """
         return self.generic(ismethod)
+
+    @property
+    def private(self):
+        return self.startswith('_')
 
     def clean(self, pattern='_'):
         """ For dictionary-like objects we'll clean out names that start with
