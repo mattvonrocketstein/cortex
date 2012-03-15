@@ -1,0 +1,27 @@
+{%extends "objects/base.html"%}
+
+{%block page_title%}{{obj_name}}{%endblock%}
+{%block obj_type%}method{%endblock%}
+
+{%block one%}
+<strong>Docs:</strong><hr/>
+<pre>{{obj.__doc__.replace('<','(').replace('>',')').replace('\n','<br/>')}}</pre>
+
+{%endblock%}
+
+
+{%block two%}
+<strong>Source:</strong><hr/>
+{% code 'python' %}
+{{source}}
+{% endcode %}
+{%endblock%}
+
+
+{%block three%}
+<strong>Namespace:</strong><br/>
+<ul>{% for x in all_namespace%}
+  <li>{{x}}
+    {%endfor%}
+</ul>
+{%endblock%}

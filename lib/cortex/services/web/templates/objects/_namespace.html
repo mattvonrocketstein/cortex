@@ -1,0 +1,4 @@
+<ul>{% for x in namespace%}
+  <li><a href={{request.path}}/{{x}}>{{x}}</a>
+    {%endfor%}
+</ul>
