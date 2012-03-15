@@ -19,7 +19,9 @@ class EventCreator(rend.Page):
 
     def render_body ( self, ctx, data ):
         request = inevow.IRequest ( ctx )
-        eventID = str(request.path)
+        f = request.fields
+        eventID = json.dumps(['/'.join(filter(None, request.path.split('/'))[1:]),
+                              dict([[x, f[x].value] for x in f])])
         self.eventHandler.fireEvent(eventID)
         return "Event Created with ID: %s" % (eventID,)
 
@@ -39,3 +41,4 @@ class CreateEventPage(rend.Page):
 
     def locateChild ( self, ctx, segments ):
         return ( EventCreator(self.eventHandler), () )
+import json
