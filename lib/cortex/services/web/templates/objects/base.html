@@ -1,6 +1,45 @@
 {%extends "index.html"%}
 
 {%block page_title%}{{obj_name}}{%endblock%}
+
+{%block main%}
+
+<div class=nav2>
+  {%block obj_nav%}
+  <a href="javascript:$('#source_code').toggle();">Source</a>
+  <a href="javascript:$('#namespace').toggle();">Namespace</a>
+  {%endblock%}
+</div><hr/>
+
+{%block obj_main%}
+<table id=namespace class=hidden>
+  <tr>
+    {%block obj_namespace%}
+    <td>
+      <strong>Everything:</strong><hr/>
+      {% with namespace=all_namespace%}{%include "objects/_namespace.html"%}{%endwith%}
+    </td>
+    <td>
+      <strong>Private:</strong><hr/>
+      {%with namespace=private%}{%include "objects/_namespace.html"%}{%endwith%}
+    </td>
+    {%endblock%}
+  </tr>
+</table>
+{%block obj_source%}
+<div id=source_code class=hidden>
+  <strong>Source:</strong><hr/>
+  {% code 'python' %}
+  {{source}}
+  {% endcode %}
+  <hr/>
+</div>
+{%endblock%}
+
+{%endblock%}
+{%endblock%}
+
+
 {%block page_subtitle%}
 &nbsp;&nbsp;&nbsp;
 {{request.path}}

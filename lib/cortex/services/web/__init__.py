@@ -37,8 +37,8 @@ class Web(Service):
         """
         d = os.path.dirname(__file__)
         code_dir = os.path.dirname(cortex.__file__)
-        static_dir = os.path.join(d,'static')
-        favicon = os.path.join(static_dir,'favicon.ico')
+        static_dir = os.path.join(d, 'static')
+        favicon = os.path.join(static_dir, 'favicon.ico')
 
         root = Root()
         root.putChild('static',      static.File(static_dir))
