@@ -44,6 +44,7 @@ class Web(Service):
         root.putChild('static',      static.File(static_dir))
         root.putChild('favicon.ico', static.File(favicon))
         root.putChild('web',         ObjResource(self))
+        root.putChild('universe',    ObjResource(self.universe))
         root.putChild("_code",       static.File(code_dir))
 
         site = server.Site(root)
