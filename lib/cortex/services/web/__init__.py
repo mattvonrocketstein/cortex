@@ -2,14 +2,19 @@
 """
 import os
 
+from nevow import appserver
 from twisted.web import static, server
+from twisted.application import service, internet
+from twisted.internet import reactor
 
 import cortex
 from cortex.core.util import report
 from cortex.services import Service
-#from cortex.util.decorators import constraint
 from cortex.services.web.resource import Root, ObjResource
 from cortex.services.web.resource import ClockPage
+
+from .eventdemo import rootpage
+
 
 class Web(Service):
     """ Stub Service:
@@ -48,19 +53,9 @@ class Web(Service):
         root.putChild("_code",       static.File(code_dir))
 
         site = server.Site(root)
+
+        event_hub = appserver.NevowSite(rootpage.RootPage2())
         self.universe.reactor.listenTCP(1338, site)
-
-        from nevow import appserver
-        from twisted.application import service, internet
-        from twisted.internet import reactor
-
-        from .eventdemo import rootpage
-        foo = rootpage.RootPage()
-
-        foo.putChild('bonk',  rootpage.RootPage2())
-        root.putChild('bonk', rootpage.RootPage2())
-
-        event_hub = appserver.NevowSite(foo)
         self.universe.reactor.listenTCP(1339, event_hub)
 
         Service.start(self)
