@@ -1,28 +1,23 @@
-{%extends "index.html"%}
-
+{%extends "objects/base.html"%}
 
 {%block page_title%}{{obj_name}}{%endblock%}
-{%block page_subtitle%}&nbsp;&nbsp;&nbsp;{{request.path}}{%endblock%}
+{%block obj_type%}unknown object type{%endblock%}
 
 {%block one%}
 <strong>Everything:</strong><br/>
-<ul>{% for x in all_namespace%}
-  <li>{{x}}
-    {%endfor%}
-</ul>
+{%with namespace=all_namespace%}{%include "objects/_namespace.html"%}{%endwith%}
 {%endblock%}
+
 
 {%block two%}
 <strong>Methods:</strong><br/>
-<ul>{% for x in methods%}
-  <li>{{x}}
-    {%endfor%}
-</ul>
-
+{%with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
 {%endblock%}
+
+
 {%block three%}
 <strong>Private:</strong><br/>
-{{private}}
+{%with namespace=private%}{%include "objects/_namespace.html"%}{%endwith%}
 <hr/>
 </html>
 {%endblock%}

@@ -1,0 +1,11 @@
+{%extends "index.html"%}
+
+{%block page_title%}{{obj_name}}{%endblock%}
+{%block page_subtitle%}
+&nbsp;&nbsp;&nbsp;
+{{request.path}}
+&nbsp;&nbsp;&nbsp;
+<font color=red>
+  <small>({%block obj_type%}{%endblock%})</small>
+</font>
+{%endblock%}
