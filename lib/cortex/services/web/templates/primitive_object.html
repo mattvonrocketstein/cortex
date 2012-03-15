@@ -1,0 +1,10 @@
+{%extends "abstract_object.html"%}
+
+
+{%block page_title%}{{obj_name}}{%endblock%}
+{%block page_subtitle%}{{ super() }} <font color=red><small>(primitive)</small></font>{%endblock%}
+
+{%block main%}
+
+{{obj_name}}
+{%endblock%}
