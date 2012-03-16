@@ -58,7 +58,8 @@ class Web(Service, LocalQueue):
         root.putChild("_code",       static.File(code_dir))
 
         site = server.Site(root)
-        event_hub = appserver.NevowSite(rootpage.RootPage2())
+        tmp = rootpage.RootPage2()
+        event_hub = appserver.NevowSite(tmp)
         self.universe.reactor.listenTCP(1338, site)
         self.universe.reactor.listenTCP(1339, event_hub)
         self.universe.reactor.callFromThread(self.iterate)
@@ -71,38 +72,22 @@ class Web(Service, LocalQueue):
         """ see docs for ThreadedIterator """
         while self.started:
             self.iterate()
+            time.sleep(1)
 
-
-    def _post_init(self, syndicate_events_to_terminal=True):
-        """ install back-reference in universe,
-            initialize the local queue
-        """
-        # initialize for LocalQueue
+    def _post_init(self, **kargs):
+        """ initialize the local queue """
         self.init_q()
 
-    def update_events(self, *args, **kargs):
-        url = 'http://127.0.0.1:1339/event/foo/blue'
-        data = urllib.urlencode(dict(args=args,kargs=kargs))
-        req = urllib2.Request(url)
-        fd = urllib2.urlopen(req, data)
-        print fd.read()
-        #cmd = """wget --post-data "{0}" http://127.0.0.1:1339/event/foo/blue -o -"""
-        #cmd = cmd.format(urllib.urlencode(dict(args=args,kargs=kargs)))
-        #os.system('cd /tmp; '+cmd)
-
     def iterate(self):
-        """ a placeholder for some "probably-atomic-action".
-            this name is used by convention ie if <start> invokes
-            it repeatedly as in from a while-loop or "reactor-recursion"
-            with reactor.callLater
-        """
+        """ """
+        report('iterating')
+        return
         e = self.pop_q()
         if not e:
             time.sleep(1)
             return
         args, kargs = e
         report('iterating',e)
-        time.sleep(1)
         import urllib,os
         cmd = """wget --post-data "{0}" http://127.0.0.1:1339/event/foo/blue -o -"""
         cmd = cmd.format(urllib.urlencode(dict(data=self.pop_q())))
