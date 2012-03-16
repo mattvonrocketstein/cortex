@@ -11,4 +11,4 @@ def entry():
     pids =  os.popen(_procs+"|awk '{print $2}'").read().split()
     print pids
     _pids = ' '.join(pids)
-    print os.popen('kill -KILL '+_pids).read()
+    print os.popen('kill -KILL ' + _pids).read()
