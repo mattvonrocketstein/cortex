@@ -4,11 +4,12 @@ Pygments
 ipython
 python-Levenshtein
 simplejson
-lindypy
+lindypy==0.2
+cyrusbus==0.1.0
 python-nmap
-cyrusbus
+
 bzr+http://launchpad.net/txjsonrpc/0.3#egg=txjsonrpc
 svn+http://codespeak.net/svn/user/niemeyer/constraint/trunk/#egg=constraint
 pep362
 git+git://github.com/mattvonrocketstein/channels#egg=channel
-
+jinja2==2.6
