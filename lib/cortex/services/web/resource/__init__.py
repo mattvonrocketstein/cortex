@@ -134,12 +134,19 @@ class ObjectResource(Resource):
                    ancestry=classtree(getattr(self.target,'__class__',object),
                                       base_url=request.path),
                    request=request,)
-        rsorted = lambda x: reversed(sorted(x))
+        def rsorted(a,b):
+            try: x = getattr(a,b).keys()
+            except:
+                return ['error in rsorted']
+            x = reversed(sorted(x))
+            return x
+
         if self.is_complex:
             ns = NSPart(self.target)
-            ctx.update(all_namespace=rsorted(ns.namespace.keys()),
-                       methods=rsorted(ns.methods.keys()),
-                       private=rsorted(ns.private.keys()))
+            ctx.update(all_namespace=rsorted(ns,'namespace'),
+                       methods=rsorted(ns,'methods'),
+                       private=rsorted(ns,'private')
+                       )
         obj_name = getattr(self.target, '__name__', str(self.target))
         obj_name = obj_name.replace('<','(').replace('>',')')
         obj_name = obj_name.replace('object at','@')
