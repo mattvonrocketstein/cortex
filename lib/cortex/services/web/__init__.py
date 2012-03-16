@@ -14,7 +14,6 @@ from cortex.core.util import report
 from cortex.services import Service
 from cortex.core.data import EVENT_T
 from cortex.util.decorators import constraint
-from cortex.services.web.resource import ClockPage
 from cortex.services.web.resource import Root, ObjResource
 
 from .eventdemo import rootpage
