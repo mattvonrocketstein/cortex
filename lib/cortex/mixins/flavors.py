@@ -9,9 +9,11 @@ import threading
 
 from cortex.core.util import report
 from cortex.mixins.autonomy import Autonomy
+from cortex.util.namespaces import NSPart
+from cortex.util.calltools import callchain
 
-class Eventful(Autonomy):
-    pass
+class Eventful(Autonomy): pass
+
 
 class ReactorRecursion(Autonomy):
     """ """
@@ -24,7 +26,7 @@ class ReactorRecursion(Autonomy):
         #self.universe.reactor.callLater(self.iteration_period,
         #                                lambda: LoopingCall(self.run_primitive).start(.3))
 
-#self.universe.reactor.callFromThread(self.run_primitive)
+        #self.universe.reactor.callFromThread(self.run_primitive)
         #self.universe.reactor.callLater(self.iteration_period, self.run)
         #self.run_primitive()
 
@@ -90,18 +92,6 @@ class Threaded(Autonomy):
         Autonomy.start(self)
         go = lambda: self.universe.threadpool.callInThread(self.run)
         self.universe.reactor.callWhenRunning(go)
-
-from cortex.util.namespaces import NSPart
-class callchain(object):
-    def __init__(self, chain):
-        self.chain = chain
-
-    def __str__(self):
-        return 'call-chain: '+str([x.__name__ for x in self.chain])
-
-    def __call__(self, *args, **kargs):
-        results = [x(*args, **kargs) for x in self.chain]
-        return results[-1]
 
 class ThreadedIterator(Threaded):
 

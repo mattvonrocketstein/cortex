@@ -4,15 +4,6 @@
 {%block page_title%}Cortex{%endblock%}
 {%block page_subtitle%}&nbsp;&nbsp;&nbsp;home{%endblock%}
 
-{%block nav%}
-
-<div class=nav>
-  {% for child in children%}
-  <a href=/{{child}}>{{child}}</a>
-  {%endfor%}
-</div>
-{%endblock%}
-<hr/>
 {%block main%}
 <iframe src="http://localhost:1339/alerts"
         style="width:100%;height:150px;border:1px solid red;">
