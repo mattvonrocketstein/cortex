@@ -36,15 +36,15 @@
   {{ancestry}}
 </div>
 
-<table id=namespace class=hidden>
+<table style="width:100%" id=namespace class="hidden">
   <tr>
     {%block obj_namespace%}
     <td>
-      <strong>Everything:</strong><hr/>
+      <strong>Everything:</strong>
       {% with namespace=all_namespace%}{%include "objects/_namespace.html"%}{%endwith%}
     </td>
     <td>
-      <strong>Private:</strong><hr/>
+      <strong>Private:</strong>
       {%with namespace=private%}{%include "objects/_namespace.html"%}{%endwith%}
     </td>
     {%endblock%}
