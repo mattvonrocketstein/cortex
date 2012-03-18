@@ -16,17 +16,17 @@ from cortex.core.data import EVENT_T
 from cortex.util.decorators import constraint
 from cortex.services.web.resource import Root, ObjResource
 
-from .eventdemo import rootpage
+from cortex.services.web.eventdemo import rootpage
 from cortex.mixins import LocalQueue
 from cortex.mixins.flavors import ThreadedIterator
 from cortex.mixins.autonomy import Autonomy
 
-class Web(LocalQueue, ThreadedIterator, Service):
+class Web(LocalQueue, Service):
     """ Web Service:
         start: start main webserver, and secondary event-hub
         stop:  brief description of shutdown here
     """
-    _iteration_period = 5
+    _iteration_period = 1
 
     def stop(self):
         """ """
@@ -38,8 +38,8 @@ class Web(LocalQueue, ThreadedIterator, Service):
         self.start_main()
         self.start_event_hub()
         (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
-        ThreadedIterator.start(self)
         Service.start(self)
+        #ThreadedIterator.start(self)
 
     def start_main(self):
         """ """
@@ -82,3 +82,7 @@ class Web(LocalQueue, ThreadedIterator, Service):
         cmd = """wget --post-data "{0}" http://127.0.0.1:1339/event/foo/blue -o -"""
         cmd = cmd.format(urllib.urlencode(dict(data=self.pop_q())))
         os.system('cd /tmp; '+cmd)
+Web = ThreadedIterator.from_class(Web)
+
+#if __name__=='__main__':
+#    print ThreadedIterator.from_class(Web)
