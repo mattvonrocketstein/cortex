@@ -100,7 +100,8 @@ class ObjectResource(Resource):
         return T, ctx
 
     def breadcrumbs(self,request):
-        out = filter(None,request.path.split('/'))
+        """ """
+        out = filter(None, request.path.split('/'))
         z = []
         for x in out:
             z.append([x,out[:out.index(x)+1]])

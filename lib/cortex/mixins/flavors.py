@@ -7,6 +7,7 @@
 import time
 import threading
 from cortex.mixins.autonomy import Autonomy
+
 class Eventful(Autonomy):
     pass
 
@@ -59,8 +60,8 @@ class Threaded(Autonomy):
             raise
 
         def start(self):
-            parent = getattr(self,'parent',None)
-            bus = getattr(parent,'bus',None)
+            parent = getattr(self, 'parent', None)
+            bus = getattr(parent, 'bus', None)
             if parent is None:
                 try:
                     # You should really make sure that parent is
