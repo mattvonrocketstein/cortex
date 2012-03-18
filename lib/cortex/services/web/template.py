@@ -1,4 +1,4 @@
-"""
+""" cortex.services.web.template
 """
 from jinja2.ext import with_, autoescape
 from jinja2 import Environment, PackageLoader
