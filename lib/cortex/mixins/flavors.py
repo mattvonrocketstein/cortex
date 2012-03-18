@@ -6,6 +6,8 @@
 """
 import time
 import threading
+
+from cortex.core.util import report
 from cortex.mixins.autonomy import Autonomy
 
 class Eventful(Autonomy):
@@ -89,6 +91,18 @@ class Threaded(Autonomy):
         go = lambda: self.universe.threadpool.callInThread(self.run)
         self.universe.reactor.callWhenRunning(go)
 
+from cortex.util.namespaces import NSPart
+class callchain(object):
+    def __init__(self, chain):
+        self.chain = chain
+
+    def __str__(self):
+        return 'call-chain: '+str([x.__name__ for x in self.chain])
+
+    def __call__(self, *args, **kargs):
+        results = [x(*args, **kargs) for x in self.chain]
+        return results[-1]
+
 class ThreadedIterator(Threaded):
 
     """
@@ -100,6 +114,41 @@ class ThreadedIterator(Threaded):
 
         TODO: save answer in some way?
     """
+    @classmethod
+    def from_class(kls, klazz):
+        """ Modifies class to use the ThreadedIterator concurrency flavor.
+            This works in place, if you don't like that you'll need to make
+            a copy first.
+        """
+        if kls in klazz.__bases__:
+            return klazz
+        from cortex.mixins.autonomy import AbstractAutonomy
+        ns = NSPart(klazz, dictionaries=False).intersection(NSPart(ThreadedIterator))
+        ns = ns.methods
+
+        if 'run' in ns:
+            if ns['run'] != AbstractAutonomy.run:
+                raise Exception,"NonAbstract run already defined for {0}".format(klazz)
+        else:
+            report('replacing run() method')
+            old_run = ns.pop('run')
+            klazz.run = kls.run
+        if getattr(klazz, 'start'):
+            import new
+            report('augmenting start() method')
+            old_start = klazz.start
+            new_start = callchain([old_start, kls.start])
+            new_start = new.instancemethod(new_start, None, klazz)
+            #def new_start(self):
+            #    old_start(self)
+            #    kls.start(self)
+            klazz.start = new_start
+        #else:
+        #    report(""
+        report("augmenting __bases__")
+        klazz.__bases__ += (kls,)
+        return klazz
+
     def run(self):
         """ see docs for ThreadedIterator """
         while self.started:

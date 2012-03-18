@@ -30,7 +30,8 @@ def get_source(obj):
     try:
         return inspect.getsource(obj)
     except:
-        return get_source(obj.__class__)
+        return get_source(getattr(obj,'im_func',obj.__class__))
+    #get_source(obj.__class__)
 
 
 def classtree(cls, indent=0, out='', base_url='', pfx=[]):
@@ -53,7 +54,8 @@ class ObjectResource(Resource):
 
     @property
     def is_atom(self):
-        return isinstance(self.target, ( tuple, int, str ))
+        return isinstance(self.target, ( list, tuple,
+                                         float, int, str ))
 
     @property
     def is_complex(self):
