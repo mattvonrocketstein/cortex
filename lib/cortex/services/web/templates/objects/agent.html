@@ -2,63 +2,69 @@
 
 
 {%block page_title%}{{obj_name}}{%endblock%}
-{%block obj_type%}AGENT{%endblock%}
+{%block obj_type%}AGENT(base)){%endblock%}
+
+{%block obj_nav%}
+<a href="javascript:$('#autonomy').toggle()">Autonomy Aspect</a>
+{{super()}}
+{%endblock%}
 
 {%block obj_namespace%}
-  {{super()}}
-  <td>
-    <strong>Behaviours:</strong><hr/>
-    {% with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
-  </td>
-  <td>
-    <strong>Beliefs:</strong><br/>
-    {% with namespace=data%}{%include "objects/_namespace.html"%}{%endwith%}
-  </td>
+{{super()}}
+<td>
+  <strong>Behaviours:</strong><hr/>
+  {% with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
+</td>
+<td>
+  <strong>Beliefs:</strong><br/>
+  {% with namespace=data%}{%include "objects/_namespace.html"%}{%endwith%}
+</td>
 {%endblock%}
 
 
-  {%block obj_main%}
+{%block obj_main%}
 
-  <table style="width:100%;margin-left:15px;">
-    <tr>
-      <td style="margin-left:15px;">
-        <h4>Status:</h4><hr/>
-        <table style="width:80%;margin-left:15px;" border=1>
-          <tr>
-            <td>
-              <strong>name</strong>
-            </td>
-            <td>{{obj.name}}</td>
-          </tr>
-          <tr>
-            <td>
-              <strong>host</strong>
-            </td>
-            <td>{{obj.host}}</td>
-          </tr>
-          {%if parent%}
-          <tr>
-            <td>
-              <strong>parent</strong><br/>
-            </td>
-            <td><a href="{{base_url}}/parent/">{{parent}}</a></td>
-          </tr>
-          {%endif%}
-          <tr>
-            <td>
-              <strong>started</strong>
-            </td>
-            <td>{{obj.started}}</td>
-          </tr>
-        </table>
-        <hr/>
-    </td></tr>
-    <tr class="menu hidden" id=autonomy>
+
+<table style="width:100%;margin-left:15px;">
+  <tr>
+    <td style="margin-left:15px;">
+      <h4>Status:</h4><hr/>
+      <table style="width:80%;margin-left:15px;" border=1>
+        <tr>
+          <td>
+            <strong>name</strong>
+          </td>
+          <td>{{obj.name}}</td>
+        </tr>
+        <tr>
+          <td>
+            <strong>host</strong>
+          </td>
+          <td>{{obj.host}}</td>
+        </tr>
+        {%if parent%}
+        <tr>
+          <td>
+            <strong>parent</strong><br/>
+          </td>
+          <td><a href="{{base_url}}/parent/">{{parent}}</a></td>
+        </tr>
+        {%endif%}
+        <tr>
+          <td>
+            <strong>started</strong>
+          </td>
+          <td>{{obj.started}}</td>
+        </tr>
+      </table>
+      <hr/>
+  </td></tr>
+  <tr class="menu hidden" id=autonomy>
     <td>
       <strong>Autonomy:</strong>
       {% with namespace=autonomy%}{%include "objects/_namespace.html"%}{%endwith%}
     </td>
-    </tr>
-  </table>
-  {{super()}}
+  </tr>
+</table>
+{{super()}}
 {%endblock%}

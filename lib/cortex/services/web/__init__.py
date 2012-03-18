@@ -19,7 +19,7 @@ from cortex.services.web.resource import Root, ObjResource
 from .eventdemo import rootpage
 from cortex.mixins import LocalQueue
 
-class Web(Service, LocalQueue):
+class Web(LocalQueue, Service):
     """ Stub Service:
         start: brief description of service start-up here
         stop:  brief description service shutdown here
@@ -67,7 +67,7 @@ class Web(Service, LocalQueue):
         self.universe.reactor.callWhenRunning(go)
         Service.start(self)
 
-    def run(self):
+    def asdrun(self):
         """ see docs for ThreadedIterator """
         while self.started:
             self.iterate()
@@ -77,9 +77,9 @@ class Web(Service, LocalQueue):
         """ initialize the local queue """
         self.init_q()
 
-    def iterate(self):
+    def asdfiterate(self):
         """ """
-        #report('iterating')
+        report('iterating')
         return
         e = self.pop_q()
         if not e:

@@ -212,6 +212,15 @@ class NamespacePartition(object):
         test = lambda obj: issubclass(obj,kls)
         return self.generic(test)
 
+    def intersection(self, other):
+        if isinstance(other, (dict,NSPart)):
+            other = getattr(other, 'namespace', other)
+            result = [ [k,self[k]] for k in self.namespace if k in other]
+        else:
+            raise RuntimeError,'niy'
+        result = dict(result)
+        return result if self.dictionaries else self.__class__(result)
+
 # Begin aliases, shortcuts
 ################################################################################
 NSPart = NamespacePartitioner = NamespacePartition

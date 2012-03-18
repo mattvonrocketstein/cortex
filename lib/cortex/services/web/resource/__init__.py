@@ -69,7 +69,9 @@ class ObjectResource(Resource):
             ctx.update(source=get_source(self.target))
 <<<<<<< Updated upstream
             if isinstance(self.target, Agent):
+                from cortex.mixins.autonomy import Autonomy
                 T = template('objects/agent')
+                ctx.update(autonomy=NSPart(self.target).intersection(NSPart(Autonomy)))
             elif self.target == Universe:
                 T = template('objects/universe')
             elif isinstance(self.target, types.MethodType):
