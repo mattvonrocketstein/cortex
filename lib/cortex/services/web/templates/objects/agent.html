@@ -2,7 +2,12 @@
 
 
 {%block page_title%}{{obj_name}}{%endblock%}
-{%block obj_type%}AGENT{%endblock%}
+{%block obj_type%}AGENT(base)){%endblock%}
+
+{%block obj_nav%}
+<a href="javascript:$('#autonomy').toggle()">Autonomy Aspect</a>
+{{super()}}
+{%endblock%}
 
 {%block obj_namespace%}
   {{super()}}
@@ -14,4 +19,20 @@
     <strong>Beliefs:</strong><br/>
     {% with namespace=data%}{%include "objects/_namespace.html"%}{%endwith%}
   </td>
+{%endblock%}
+
+
+  {%block obj_main%}
+  <table>
+    <tr>
+      <td>agent etc
+    </td></tr>
+    <tr class=hidden id=autonomy>
+    <td>
+      <strong>Autonomy:</strong>
+      {% with namespace=autonomy%}{%include "objects/_namespace.html"%}{%endwith%}
+    </td>
+    </tr>
+  </table>
+  {{super()}}
 {%endblock%}
