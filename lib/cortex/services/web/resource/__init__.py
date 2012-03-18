@@ -22,6 +22,7 @@ from twisted.internet import reactor
 
 from cortex.core.universe import Universe
 from cortex.services.web.resource.root import Root
+from cortex.services.web.resource.root import NavResource
 
 
 def get_source(obj):
@@ -32,7 +33,6 @@ def get_source(obj):
     except:
         return get_source(getattr(obj,'im_func',obj.__class__))
     #get_source(obj.__class__)
-
 
 def classtree(cls, indent=0, out='', base_url='', pfx=[]):
     cname = cls.__name__
