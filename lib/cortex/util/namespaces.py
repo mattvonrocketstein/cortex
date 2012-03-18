@@ -140,6 +140,23 @@ class NamespacePartition(object):
     def private(self):
         return self.startswith('_')
 
+    @property
+    def data(self):
+        """ no methods, no private stuff
+            TODO: no "complex" stuff e.g. classobj
+        """
+        tmp = NSPart(self.copy())
+        tmp.dictionaries = False
+        tmp = tmp.cleaned
+        result = [ [x, self.namespace[x]] for x in tmp if x not in tmp.methods ]
+        result = [ [x[0],x[1]] for x in result if not isclass(x[1]) ]
+        result = dict(result)
+        return result if self.dictionaries else NSPart(result)
+
+    def __getitem__(self,name):
+        """ dict compat """
+        return self.namespace[name]
+
     def clean(self, pattern='_'):
         """ For dictionary-like objects we'll clean out names that start with
             pattern.. for generic objects, we'll turn them into namespace

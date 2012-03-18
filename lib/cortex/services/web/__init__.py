@@ -79,7 +79,7 @@ class Web(Service, LocalQueue):
 
     def iterate(self):
         """ """
-        report('iterating')
+        #report('iterating')
         return
         e = self.pop_q()
         if not e:

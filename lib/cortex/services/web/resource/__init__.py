@@ -129,7 +129,8 @@ class ObjectResource(Resource):
             ns = NSPart(self.target)
             ctx.update(all_namespace=rsorted(ns,'namespace'),
                        methods=rsorted(ns,'methods'),
-                       private=rsorted(ns,'private')
+                       private=rsorted(ns,'private'),
+                       data=rsorted(ns, 'data'),
                        )
         ctx.update(obj_name=self.obj_name)
         t,extra_ctx=self.template
