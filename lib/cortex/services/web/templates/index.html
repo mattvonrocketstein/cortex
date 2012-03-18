@@ -52,7 +52,7 @@
 
                   <h5>{%block page_subtitle%}subtitle{%endblock%}</h5>
                 </td><td style="vertical-align:bottom;">
-                  {%block nav%}default nav{%endblock%}
+                  {%block nav%}<div id=main_nav></div>{%endblock%}
             </td>
             </tr></table>
             {%endblock%}
@@ -77,7 +77,9 @@
         ================================================== -->
         <script src="/static/js/libs/jquery-1.7.1.js"></script>
         <script src="/static/js/tabs.js"></script>
-
+        <script>
+          $(document).ready(function(){$('#main_nav').load('/main_nav');})
+        </script>
 <!-- End Document
 ================================================== -->
 </body>
