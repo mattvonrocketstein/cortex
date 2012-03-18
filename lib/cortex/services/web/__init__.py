@@ -18,17 +18,15 @@ from cortex.services.web.resource import Root, ObjResource
 
 from .eventdemo import rootpage
 from cortex.mixins import LocalQueue
+from cortex.mixins.flavors import ThreadedIterator
+from cortex.mixins.autonomy import Autonomy
 
-class Web(LocalQueue, Service):
-    """ Stub Service:
-        start: brief description of service start-up here
-        stop:  brief description service shutdown here
+class Web(LocalQueue, ThreadedIterator, Service):
+    """ Web Service:
+        start: start main webserver, and secondary event-hub
+        stop:  brief description of shutdown here
     """
-    def print_error(self, *errors):
-        """ """
-        for x in errors:
-            pass # choose any errors to ignore and remove them
-        report('error_handler for generic service', str(errors) )
+    _iteration_period = 5
 
     def stop(self):
         """ """
@@ -37,13 +35,14 @@ class Web(LocalQueue, Service):
 
     @constraint(boot_first='postoffice')
     def start(self):
-        """ <start> is an operation, called once (and typically by <play>), which may or
-            may not return and so may be blocking or non-blocking.
+        self.start_main()
+        self.start_event_hub()
+        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
+        ThreadedIterator.start(self)
+        Service.start(self)
 
-            most blocking services will either a) need to be wrapped to made non-blocking,
-            or, b) they may responsibly manage their own mainloop using some combination
-            of this function and iterate()
-        """
+    def start_main(self):
+        """ """
         d          = os.path.dirname(__file__)
         code_dir   = os.path.dirname(cortex.__file__)
         static_dir = os.path.join(d, 'static')
@@ -57,33 +56,25 @@ class Web(LocalQueue, Service):
         root.putChild("_code",       static.File(code_dir))
 
         site = server.Site(root)
+        self.universe.reactor.listenTCP(1338, site)
+
+    def start_event_hub(self):
+        """ TODO: needing an extra port for this is not cool..
+        """
         tmp = rootpage.RootPage2()
         event_hub = appserver.NevowSite(tmp)
-        self.universe.reactor.listenTCP(1338, site)
         self.universe.reactor.listenTCP(1339, event_hub)
-        self.universe.reactor.callFromThread(self.iterate)
-        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
-        go = lambda: self.universe.threadpool.callInThread(self.run)
-        self.universe.reactor.callWhenRunning(go)
-        Service.start(self)
-
-    def asdrun(self):
-        """ see docs for ThreadedIterator """
-        while self.started:
-            self.iterate()
-            time.sleep(1)
 
     def _post_init(self, **kargs):
         """ initialize the local queue """
         self.init_q()
 
-    def asdfiterate(self):
+    def iterate(self):
         """ """
         report('iterating')
         return
         e = self.pop_q()
         if not e:
-            time.sleep(1)
             return
         args, kargs = e
         report('iterating',e)
@@ -91,9 +82,3 @@ class Web(LocalQueue, Service):
         cmd = """wget --post-data "{0}" http://127.0.0.1:1339/event/foo/blue -o -"""
         cmd = cmd.format(urllib.urlencode(dict(data=self.pop_q())))
         os.system('cd /tmp; '+cmd)
-
-    def play(self):
-        """ <play> is stubbed out although services should usually
-            override <start> instead.
-        """
-        return Service.play(self)
