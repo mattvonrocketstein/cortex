@@ -48,16 +48,12 @@ class Web(LocalQueue, Service):
         static_dir = os.path.join(d, 'static')
         favicon    = os.path.join(static_dir, 'favicon.ico')
 
-        root = Root()
-
+        root = Root(favicon=favicon, static=static_dir)
         site = server.Site(root)
 
-        root.putChild('static',      static.File(static_dir))
-        root.putChild('favicon.ico', static.File(favicon))
         root.putChild('web',         ObjResource(self))
         root.putChild('universe',    ObjResource(self.universe))
         root.putChild("_code",       static.File(code_dir))
-        root.putChild('main_nav',      NavResource(root))
         self.universe.reactor.listenTCP(1338, site)
 
     def start_event_hub(self):
