@@ -1,6 +1,10 @@
 """
 """
+import json
+
 from nevow import loaders, tags as T, inevow, rend
+
+from cortex.core.util import report
 
 class EventHandler():
     def __init__(self):
@@ -20,10 +24,13 @@ class EventCreator(rend.Page):
     def render_body ( self, ctx, data ):
         request = inevow.IRequest ( ctx )
         f = request.fields
-        eventID = json.dumps(['/'.join(filter(None, request.path.split('/'))[1:]),
-                              dict([[x, f[x].value] for x in f])])
-        self.eventHandler.fireEvent(eventID)
-        return "Event Created with ID: %s" % (eventID,)
+        report(f)
+        if f:
+            eventID = json.dumps(['/'.join(filter(None, request.path.split('/'))[1:]),
+                                  dict([[x, f[x].value] for x in f])])
+            self.eventHandler.fireEvent(eventID)
+            return "Event Created with ID: %s" % (eventID,)
+        return "No dat found.  Are you using POST ?"
 
     docFactory = loaders.stan (
         T.html [ T.head [T.title["Event Created"]],
@@ -41,4 +48,3 @@ class CreateEventPage(rend.Page):
 
     def locateChild ( self, ctx, segments ):
         return ( EventCreator(self.eventHandler), () )
-import json

@@ -140,6 +140,7 @@ class PeerManager(Manager):
     def post_registration(self, peer):
         """ post_registration hook:
              (called by Manager.register when present) """
+        report('sending peer event')
         (self.universe|'postoffice').event(peer)
 
     def printValue(self, value):
