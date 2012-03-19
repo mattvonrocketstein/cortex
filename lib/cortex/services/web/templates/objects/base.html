@@ -30,13 +30,16 @@
 
 {%block obj_main%}
 
-<div class="menu hidden" id=obj_type>
-  {{request.path}}<br/>
-  {{obj.__class__}}<br/>
-  {{ancestry}}
+<div style="margin-left:15px;width:100%" class="menu hidden" id=obj_type>
+  <h4>Type info</h4><hr/>
+  <div style="margin-left:15px">
+    {{ancestry}}
+  </div>
 </div>
 
-<table style="width:100%" id=namespace class="menu hidden">
+<div style="margin-left:15px;width:100%" id=namespace class="menu hidden">
+<h4>Namespace</h4><hr/>
+<table style="margin-left:15px;">
   <tr>
     {%block obj_namespace%}
     <td>
@@ -50,9 +53,11 @@
     {%endblock%}
   </tr>
 </table>
+</div>
+
 {%block obj_source%}
-<div id=source_code class="menu hidden">
-  <strong>Source:</strong><hr/>
+<div style="margin-left:15px;width:100%" id=source_code class="menu hidden">
+  <h4>Source:</h4><hr/>
   {% code 'python' %}
   {{source}}
   {% endcode %}
