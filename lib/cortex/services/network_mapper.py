@@ -23,10 +23,12 @@ class Mapper(Service):
           stop:  brief description service shutdown here
     """
 
-    def discovery(self, postoffice, pickled_data, **kargs):
+    def discovery(self, peer_data, **kwargs):
         """ will be called by the postoffice, with type PEER_T
         """
-        data = simplejson.loads(pickled_data)
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        #data = kargs#simplejson.loads(pickled_data)
+        data=peer_data
         name = data['host'] + ':' + str(data['port'])
         self.universe.peers.register(name, **data)
 
@@ -63,12 +65,13 @@ class Mapper(Service):
                         metadata.update({'host':'self'})
 
                     metadata.update(port_data)
-                    (self.universe|'postoffice').publish_json(PEER_T, metadata)
+                    #(self.universe|'postoffice').publish_json(PEER_T, metadata)
+                    (self.universe|'postoffice').peers(metadata)
 
             else:
                 port_aspect = { 'port' : NOT_FOUND_T }
                 peer_metadata.update(port_aspect)
-                (self.universe|'postoffice').publish_json(PEER_T, peer_metadata)
+                (self.universe|'postoffice').peers(peer_metadata)
             self.universe.reactor.callLater(10, lambda: self.iterate(host))
     scan = iterate
 
