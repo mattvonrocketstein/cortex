@@ -6,8 +6,8 @@
 
 
 {%block obj_nav%}
-<a href="javascript:$('#services').toggle()">Services</a>
-<a href="javascript:$('#peers').toggle()">Peers</a>
+<a href="javascript:menu('services')">Services</a>
+<a href="javascript:menu('peers')">Peers</a>
 {{super()}}
 {%endblock%}
 
@@ -18,7 +18,6 @@
 
 
 {%block obj_main%}
-
 <table>
 
   {%block extra_status%}

@@ -5,7 +5,7 @@
 {%block obj_type%}AGENT(base)){%endblock%}
 
 {%block obj_nav%}
-<a href="javascript:$('#autonomy').toggle()">Autonomy Aspect</a>
+<a href="javascript:menu('autonomy')">Autonomy Aspect</a>
 {{super()}}
 {%endblock%}
 
@@ -20,7 +20,6 @@
   {% with namespace=data%}{%include "objects/_namespace.html"%}{%endwith%}
 </td>
 {%endblock%}
-
 
 {%block obj_main%}
 

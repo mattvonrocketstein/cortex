@@ -5,7 +5,7 @@
 
 {%block page_subtitle%}
 &nbsp;&nbsp;&nbsp;
-{%for breadcrumb in breadcrumbs%}{{breadcrumb}}{%if not loop.last%}..{%endif%}{%endfor%}
+{%for breadcrumb in breadcrumbs%}{{breadcrumb}}{%if not loop.last%}&nbsp;/&nbsp;{%endif%}{%endfor%}
 
 &nbsp;&nbsp;&nbsp;
 <font color=red>
@@ -20,9 +20,9 @@
 
 <div class=nav2>
   {%block obj_nav%}
-  <a href="javascript:$('#source_code').toggle();">Source</a>
-  <a href="javascript:$('#obj_type').toggle();">Type</a>
-  <a href="javascript:$('#namespace').toggle();">Namespace</a>
+  <a href="javascript:menu('source_code');">Source</a>
+  <a href="javascript:menu('obj_type');">Type</a>
+  <a href="javascript:menu('namespace');">Namespace</a>
   {%endblock%}
 </div><hr/>
 
@@ -30,13 +30,13 @@
 
 {%block obj_main%}
 
-<div class=hidden id=obj_type>
+<div class="menu hidden" id=obj_type>
   {{request.path}}<br/>
   {{obj.__class__}}<br/>
   {{ancestry}}
 </div>
 
-<table style="width:100%" id=namespace class="hidden">
+<table style="width:100%" id=namespace class="menu hidden">
   <tr>
     {%block obj_namespace%}
     <td>
@@ -51,7 +51,7 @@
   </tr>
 </table>
 {%block obj_source%}
-<div id=source_code class=hidden>
+<div id=source_code class="menu hidden">
   <strong>Source:</strong><hr/>
   {% code 'python' %}
   {{source}}
