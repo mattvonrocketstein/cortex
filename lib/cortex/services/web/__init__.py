@@ -44,7 +44,6 @@ class Web(LocalQueue, Service):
     def start_main(self):
         """ """
         d          = os.path.dirname(__file__)
-        code_dir   = os.path.dirname(cortex.__file__)
         static_dir = os.path.join(d, 'static')
         favicon    = os.path.join(static_dir, 'favicon.ico')
 
@@ -53,7 +52,7 @@ class Web(LocalQueue, Service):
 
         root.putChild('web',         ObjResource(self))
         root.putChild('universe',    ObjResource(self.universe))
-        root.putChild("_code",       static.File(code_dir))
+        root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
 
     def start_event_hub(self):
