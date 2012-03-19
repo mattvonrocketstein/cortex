@@ -23,9 +23,25 @@
 
 
   {%block obj_main%}
-  <table>
+  <table style="width:100%;margin-left:15px;">
     <tr>
-      <td>agent etc
+      <td style="margin-left:15px;">
+        <h4>Status:</h4><hr/>
+        <table style="width:50%;margin-left:15px;" border=1>
+          <tr>
+            <td>
+              <strong>name</strong>
+            </td>
+            <td>{{obj.name}}</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>started</strong>
+            </td>
+            <td>{{obj.started}}</td>
+          </tr>
+        </table>
+        <hr/>
     </td></tr>
     <tr class="menu hidden" id=autonomy>
     <td>
