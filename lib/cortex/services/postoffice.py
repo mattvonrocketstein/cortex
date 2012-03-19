@@ -18,7 +18,7 @@
 import simplejson
 
 from cortex.core.util import report
-from cortex.core.data import EVENT_T, ERROR_T
+from cortex.core.data import EVENT_T, ERROR_T, PEER_T
 from cortex.core.ground import Keyspace
 from cortex.services import Service
 from cortex.core.bus import SelfHostingTupleBus
@@ -44,6 +44,7 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
     notice = channel.NOTICE              # shortcut for publishing notices (unused)
     error  = getattr(channel, ERROR_T)   # shortcut for publishing errors  (unused)
     event  = getattr(channel, EVENT_T)   # shortcut for publishing events  (used by term)
+    peers  = getattr(channel,PEER_T)
 
     def __init__(self, *args, **kargs):
         """ """

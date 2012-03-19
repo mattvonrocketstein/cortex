@@ -57,7 +57,7 @@ class TupleBus(Bus):
             return N
         for subscriber in subscribers:
             #report(subscriber)
-            subscriber(self, *args, **kwargs)
+            subscriber(*args, **kwargs)
             N+=1
         return N
 
