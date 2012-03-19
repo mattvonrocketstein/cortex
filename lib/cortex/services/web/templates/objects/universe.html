@@ -6,8 +6,8 @@
 
 
 {%block obj_nav%}
-<a href="javascript:$('#services').toggle()">Services</a>
-<a href="javascript:$('#peers').toggle()">Peers</a>
+<a href="javascript:menu('services')">Services</a>
+<a href="javascript:menu('peers')">Peers</a>
 {{super()}}
 {%endblock%}
 
@@ -22,7 +22,7 @@
     <tr>
       <td>universe etc
     </td></tr>
-    <tr class=hidden id=services>
+    <tr class="menu hidden" id=services>
       <td align=right>
         <strong>Services</strong> <hr/>
         <ul>
@@ -32,7 +32,7 @@
         </ul>
       </td>
     </tr>
-    <tr class=hidden id=peers>
+    <tr class="menu hidden" id=peers>
       <td>
         <ul>
           {% for x in obj.peers %}

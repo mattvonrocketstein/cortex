@@ -78,6 +78,10 @@
         <script src="/static/js/libs/jquery-1.7.1.js"></script>
         <script src="/static/js/tabs.js"></script>
         <script>
+          function menu(name){
+          $('.menu').hide();
+          $('#'+name).show()
+          }
           $(document).ready(function(){$('#main_nav').load('/main_nav');})
         </script>
 <!-- End Document

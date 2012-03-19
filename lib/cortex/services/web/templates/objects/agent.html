@@ -5,7 +5,7 @@
 {%block obj_type%}AGENT(base)){%endblock%}
 
 {%block obj_nav%}
-<a href="javascript:$('#autonomy').toggle()">Autonomy Aspect</a>
+<a href="javascript:menu('autonomy')">Autonomy Aspect</a>
 {{super()}}
 {%endblock%}
 
@@ -27,7 +27,7 @@
     <tr>
       <td>agent etc
     </td></tr>
-    <tr class=hidden id=autonomy>
+    <tr class="menu hidden" id=autonomy>
     <td>
       <strong>Autonomy:</strong>
       {% with namespace=autonomy%}{%include "objects/_namespace.html"%}{%endwith%}
