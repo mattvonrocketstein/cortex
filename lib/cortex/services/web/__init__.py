@@ -26,7 +26,7 @@ class Web(LocalQueue, Service):
         start: start main webserver, and secondary event-hub
         stop:  brief description of shutdown here
     """
-    _iteration_period = 1
+    _iteration_period = 3
 
     def stop(self):
         """ """
