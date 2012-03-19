@@ -37,6 +37,7 @@ class Web(LocalQueue, Service):
     def start(self):
         self.start_main()
         self.start_event_hub()
+        #(self.universe|'postoffice').subscribe(EVENT_T, self.handle_event)
         (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
         Service.start(self)
         #ThreadedIterator.start(self)
@@ -66,18 +67,21 @@ class Web(LocalQueue, Service):
         """ initialize the local queue """
         self.init_q()
 
+    def handle_event(self, e):
+        report('dammit')
+        args,kargs=e
+        foo = str(e)
+        # need to call this from the main thread.  (curl uses signals)
+        os.system('''python -c"import curl;c = curl.Curl('http://127.0.0.1:1339/');results = c.post('event/',dict(data=str('peer')))"&''')
+        #report(str(results))
+
     def iterate(self):
         """ """
-        report('iterating')
-        return
-        """e = self.pop_q()
+        e = self.pop_q()
         if not e:
             return
-        args, kargs = e
-        report('iterating',e)
-        import urllib,os
-        cmd = 'wget --post-data "{0}" http://127.0.0.1:1339/event/foo/blue -o -'
-        cmd = cmd.format(urllib.urlencode(dict(data=self.pop_q())))
-        os.system('cd /tmp; '+cmd)"""
+        else:
+            report('iterating',e)
+            self.handle_event(e)
 
 Web = ThreadedIterator.from_class(Web)
