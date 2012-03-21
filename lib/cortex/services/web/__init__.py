@@ -37,10 +37,12 @@ class Web(LocalQueue, Service):
     def start(self):
         self.start_main()
         self.start_event_hub()
-        #(self.universe|'postoffice').subscribe(EVENT_T, self.handle_event)
         (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
         Service.start(self)
-        #ThreadedIterator.start(self)
+
+    def _post_init(self, **kargs):
+        """ initialize the local queue """
+        self.init_q()
 
     def start_main(self):
         """ """
@@ -63,16 +65,14 @@ class Web(LocalQueue, Service):
         event_hub = appserver.NevowSite(tmp)
         self.universe.reactor.listenTCP(1339, event_hub)
 
-    def _post_init(self, **kargs):
-        """ initialize the local queue """
-        self.init_q()
-
     def handle_event(self, e):
         report('dammit')
         args,kargs=e
         foo = str(e)
         # need to call this from the main thread.  (curl uses signals)
-        os.system('''python -c"import curl;c = curl.Curl('http://127.0.0.1:1339/');results = c.post('event/',dict(data=str('peer')))"&''')
+        os.system('''python -c"import curl;'''
+                  '''c = curl.Curl('http://127.0.0.1:1339/');'''
+                  '''results = c.post('event/',dict(data=str('peer')))"&''')
         #report(str(results))
 
     def iterate(self):
