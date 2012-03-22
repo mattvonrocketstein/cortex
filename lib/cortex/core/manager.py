@@ -72,6 +72,7 @@ class Manager(object):
         boot_order = self.resolve_boot_order()
         report('determined boot order:', boot_order)
         self.load_items(boot_order)
+        self._boot_order = boot_order
 
     def isloaded(self, obj):
         """ """
