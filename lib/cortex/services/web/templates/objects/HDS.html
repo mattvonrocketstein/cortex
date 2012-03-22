@@ -1,0 +1,54 @@
+{%extends "objects/base.html"%}
+
+
+{%block page_title%}{{obj_name}}{%endblock%}
+{%block obj_type%}(HierarchicalDataStructure){%endblock%}
+
+{%block obj_nav%}
+{#}<a href="javascript:menu('autonomy')">Autonomy Aspect</a>#}
+{{super()}}
+{%endblock%}
+
+{%block obj_namespace%}
+  {{super()}}
+  <td>
+    <strong>Behaviours:</strong><hr/>
+    {% with namespace=methods%}{%include "objects/_namespace.html"%}{%endwith%}
+  </td>
+  <td>
+    <strong>Beliefs:</strong><br/>
+    {% with namespace=data%}{%include "objects/_namespace.html"%}{%endwith%}
+  </td>
+{%endblock%}
+
+
+  {%block obj_main%}
+  <table style="width:100%;margin-left:15px;">
+    <tr>
+      <td style="margin-left:15px;">
+        <h4>Status:</h4><hr/>
+        <table style="width:50%;margin-left:15px;" border=1>
+          <tr>
+            <td>
+              <strong>name</strong>
+            </td>
+            <td>{{obj.name}}</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>started</strong>
+            </td>
+            <td>{{obj.started}}</td>
+          </tr>
+        </table>
+        <hr/>
+    </td></tr>
+    <tr class="menu hidden" id=autonomy>
+    <td>
+      <strong>Autonomy:</strong>
+      {% with namespace=autonomy%}{%include "objects/_namespace.html"%}{%endwith%}
+    </td>
+    </tr>
+  </table>
+  {{super()}}
+{%endblock%}
