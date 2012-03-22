@@ -2,12 +2,13 @@
 """
 import os
 import time
-import urllib,urllib2
+import urllib
 
 from nevow import appserver
 from twisted.web import static, server
 from twisted.application import service, internet
 from twisted.internet import reactor
+from twisted.web.client import HTTPClientFactory, getPage
 from twisted.internet.task import LoopingCall
 import cortex
 from cortex.core.util import report
@@ -66,22 +67,26 @@ class Web(LocalQueue, Service):
         self.universe.reactor.listenTCP(1339, event_hub)
 
     def handle_event(self, e):
-        report('dammit')
-        args,kargs=e
-        foo = str(e)
-        # need to call this from the main thread.  (curl uses signals)
-        os.system('''python -c"import curl;'''
-                  '''c = curl.Curl('http://127.0.0.1:1339/');'''
-                  '''results = c.post('event/',dict(data=str('peer')))"&''')
-        #report(str(results))
+        POST_HDR    = {'Content-Type':
+                       "application/x-www-form-urlencoded;charset=utf-8"}
+        args, kargs = e
+        peer        = args[0]
+
+        url      = 'http://127.0.0.1:1339/event/'
+        values   = peer.__dict__
+        postdata = urllib.urlencode(values)
+
+        def callback(*args): "any processing on page string here."
+        def errback(*args): report('error with getPage:',str(args))
+        callbacks = (callback, errback)
+        getPage(url, headers=POST_HDR,
+                method="POST", postdata=postdata).addCallback(*callbacks)
+
 
     def iterate(self):
         """ """
         e = self.pop_q()
-        if not e:
-            return
-        else:
-            report('iterating',e)
+        if e:
             self.handle_event(e)
 
 Web = ThreadedIterator.from_class(Web)
