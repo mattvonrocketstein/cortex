@@ -20,6 +20,8 @@ class FaultTolerant(Mixin):
 
     def fault(self, error, context={}, **kargs):
         """ TODO: sane yet relatively automatic logging for faults.. """
+        if not isinstance(context,dict):
+            context=dict(msg=context)
         context.update(kargs)
         import StringIO, pprint
         context = context or dict(agent=self)

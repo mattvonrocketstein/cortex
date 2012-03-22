@@ -67,7 +67,19 @@ class NamespacePartition(object):
                        "like a dictionary, got {0}".format(type(obj).__name__))
                 raise TypeError, err
             namespace={}
-            namespace.update(**dict([[k, getattr(obj, k, ValueNotFound)] for k in dir(obj)]))
+            def grab(obj,k):
+                try:
+                    if isinstance(getattr(obj.__class__, k, ValueNotFound),
+                                  property): return ValueNotFound
+                except: pass
+                return getattr(obj, k, ValueNotFound)
+            namespace.update(**dict([[k, grab(obj,k)] for k in dir(obj)]))
+            #namespace.update(**dict([[k, getattr(obj, k, ValueNotFound)] for k in dir(obj)]))
+            #namespace.update(**dict([[k, getattr(obj, k, ValueNotFound)] for k in dir(obj)]))
+            #namespace.update(**dict([[k, getattr(obj, k, ValueNotFound)] for k in dir(obj) \
+            #                         if not isinstance(getattr(obj.__class__,
+            #                                                   k, ValueNotFound),
+            #                                           property)]))
             namespace.update(obj.__dict__)
         else:
             namespace = obj

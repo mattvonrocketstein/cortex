@@ -87,6 +87,7 @@ class AgentManager(Manager):
 
     def post_load_obj(self, obj):
         """ post_load_obj hook: """
+        obj.parents += [self]
         return obj.play()
 
     def pre_registration(self, name, **metadata):
@@ -95,5 +96,8 @@ class AgentManager(Manager):
 
     def post_registration(self, asset):
         """ pre_registration hook """
+
+    @property
+    def agents(self): return self.registry
 
 AGENTS = AgentManager() # A cheap singleton
