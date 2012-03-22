@@ -40,7 +40,7 @@ class Web(LocalQueue, Service, AgentManager):
     def __init__(self, *args, **kargs):
         Service.__init__(self, **kargs)
         AgentManager.__init__(self, **kargs)
-        self.init_q()
+
 
     def stop(self):
         """ """
@@ -59,7 +59,7 @@ class Web(LocalQueue, Service, AgentManager):
         self.load()
 
         Service.start(self)
-        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
+
 
     def start_main(self):
         """ """
@@ -74,8 +74,6 @@ class Web(LocalQueue, Service, AgentManager):
         root.putChild('universe',    ObjResource(self.universe))
         root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
-
-
 
 
 class EventHub(LocalQueue, Agent):
@@ -97,15 +95,16 @@ class EventHub(LocalQueue, Agent):
                 method="POST", postdata=postdata).addCallback(*callbacks)
 
     def start(self):
-        #self.init_q() # safe to call in start or __init__
+        self.init_q() # safe to call in start or __init__
         tmp = rootpage.RootPage2()
         event_hub = appserver.NevowSite(tmp)
         self.universe.reactor.listenTCP(1339, event_hub)
+        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
 
     def iterate(self):
         """ """
         report('iterating')
-        e = self.parent.pop_q()
+        e = self.pop_q()
         if e:
             self.handle_event(e)
 
