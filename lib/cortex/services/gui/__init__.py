@@ -6,17 +6,19 @@ from cortex.services.terminal import abstract
 from cortex.services.gui.parent import GUI as _GUI
 from cortex.core.agent.manager import AgentManager
 
-def __init__(self, **kargs):
-    AgentManager.__init__(self,**kargs)
-    abstract.ATerminal(self, **kargs)
 
 
 class GUI(abstract.ATerminal,
           AgentManager, _GUI ):
 
-    __init__=__init__
+    def __init__(self, **kargs):
+        AgentManager.__init__(self,**kargs)
+        abstract.ATerminal(self, **kargs)
 
     def shell_contribute_to_ns(self, **kargs):
         ipythonview = self.registry['ShellAgent'].obj.shell
         ip = ipythonview.IP
         ip.user_ns.update(**kargs)
+
+#not used anymore?
+__init__ = GUI.__init__

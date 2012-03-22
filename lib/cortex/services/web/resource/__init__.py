@@ -28,12 +28,12 @@ from cortex.core.hds import HDS
 
 
 def get_source(obj):
-    if obj==type:
+    if obj==type or isinstance(obj,HDS):
         return 'Could not retrieve source.'
     try:
         return inspect.getsource(obj)
     except:
-        return get_source(getattr(obj,'im_func',obj.__class__))
+        return get_source(getattr(obj,'im_func', obj.__class__))
     #get_source(obj.__class__)
 
 def classtree(cls, indent=0, out='', base_url='', pfx=[]):
@@ -110,7 +110,9 @@ class ObjectResource(Resource):
         out = filter(None, request.path.split('/'))
         z = []
         for x in out:
-            z.append([x,out[:out.index(x)+1]])
+            upto = out.index(x)+1
+            tmp  = [x, out[:upto]]
+            z.append(tmp)
         result = ['<a href={0}> {1} </a>'.format('/' + '/'.join(x[1]),x[0]) for x in z]
         if len(result) > 6: result = result[-6:]
         return result

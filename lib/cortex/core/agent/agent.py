@@ -30,8 +30,6 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     _post_init    = NOOP
     name          = 'default-name'
 
-<<<<<<< Updated upstream
-=======
     @property
     def doctrine(self):
         """ returns a list of this agents beliefs.
@@ -48,7 +46,6 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
         else:
             return None
 
->>>>>>> Stashed changes
     @classmethod
     def using(self, template=None, flavor=None):
         target=Agent
@@ -113,6 +110,8 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
         self.universe = universe
         self.host     = host or DEFAULT_HOST
         self.name     = name
+        self.parents  = []
+
         cbs = []
         for x in dir(self):
             if not isinstance(getattr(self.__class__, x, None), property) and \

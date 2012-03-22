@@ -39,6 +39,7 @@ class __Universe__(AutoReloader, UniverseNotation,
     peers         = PEERS
     nodeconf_file = u''
     config        = HDS()
+    parent = None # agent.__init__ never called?
 
     def read_nodeconf(self):
         """ iterator that returns decoded json entries from self.nodeconf_file
