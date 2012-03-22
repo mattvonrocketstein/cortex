@@ -24,6 +24,8 @@ from cortex.core.universe import Universe
 from cortex.services.web.resource.root import Root
 from cortex.services.web.resource.root import NavResource
 
+from cortex.core.hds import HDS
+
 
 def get_source(obj):
     if obj==type:
@@ -76,6 +78,8 @@ class ObjectResource(Resource):
                 ctx.update(autonomy=NSPart(self.target).intersection(NSPart(Autonomy)))
             elif self.target == Universe:
                 T = template('objects/universe')
+            elif isinstance(self.target, HDS):
+                T = template('objects/HDS')
             elif isinstance(self.target, types.MethodType):
 =======
             from cortex.services.web import Service
