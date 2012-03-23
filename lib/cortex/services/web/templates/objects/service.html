@@ -25,11 +25,13 @@
 
   <tr class="menu" id=services>
     <td align=left>
+
       {%if children%}
       <table style="width:100%;margin-left:15px;">
         <tr>
           <td style="margin-left:15px;">
             <h4>Children:</h4><hr/>
+
             <p>
               {%for a in children %}<a href={{base_url}}[{{a}}]/obj>{{a}}</a>
               {%if not loop.last%}|{%endif%}

@@ -1,4 +1,8 @@
 """ cortex.services.web
+    TODO: constraint solving is sometimes broken?
+        determined boot order:', ['web', 'postoffice', 'terminal', 'linda', 'mapper', 'api']
+    TODO: occasional message delivery issues or unintended queue sharing?
+
 """
 import os
 import time
@@ -107,5 +111,5 @@ class EventHub(LocalQueue, Agent):
             self.handle_event(e)
 
 
-#Web = ThreadedIterator.from_class(Web)
+Web = ThreadedIterator.from_class(Web)
 EventHub = ThreadedIterator.from_class(EventHub)
