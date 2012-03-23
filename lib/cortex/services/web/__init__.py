@@ -34,13 +34,12 @@ class Web(LocalQueue, Service, AgentManager):
     # NOTE: currently this is the time it will take for shutdown too :(
     _iteration_period = 2
 
-    __str__ = Service.__str__
+    __str__  = Service.__str__
     __repr__ = Service.__repr__
 
     def __init__(self, *args, **kargs):
         Service.__init__(self, **kargs)
         AgentManager.__init__(self, **kargs)
-
 
     def stop(self):
         """ """
@@ -50,37 +49,36 @@ class Web(LocalQueue, Service, AgentManager):
 
     @constraint(boot_first='postoffice')
     def start(self):
-        self.start_main()
-
         ctx = dict(universe=self.universe)
-        self.manage(kls=EventHub,
-                    kls_kargs=ctx,
-                    name='EventHub')
+        for kls in [EventHub, WebRoot]:
+            self.manage(kls=kls, kls_kargs=ctx,
+                        name=kls.__name__)
         self.load()
 
         Service.start(self)
 
 
-    def start_main(self):
-        """ """
+class WebRoot(Agent):
+    def start(self):
         d          = os.path.dirname(__file__)
         static_dir = os.path.join(d, 'static')
         favicon    = os.path.join(static_dir, 'favicon.ico')
-
         root = Root(favicon=favicon, static=static_dir)
         site = server.Site(root)
-
         root.putChild('web',         ObjResource(self))
         root.putChild('universe',    ObjResource(self.universe))
         root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
 
-
 class EventHub(LocalQueue, Agent):
+    POST_HDR    = {'Content-Type':
+                   "application/x-www-form-urlencoded;charset=utf-8"}
+
+    @property
+    def port(self):
+        return 1339
     def handle_event(self, e):
         report('handling')
-        POST_HDR    = {'Content-Type':
-                       "application/x-www-form-urlencoded;charset=utf-8"}
         args, kargs = e
         peer        = args[0]
 
@@ -91,19 +89,18 @@ class EventHub(LocalQueue, Agent):
         def callback(*args): "any processing on page string here."
         def errback(*args): report('error with getPage:',str(args))
         callbacks = (callback, errback)
-        getPage(url, headers=POST_HDR,
+        getPage(url, headers=EventHub.POST_HDR,
                 method="POST", postdata=postdata).addCallback(*callbacks)
 
     def start(self):
         self.init_q() # safe to call in start or __init__
         tmp = rootpage.RootPage2()
         event_hub = appserver.NevowSite(tmp)
-        self.universe.reactor.listenTCP(1339, event_hub)
+        self.universe.reactor.listenTCP(self.port, event_hub)
         (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
 
     def iterate(self):
         """ """
-        report('iterating')
         e = self.pop_q()
         if e:
             self.handle_event(e)
