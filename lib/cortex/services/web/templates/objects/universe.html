@@ -31,7 +31,7 @@
             <h4>Services:</h4><hr/>
             <p>
               {% for x in obj.services %}
-              <a href="{{request.path}}/services[{{x}}]/obj">{{x}}</a> |
+              <a href="{{request.path}}/services/registry[{{x}}]/obj">{{x}}</a> |
               {%endfor%}
             </p>
           </td>
@@ -46,7 +46,9 @@
           </td>
         </tr>
       </table>
-  </td></tr>
+    </td>
+  </tr>
+</table>
 
-  {{super()}}
-  {%endblock%}
+      {{super()}}
+      {%endblock%}

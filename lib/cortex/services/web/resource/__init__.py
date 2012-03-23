@@ -71,19 +71,9 @@ class ObjectResource(Resource):
             T = template('objects/primitive')
         else:
             ctx.update(source=get_source(self.target))
-<<<<<<< Updated upstream
-            if isinstance(self.target, Agent):
-                from cortex.mixins.autonomy import Autonomy
-                T = template('objects/agent')
-                ctx.update(autonomy=NSPart(self.target).intersection(NSPart(Autonomy)))
-            elif self.target == Universe:
-                T = template('objects/universe')
-            elif isinstance(self.target, HDS):
-                T = template('objects/HDS')
-            elif isinstance(self.target, types.MethodType):
-=======
             from cortex.services.web import Service
             target=self.target
+
             if False:
                 pass
             elif target == Universe:
@@ -96,13 +86,12 @@ class ObjectResource(Resource):
                 if isinstance(target, Service):
                     T = template('objects/service',)
                     ctx.update(children=target.agents if hasattr(target, 'agents') else [],)
-                    #ctx.update()
-            elif isinstance(target, HDS):
+            elif isinstance(self.target, HDS):
                 T = template('objects/HDS')
-            elif isinstance(target, types.MethodType):
->>>>>>> Stashed changes
+            elif isinstance(self.target, types.MethodType):
                 T = template('objects/method')
-            else: T = template('objects/abstract')
+            else:
+                T = template('objects/abstract')
         return T, ctx
 
     def breadcrumbs(self,request):
@@ -143,7 +132,7 @@ class ObjectResource(Resource):
                        private=rsorted(ns,'private'),
                        data=rsorted(ns, 'data'),
                        )
-        ctx.update(obj_name=self.obj_name)
+        ctx.update(base_url=request.path, obj_name=self.obj_name)
         t,extra_ctx=self.template
         ctx.update(**extra_ctx)
         return str(t.render(**ctx))
