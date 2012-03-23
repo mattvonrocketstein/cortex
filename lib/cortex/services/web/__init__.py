@@ -77,6 +77,7 @@ class EventHub(LocalQueue, Agent):
     @property
     def port(self):
         return 1339
+
     def handle_event(self, e):
         report('handling')
         args, kargs = e
@@ -106,5 +107,5 @@ class EventHub(LocalQueue, Agent):
             self.handle_event(e)
 
 
-Web = ThreadedIterator.from_class(Web)
+#Web = ThreadedIterator.from_class(Web)
 EventHub = ThreadedIterator.from_class(EventHub)
