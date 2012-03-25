@@ -84,7 +84,7 @@ class ObjectResource(Resource):
                 ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
                            autonomy=NSPart(target).intersection(NSPart(Autonomy)))
                 if isinstance(target, Service):
-                    T = template('objects/service',)
+                    T = template('objects/service')
                     ctx.update(children=target.agents if hasattr(target, 'agents') else [],)
             elif isinstance(self.target, HDS):
                 T = template('objects/HDS')
