@@ -5,18 +5,19 @@ import os
 import time
 
 from pep362 import Signature
-
 from cortex.core.util import report
+from cortex.core.manager import Manager
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
-from cortex.core.data import NOOP, LOOPBACK_HOST, GENERIC_LOCALHOST
-from cortex.mixins import AutonomyMixin, PerspectiveMixin
-from cortex.core.ground import HierarchicalWrapper, HierarchicalData
+from cortex.extensions.logic import Doctrine
+from cortex.core.ground import HierarchicalData
+from cortex.mixins import MobileCodeMixin, FaultTolerant
+from cortex.mixins import  AutonomyMixin, PerspectiveMixin
+
+from cortex.core.data import NOOP, LOOPBACK_HOST
+from cortex.core.data import GENERIC_LOCALHOST, DEFAULT_HOST
+
 from channel import is_declared_callback,unpack, declare_callback
-from cortex.core.data import DEFAULT_HOST
-from cortex.mixins import MobileCodeMixin
-from cortex.mixins import FaultTolerant
-from cortex.core.manager import Manager
 
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     """
@@ -29,13 +30,30 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP
     name          = 'default-name'
+    def __init__(self, host=None, universe=None, name=None, **kargs):
+        """
+            TODO: "host" is bad.  use a better address formalism instead.
+        """
+        self.universe = universe
+        self.host     = host or DEFAULT_HOST
+        self.name     = name
+        self.parents  = []
+
+        cbs = []
+        for x in dir(self):
+            if not isinstance(getattr(self.__class__, x, None), property) and \
+                is_declared_callback(getattr(self,x)):
+                    cbs.append(getattr(self,x))
+
+        for cb in cbs:
+            cb.bootstrap(self)
+        self._post_init(**kargs)
 
     @property
     def doctrine(self):
-        """ returns a list of this agents beliefs.
-            (nothing about the ordering is guaranteed at this point)
-        """
-        return []
+        if not hasattr(self,'_doctrine'):
+            self._doctrine=Doctrine()
+        return self._doctrine
 
     @property
     def parent(self):
@@ -102,25 +120,6 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
                 new_iterate = lambda self: iterate()
             dct['iterate'] = new_iterate
         return name,dct
-
-    def __init__(self, host=None, universe=None, name=None, **kargs):
-        """
-            TODO: "host" is bad.  use a better address formalism instead.
-        """
-        self.universe = universe
-        self.host     = host or DEFAULT_HOST
-        self.name     = name
-        self.parents  = []
-
-        cbs = []
-        for x in dir(self):
-            if not isinstance(getattr(self.__class__, x, None), property) and \
-                is_declared_callback(getattr(self,x)):
-                    cbs.append(getattr(self,x))
-
-        for cb in cbs:
-            cb.bootstrap(self)
-        self._post_init(**kargs)
 
     def stop(self):
         """ autonomy override:
