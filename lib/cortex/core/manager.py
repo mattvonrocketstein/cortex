@@ -280,7 +280,7 @@ class Manager(object):
 
     def __str__(self):
         """ """
-        return str( self.as_list )
+        return 'Manager({0})'.format(str( self.as_list ))
 
     def __repr__(self):
         """ """
