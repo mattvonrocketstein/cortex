@@ -105,11 +105,32 @@ class ObjectResource(Resource):
             T = template('objects/primitive')
         else:
             ctx.update(source=get_source(self.target))
+<<<<<<< Updated upstream
             if isinstance(self.target, Agent):
                 T = template('objects/agent')
             elif self.target == Universe:
                 T = template('objects/universe')
             elif isinstance(self.target, types.MethodType):
+=======
+            from cortex.services.web import Service
+            target=self.target
+            if False:
+                pass
+            elif target == Universe:
+                T = template('objects/universe')
+            elif isinstance(target, Agent):
+                from cortex.mixins.autonomy import Autonomy
+                T = template('objects/agent')
+                ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
+                           autonomy=NSPart(target).intersection(NSPart(Autonomy)))
+                if isinstance(target, Service):
+                    T = template('objects/service',)
+                    ctx.update(children=target.agents if hasattr(target, 'agents') else [],)
+                    #ctx.update()
+            elif isinstance(target, HDS):
+                T = template('objects/HDS')
+            elif isinstance(target, types.MethodType):
+>>>>>>> Stashed changes
                 T = template('objects/method')
             else: T = template('objects/abstract')
         return T, ctx

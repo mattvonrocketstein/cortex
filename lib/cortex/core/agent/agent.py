@@ -30,6 +30,25 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     _post_init    = NOOP
     name          = 'default-name'
 
+<<<<<<< Updated upstream
+=======
+    @property
+    def doctrine(self):
+        """ returns a list of this agents beliefs.
+            (nothing about the ordering is guaranteed at this point)
+        """
+        return []
+
+    @property
+    def parent(self):
+        """ Warning this might not be an agent! """
+        if len(self.parents):
+            if len(self.parents)<2: return self.parents[0]
+            else: self.fault('ambiguous topology')
+        else:
+            return None
+
+>>>>>>> Stashed changes
     @classmethod
     def using(self, template=None, flavor=None):
         target=Agent
