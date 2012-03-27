@@ -83,7 +83,7 @@ class EventHub(LocalQueue, Agent):
         return 1339
 
     def handle_event(self, e):
-        report('handling')
+        """ """
         args, kargs = e
         peer        = args[0]
 
