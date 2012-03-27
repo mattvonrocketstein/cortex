@@ -23,7 +23,6 @@ class AlertElement(athena.LiveElement):
         eventHandler.addSubscriber(self)
 
     def fireEvent(self, eventID):
-        report('yo', eventID)
         self.callRemote('addRow', unicode(eventID))
 
 class AlertPage(athena.LivePage):

@@ -24,7 +24,6 @@ class EventCreator(rend.Page):
     def render_body ( self, ctx, data ):
         request = inevow.IRequest ( ctx )
         f = request.fields
-        report('fields:',len(f))
         if f:
             eventID = json.dumps(['/'.join(filter(None, request.path.split('/'))[1:]),
                                   dict([[x, f[x].value] for x in f])])
