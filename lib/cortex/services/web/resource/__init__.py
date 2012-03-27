@@ -151,8 +151,12 @@ class ObjectResource(Resource):
                 target   = getattr(target, jst_name)
                 if isinstance(target,(list,tuple)): index = int(index)
                 target   = target[index]
+            elif component.endswith('()'):
+                func   = component[:-2]
+                target = getattr(target,func)()
             else:
                 target = getattr(target, component)
+
         return target
 
     @property
