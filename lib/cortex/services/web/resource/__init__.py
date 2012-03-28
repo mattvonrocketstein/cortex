@@ -90,6 +90,9 @@ class ObjectResource(Resource):
                 if isinstance(target, API):
                     T = template('objects/service_api')
                     ctx.update(api_methods=NSPart(target).startswith('jsonrpc'))
+                from cortex.services.postoffice import PostOffice
+                if isinstance(target, PostOffice):
+                    T = template('objects/postoffice')
             elif isinstance(self.target, HDS):
                 T = template('objects/HDS')
             elif isinstance(self.target, types.MethodType):
