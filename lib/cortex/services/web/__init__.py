@@ -74,6 +74,9 @@ class WebRoot(Agent):
         root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
 
+# TODO: from channel import declare_callback
+#push_q = declare_callback(channel=EVENT_T)
+
 class EventHub(LocalQueue, Agent):
     POST_HDR    = {'Content-Type':
                    "application/x-www-form-urlencoded;charset=utf-8"}
