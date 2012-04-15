@@ -4,13 +4,14 @@
 """
 
 
-from cortex.core.util import report, console
-from cortex.util.decorators import constraint
-from cortex.services import Service
-
 from txjsonrpc.netstring import jsonrpc
+from twisted.internet.error import CannotListenError
+
+from cortex.core.util import report, console
 
 from cortex.core.api import publish
+from cortex.services import Service
+from cortex.util.decorators import constraint
 from cortex.core.data import CORTEX_PORT_RANGE
 
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
@@ -52,6 +53,7 @@ class API(Service, ApiWrapper):
 
     def __init__(self, *args, **kargs):
         self.port = kargs.pop('port', None)
+        kargs.update(name='API')
         super(Service,self).__init__(*args, **kargs)
         ApiWrapper.__init__(self)
         from cortex.core import api
@@ -69,13 +71,6 @@ class API(Service, ApiWrapper):
     @constraint(boot_first='gui')
     def start(self):
         """ """
-
-# TODO: unittest like this
-#       terminal = (self.universe|'terminal') or \
-#                  (self.universe|'gui')
-#       assert terminal,"Boot order not working?"
-#
-        from twisted.internet.error import CannotListenError
         factory = jsonrpc.RPCFactory(API)
 
         count   = self.port or PORT_START
