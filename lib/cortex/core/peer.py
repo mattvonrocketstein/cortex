@@ -39,15 +39,15 @@ class _Peer(object):
     @property
     def _cortex(self):
         c = CortexPeer()
-        import copy
-        c.addr=self.addr
-        c.host=self.host
+        c.addr = self.addr
+        c.host = self.host
         return c
+
 class Peer(_Peer,HDS): pass
 
-class gah(object):
+class MethodHandle(object):
     def __init__(self,callabl):
-        self.callable=callabl
+        self.callable = callabl
 
     def __call__(self, *args, **kargs):
         return self.callable(*args, **kargs)
@@ -57,8 +57,10 @@ class CortexPeer(_Peer):
 
     def __getattr__(self,x):
         #if isinstance(out, HDS):
-        return gah(lambda *args, **kargs: self._eager_api(x, *args,**kargs))
+        return MethodHandle(lambda *args, **kargs: self._eager_api(x, *args,**kargs))
         #return out
+    def __repr__(self):
+        return super(CortexPeer,self).__repr__().replace('Peer@','CortexPeer@')
 
     @staticmethod
     def factory(fxn,x):
@@ -116,7 +118,7 @@ class PeerManager(Manager):
           >>> bob.api.load_service('beacon')
 
     """
-    asset_class = CortexPeer
+
     def update(self, host='localhost'):
         """ (potentially) update peer list by (re)scanning <host>
 
@@ -125,7 +127,7 @@ class PeerManager(Manager):
 
              Assumptions: "mapper" service is enabled
         """
-        self.universe.services['mapper'].obj.scan(host)
+        (self.universe|'mapper').scan(host)
 
     def __getattr__(self,name):
         """ allows for doing peers.localhost """
@@ -142,13 +144,16 @@ class PeerManager(Manager):
              (called by Manager.register when present) """
         #report('sending peer event')
         (self.universe|'postoffice').event(peer)
+        return peer
 
     def printValue(self, value):
         if value:
             report("Result:", str(value))
+
     def printError(self, error):
         if error:
             report('error', error)
+
     def __iter__(self):
         """ dumb proxy """
         return Manager.__iter__(self)

@@ -28,6 +28,8 @@ def publish(**kargs):
         extra    += services
     out = base_api.cleaned + extra
     return out
+def test_api(*args, **kargs):
+    print '*'*80,args,kargs
 
 def do(instructions, _api=None):
     """ do: execute a set of instructions wrt api <_api> """
@@ -141,7 +143,6 @@ agents        = universe.agents
 register_service  = universe.services.register
 register_peer     = universe.peers.register
 last_peer         = lambda: peers[0]
-show_last_peer    = lambda: report('most recent peer',last_peer())
 declare_agent     = universe.agents
 load_instructions = do
 
