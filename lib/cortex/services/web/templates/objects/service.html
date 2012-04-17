@@ -6,8 +6,8 @@
 
 
 {%block obj_nav%}
-<a href="javascript:menu('services')">Services</a>
-<a href="javascript:menu('peers')">Peers</a>
+<!--a href="javascript:menu('services')">Services</a>
+<a href="javascript:menu('peers')">Peers</a-->
 {{super()}}
 {%endblock%}
 
@@ -16,12 +16,18 @@
 {{super()}}
 {%endblock%}
 
+  {%block extra_status%}
+{%if obj.port%}
+<tr>
+  <td><strong>port</strong></td>
+  <td>{{obj.port}}</td>
+</tr>
+{%endif%}
+  {%endblock%}
 
 {%block obj_main%}
 <table>
 
-  {%block extra_status%}
-  {%endblock%}
 
   <tr class="menu" id=services>
     <td align=left>
