@@ -185,9 +185,10 @@ class NamespacePartition(object):
     def startswith(self, string):
         """
         """
-        test = NamespaceTests.name_startswith
-        partial = lambda obj: test(obj,string)
-        return self.generic(partial)
+        #test = NamespaceTests.name_startswith
+        #partial = lambda obj: test(obj, string)
+        #return self.generic(partial)
+        return self.generic_key(lambda k: k.startswith(string))
 
     def copy(self):
         """ This can fail for a variety of reasons involving thread safety,
@@ -197,19 +198,26 @@ class NamespacePartition(object):
         except TypeError:
             return dict([[name, self.namespace[name]] for name in self.namespace])
 
-    def generic(self, test):
+    def generic(self, test, value_test=True):
         """ This is the main work-horse everyone else will chain back to. Given
             a test, this partitions the namespace around it.
 
               TODO: refactor this around inspect.getmemebers()
         """
         namespace = self.copy()
-
         for key, val in namespace.items():
-            if not test(val):
-                namespace.pop(key)
+            if value_test:
+                if not test(val):
+                    namespace.pop(key)
+            else: #keytest
+                if not test(key):
+                    namespace.pop(key)
+
         if self.dictionaries: return namespace
         return NamespacePartition(namespace,dictionaries=self.dictionaries)
+
+    def generic_key(self,test):
+        return self.generic(test, value_test=False)
 
     def type_equal(self,thing):
         """ filter by type """
