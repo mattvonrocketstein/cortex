@@ -11,6 +11,22 @@ from cortex.core.util import report
 class _Peer(object):
     """ an abstraction representing a generic peer
     """
+    def mutate_if_cortex(self):
+        handshake = 'helo'
+        potentially = self._cortex
+        def success(result):
+            if result==handshake:
+                for name,peer in self._manager.registry.items():
+                    if peer==self:
+                        self._manager.registry[name] = potentially
+                        #report('replacing myself with something better')
+                        break
+            else:
+                report("hrm, got an answer back, but it's not the handshake.."+str(result))
+        #def failure(whatever):
+        #    report('failed ' + str(whatever))
+        potentially.is_cortex(handshake).addCallback(success)#,failure)
+
     def __repr__(self):
         port = str(getattr(self,'port','00'))
         addr = getattr(self,'addr','0')
@@ -27,13 +43,21 @@ class _Peer(object):
     def _log_last_connection(self, result):
         """ the most basic success callback, last_connection is the minimum
             that will be registered when the api is called.
+
+            NB: don't forget to return the result or you'll
+                change it for any other callbacks in the chain
         """
         self._last_result     = result
         self._last_connection = datetime.datetime.now()
+        return result
 
     def _report_err(self, failure):
         """ """
-        report('failure in peer',dict(self=self, type=failure.type, value=failure.value, tb=failure.tb))
+        if self._manager.universe.started:
+            # without this check, the screen clogs with errors during shutdown.
+            report('failure in peer',dict(self=self, type=failure.type,
+                                          value=failure.value, tb=failure.tb))
+            return failure
         #failure.printTraceback()
 
     @property
@@ -41,9 +65,10 @@ class _Peer(object):
         c = CortexPeer()
         c.addr = self.addr
         c.host = self.host
+        c.__dict__ = self.__dict__
         return c
 
-class Peer(_Peer,HDS): pass
+class Peer(_Peer): pass
 
 class MethodHandle(object):
     def __init__(self,callabl):
@@ -51,6 +76,12 @@ class MethodHandle(object):
 
     def __call__(self, *args, **kargs):
         return self.callable(*args, **kargs)
+
+from txjsonrpc.netstring.jsonrpc import Proxy
+
+#def ifCortex(peer,):
+#    p = Proxy(str(peer.addr), int(peer.port))
+#    p.callRemote('echo',3).addCallbacks(report,report)
 
 class CortexPeer(_Peer):
     """ abstraction representing a peer that speaks cortex """
@@ -86,7 +117,6 @@ class CortexPeer(_Peer):
     @property
     def _proxy(self):
         """ obtain proxy for this peer: a handle on a remote api """
-        from txjsonrpc.netstring.jsonrpc import Proxy
         #report('dialing peer={addr}::{port}'.format(addr=self.addr,port=API_PORT))
         proxy = Proxy(self.addr, self.port)
         return proxy
@@ -95,10 +125,10 @@ class CortexPeer(_Peer):
         """ the real api, spoken thru a jsonrpc client,
             to a remote jsonrpc server
         """
-        report('dialing@{name}'.format(name=name), args, kargs)
+        #report('dialing@{name}'.format(name=name), args, kargs)
         return self._proxy.callRemote(name, *args,
                                       **kargs).addCallbacks(self._log_last_connection,
-                                                                         self._report_err)
+                                                            self._report_err)
 
 class PeerManager(Manager):
     """
@@ -118,6 +148,7 @@ class PeerManager(Manager):
           >>> bob.api.load_service('beacon')
 
     """
+    asset_class = Peer
 
     def update(self, host='localhost'):
         """ (potentially) update peer list by (re)scanning <host>
@@ -141,9 +172,12 @@ class PeerManager(Manager):
 
     def post_registration(self, peer):
         """ post_registration hook:
-             (called by Manager.register when present) """
-        #report('sending peer event')
+             (called by Manager.register when present)
+        """
+        # note: event_T not peer_T
         (self.universe|'postoffice').event(peer)
+        peer._manager = self
+        peer.mutate_if_cortex()
         return peer
 
     def printValue(self, value):
