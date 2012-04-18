@@ -25,7 +25,7 @@ class ServiceManager(AgentManager):
 
     # registering services can happen all the time..
     #  we don't want to do anything noisy here like write an event
-    post_registration = NOOP
+    #post_registration = NOOP
 
     # TODO: might need an abstractagentmanager..
     pre_load_obj      = Manager.pre_load_obj

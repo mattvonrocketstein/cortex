@@ -113,7 +113,8 @@ def resolve(name):
 
 def chat(api, msg=".. answering ping", response='pong!'):
     """ simple command, but very useful for testing remote apis """
-    report(msg)
+    if msg:
+        report(msg)
     return response
 
 def build_agent(name, kls=object, kls_kargs={}):
@@ -123,13 +124,9 @@ def build_agent(name, kls=object, kls_kargs={}):
     """
     universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
 
+def is_cortex(msg):
+    return msg
 ping = chat
-echo = chat
-
-ctx = HDS()
-s   = HDS()
-s.api = 'api'
-#c.api          = (universe|s.api)
 
 # Shortcuts into the Universe
 load_service = universe.loadService

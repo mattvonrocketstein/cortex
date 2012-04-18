@@ -94,9 +94,6 @@ class AgentManager(Manager):
         """ pre_registration hook """
         return name, metadata
 
-    def post_registration(self, asset):
-        """ pre_registration hook """
-
     @property
     def agents(self): return self.registry
 

@@ -16,6 +16,7 @@ from cortex.util.decorators import constraint
 
 NOT_FOUND_T = 'NOTFound'
 port_range  = '-'.join([str(p) for p in CORTEX_PORT_RANGE])
+from channel import declare_callback
 
 class Mapper(Service):
     """ NMap Service:
@@ -23,12 +24,13 @@ class Mapper(Service):
           stop:  brief description service shutdown here
     """
 
+    #@declare_callback(PEER_T)
     def discovery(self, peer_data, **kwargs):
         """ will be called by the postoffice, with type PEER_T
         """
         #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
         #data = kargs#simplejson.loads(pickled_data)
-        data=peer_data
+        data = peer_data
         name = data['host'] + ':' + str(data['port'])
         self.universe.peers.register(name, **data)
 
