@@ -216,12 +216,12 @@ class Manager(object):
         """
         return self[self.as_list[0]]
 
-    def _stamp(self, name):
+    def _stamp(self, obj):
         """ Timestamps the asset with name <name>, safe
             to call multiple times, but dishonesty is
             discouraged.
         """
-        self.registry[name].stamp = datetime.datetime.now()
+        obj.stamp = datetime.datetime.now()
 
     def pre_manage(self, name=None, kls=object, **kls_kargs):
         """ pre_manage hook:
@@ -271,13 +271,18 @@ class Manager(object):
         """
         name, item_metadata = self.pre_registration(name, **item_metadata)
         name = str(name)
-        self.registry[name] = getattr(self, 'asset_class', DEFAULT_ASSET_CLASS)()
+        asset_class = getattr(self, 'asset_class', DEFAULT_ASSET_CLASS)
+        #self.registry[name] = asset_class()
+        tmp = asset_class()
         for key, value in item_metadata.items():
-            setattr( self.registry[name], key, value)
-        self._stamp(name) # sets birthday
-        new_asset = self[name]
-        new_asset = self.post_registration(new_asset)
-        return new_asset
+            setattr( tmp, key, value)
+        self._stamp(tmp) # sets birthday
+        #new_asset = self[name]
+        tmp = self.post_registration(tmp)
+        if tmp is None:
+            raise ValueError,"oops, post_registration cant return None.."
+        self.registry[name] = tmp
+        return tmp
 
     def __str__(self):
         """ """
@@ -331,7 +336,6 @@ class Manager(object):
         out.sort(lambda x, y: cmp(self.registry[x].stamp,
                                   self.registry[y].stamp))
         return out
-
     aslist = as_list
 
     def __iter__(self):
