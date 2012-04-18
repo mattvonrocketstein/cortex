@@ -80,12 +80,16 @@ class ObjectResource(Resource):
                 T = template('objects/universe')
             elif isinstance(target, Agent):
                 from cortex.mixins.autonomy import Autonomy
+                from cortex.services.api import API
                 T = template('objects/agent')
                 ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
                            autonomy=NSPart(target).intersection(NSPart(Autonomy)))
                 if isinstance(target, Service):
                     T = template('objects/service')
                     ctx.update(children=target.agents if hasattr(target, 'agents') else [],)
+                if isinstance(target, API):
+                    T = template('objects/service_api')
+                    ctx.update(api_methods=NSPart(target).startswith('jsonrpc'))
             elif isinstance(self.target, HDS):
                 T = template('objects/HDS')
             elif isinstance(self.target, types.MethodType):
