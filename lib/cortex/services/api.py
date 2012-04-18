@@ -1,6 +1,6 @@
 """ cortex.services.api
 
-      This service publishes the api via json-rpc
+      This service publishes cortex.core.api via json-rpc.
 """
 
 
@@ -16,24 +16,38 @@ from cortex.core.data import CORTEX_PORT_RANGE
 
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
+def wrap(func):
+    """ by default the functions will get the API service object as
+        the first argument, but functions in cortex.core.api are not
+        designed that way (since they are used in node-def parsing,
+        the TUI, etc etc).  we need to knock that argument off, and
+        assuming that it's always there and always unnecessary should
+        be totally safe in this context.
+    """
+    def newf(*args, **kargs):
+        return func(*args[1:], **kargs)
+    return newf
+
 def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lambda: publish()):
     """ """
 
     # if _dict is not a dict then it should be a callable that returns one.
-    if hasattr(_dict,'__call__'):
+    if hasattr(_dict, '__call__'):
         _dict = _dict()
 
     # build a test for whether the given name is callable
+    # TODO: use NSPart here
     test    = lambda k: hasattr(_dict[k], '__call__') and not k.startswith('_')
 
     # wrap the whole namespace we were passed in..
     #  just maps to a different name if item is callable
-    wrapped = dict([['jsonrpc_' + k, _dict[k]] for k in _dict if test(k)])
-    report('publishing',_dict.keys())
+    wrapped = dict([ ['jsonrpc_' + k,
+                      wrap(_dict[k]) ]  for k in _dict if test(k)])
+    report('publishing', _dict.keys())
     return type(name, bases, wrapped)
 
 #Dynamically build one of the subclasses from the core API definitions
-ApiWrapper = api_wrapper(bases=(jsonrpc.JSONRPC,object),)
+ApiWrapper = api_wrapper()
 
 class API(Service, ApiWrapper):
     """ API Service:
@@ -44,7 +58,8 @@ class API(Service, ApiWrapper):
     """
     def augment_with(self, **namespace):
         """ dynamically increase the published api
-            using <namespace> """
+            using <namespace>
+        """
         for name,value in namespace.items():
             assert hasattr(value, '__call__'), "value added to api must be callable"
             name = 'jsonrpc_' + name
