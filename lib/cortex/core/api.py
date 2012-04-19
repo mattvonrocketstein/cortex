@@ -10,6 +10,13 @@ from cortex.core.parsing import Nodeconf
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
+def contribute(**kargs):
+    from cortex.core import api
+    for k,v in kargs.items():
+        if k in dir(api):
+            raise ValueError,"{0} is already in the API.".format(k)
+        else:
+            setattr(api,k,v)
 
 def publish(**kargs):
     """ return a dictionary of the namespace for this module,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" go.py: Second-phase init
+""" go.py: First/second phase init
 """
 
 import os, sys
@@ -17,19 +17,18 @@ def build_parser():
     confHelp      = "Node configuration file to use"
     commandHelp   = "same as python -c"
     gtkHelp       = "use the gtk-reactor?"
-    testHelp       = "run cortex unittest suite"
-    parser        = OptionParser()
-
-    #parser.add_option("-x",  '--xterm', dest="xterm", action="store_true", default=False,
-    #                  help=commandHelp,  metavar="XTERM")
-    parser.add_option("-c",     dest="command", default="", help=commandHelp,  metavar="COMMAND")
-    parser.add_option("--gtk",  dest="gtk_reactor", default=False, action="store_true", help=gtkHelp)
-    parser.add_option("--test",  dest="run_tests", default=False, action="store_true", help=testHelp)
-    parser.add_option("-u", "--universe", dest="universe",help=universeHelp, metavar="UNIVERSE")
-    parser.add_option('--directives', dest="directives", default="", help=directiveHelp)
-    parser.add_option('--services', dest="services", default="", help=directiveHelp)
-    parser.add_option('--conf', dest="conf", default=REL_NODE_CONF, help=confHelp)
-    return parser
+    testHelp      = "run cortex unittest suite"
+    clientHelp    = "api client"
+    p        = OptionParser()
+    p.add_option("-c",dest="command",default="",help=commandHelp,  metavar="COMMAND")
+    p.add_option("--gtk",dest="gtk_reactor", default=False,action="store_true",help=gtkHelp)
+    p.add_option("--test",dest="run_tests", default=False,action="store_true", help=testHelp)
+    p.add_option("-u","--universe",dest="universe",help=universeHelp, metavar="UNIVERSE")
+    p.add_option('--directives',dest="directives", default="", help=directiveHelp)
+    p.add_option('--services',dest="services", default="", help=directiveHelp)
+    p.add_option('--conf',dest="conf",default=REL_NODE_CONF, help=confHelp)
+    p.add_option('--client',dest="client",action='store_true',default=False,help=clientHelp)
+    return p
 
 def entry():
     """
@@ -73,12 +72,18 @@ def entry():
     ##  there goes the neighborhood.
     from cortex.core.universe import Universe
     from cortex.bin.phase2 import install_nodeconf
+    from cortex.bin.phase2 import use_client
     from cortex.core.reloading_helpers import run as RUN
     Universe.directives = options.directives.split(",")
 
     # reflect command-line options in universe's config
-    olist = [x for x in dir(options) if not x.startswith('_') and x not in 'read_file read_module ensure_value'.split()]
+    olist = [ x for x in dir(options) if not x.startswith('_') \
+              and x not in 'read_file read_module ensure_value'.split() ]
     [setattr(Universe.config,x,getattr(options,x)) for x in olist]
+
+    # use the cortex api client?
+    if options.client:
+        return use_client(args)
 
     if options.services:
         from cortex.core import api
