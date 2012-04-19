@@ -8,9 +8,13 @@ from cortex.core.hds import HDS
 from cortex.core.data import API_PORT
 from cortex.core.util import report
 
-class _Peer(object):
+class Peer(object):
     """ an abstraction representing a generic peer
     """
+    def __init__(self, addr=None, port=None):
+        self.addr = addr
+        self.port = port
+
     def mutate_if_cortex(self):
         handshake = 'helo'
         potentially = self._cortex
@@ -52,11 +56,18 @@ class _Peer(object):
         return result
 
     def _report_err(self, failure):
-        """ """
-        if self._manager.universe.started:
-            # without this check, the screen clogs with errors during shutdown.
-            report('failure in peer',dict(self=self, type=failure.type,
-                                          value=failure.value, tb=failure.tb))
+        """ we only want to propogate failures under certain conditions.
+
+            this method is complicated by the fact that peers might be
+            created as a result of network-mapper discovery OR stand-alone.
+            without a check, the screen clogs with errors during shutdown.
+        """
+        if hasattr(self,'_manager'):
+            if self._manager.universe.started:
+                report('failure in peer',dict(self=self, type=failure.type,
+                                              value=failure.value, tb=failure.tb))
+                return failure
+        else:
             return failure
         #failure.printTraceback()
 
@@ -64,11 +75,9 @@ class _Peer(object):
     def _cortex(self):
         c = CortexPeer()
         c.addr = self.addr
-        c.host = self.host
+        c.port = self.port
         c.__dict__ = self.__dict__
         return c
-
-class Peer(_Peer): pass
 
 class MethodHandle(object):
     def __init__(self,callabl):
@@ -83,7 +92,7 @@ from txjsonrpc.netstring.jsonrpc import Proxy
 #    p = Proxy(str(peer.addr), int(peer.port))
 #    p.callRemote('echo',3).addCallbacks(report,report)
 
-class CortexPeer(_Peer):
+class CortexPeer(Peer):
     """ abstraction representing a peer that speaks cortex """
 
     def __getattr__(self,x):
@@ -166,7 +175,7 @@ class PeerManager(Manager):
         mgetattr = Manager.__getattribute__
         for key in ogetattr(self,'keys')():
             peer = ogetattr(self, '__getitem__')(key)
-            if name == peer.host:
+            if name == peer.addr:
                 return peer
         return mgetattr(self,name)
 
