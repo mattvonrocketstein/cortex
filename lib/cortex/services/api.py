@@ -57,14 +57,18 @@ class API(Service, ApiWrapper):
            stop:
     """
     def augment_with(self, **namespace):
-        """ dynamically increase the published api
+        """ dynamically increase the (json) published api
             using <namespace>
+
+            TODO: define an api-contribute-signal which this
+                  service and the terminal service both respond to.
         """
         for name,value in namespace.items():
             assert hasattr(value, '__call__'), "value added to api must be callable"
             name = 'jsonrpc_' + name
             setattr(self, name, value)
         return namespace
+    contribute = augment_with
 
     def __init__(self, *args, **kargs):
         self.port = kargs.pop('port', None)
