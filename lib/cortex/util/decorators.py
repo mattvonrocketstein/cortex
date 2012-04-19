@@ -1,5 +1,9 @@
 """ cortex.util.decorators
 """
+from collections import defaultdict
+
+# TODO: annotation registration table
+FUNC_NOTES_TABLE = defaultdict(lambda: [])
 
 def function_annotator(prefix, **function_metadata):
     """ loads function up with key-values
@@ -8,7 +12,6 @@ def function_annotator(prefix, **function_metadata):
         """ """
         for label,val in function_metadata.items():
             setattr(fxn, '_'+prefix+'_'+label, val)
-
         # store an inversion and summary function
         fxn.remove_annotations  = lambda: [ delattr(fxn, '_'+prefix+'_', val) \
                                             for val in function_metadata ]
@@ -27,4 +30,3 @@ def constraint(**labels_and_constraints):
             >>>
     """
     return function_annotator('constraint', **labels_and_constraints)
-
