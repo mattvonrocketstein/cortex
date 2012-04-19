@@ -59,7 +59,8 @@ class ServiceManager(AgentManager):
         else:                           return True
 
     def build_constraint_table(self):
-        """ """
+        """ TODO: allow multiple boot-first constraints?
+        """
         self.table = {}
         for item in self._pending:
                 name, kls, kargs = item
