@@ -53,7 +53,19 @@ class __Universe__(AutoReloader, UniverseNotation,
     def Nodes(self):
         """ nodes: static definition """
         blammo = getattr(self, '_use_nodeconf', self.read_nodeconf)
-        return blammo()
+        return blammo() if callable(blammo) else blammo
+
+    @classmethod
+    def set_nodes(self, val):
+        """ method to overwrite the property above.  might seem weird, but
+            the universe is a singleton so it's not really that strange.
+            why would you use this?  maybe you're generating it dynamically
+            instead of from a file.  or, if you're initializing the universe
+            completely via the API, maybe it would be useful afterwards to
+            call something like Universe.set_nodes([]) to use a nil config
+            w/o saving such a trivial thing to a file.
+        """
+        self.Nodes = val
 
     def load(self):
         """ call load for all embedded managers """
@@ -189,6 +201,15 @@ class __Universe__(AutoReloader, UniverseNotation,
         name = 'Universe({alfa})[{bravo}:{charlie}]@{delta}'.format(**name_args)
         self.name    = name
         return name
+
+    def loadServices(self, services=[]):
+        """ """
+        for s in services:
+            if isinstance(s,(list,tuple)):
+                s, kargs = s
+            else:
+                kargs = {}
+            self.loadService(s,**kargs)
 
     def loadService(self, service, **kargs):
         """ """

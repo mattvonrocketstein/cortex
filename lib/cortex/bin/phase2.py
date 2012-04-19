@@ -11,6 +11,7 @@ from cortex.core.universe import Universe
 from cortex.core.util import report
 from cortex.core.data import CORTEX_PORT_RANGE
 from cortex.core.peer import CortexPeer
+from cortex.core import api
 
 def install_nodeconf(nodeconf_file, options, args):
     """ bootstraps universe using a file with a list
@@ -35,7 +36,6 @@ def use_client(args):
     has the name 'peer'.  To call a method on the remote host, simply
     run something like 'peer.method(arguments)'
 
-
         USAGE:
 
           # HOST : PORT         COMMAND-LINE
@@ -44,23 +44,31 @@ def use_client(args):
             otherHost : 1337      $ cortex --client otherHost
             otherHost : 1337      $ cortex --client otherHost:1337
             otherHost : 1337      $ cortex --client otherHost 1337
+
+    TODO: support --cmd, so this isn't forced to interactive
+
     """
-    from cortex.core import api
     PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
     host, port = 'localhost', PORT_START
     if not args: pass # use defaults
     elif len(args)==1:
             if ':' in args[0]: host, port = args[0].split(':')
             else:              host = args[0]
-    elif len(args)==2:         host,port = args
+    elif len(args)==2:         host, port = args
     else:
         err = '--client is not sure what to do with these arguments: {0}'
         err = err.format(args)
         return Universe.fault(err)
+    _use_client(host, port)
+
+def _use_client(host, port):
+    """ """
     report('connecting to ctx://{0}:{1} .. '.format(host, port))
     peer = CortexPeer(addr = host, port = port)
     api.contribute(peer=peer)
-    Universe.__class__.Nodes = [['load_service', 'postoffice'],
-                                ['load_service', '_linda'],
-                                ['load_service', 'terminal'],]
+    api.load_services('postoffice _linda terminal'.split())
+
+    #Universe.__class__.Nodes = []
+    Universe.set_nodes([])
+    print 'setem'
     return Universe.play()

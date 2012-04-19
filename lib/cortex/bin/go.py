@@ -85,31 +85,35 @@ def entry():
     if options.client:
         return use_client(args)
 
-    if options.services:
-        from cortex.core import api
-        services = options.services.split(',')
-        for s in services:
-            api.do([['load_service',(s,),{}]])
-
+    # run tests?
     if options.run_tests:
         from cortex.tests import main
         return main()
 
-    ## deserialize a saved universe and resume it
+    # deserialize a saved universe and resume it?
     if options.universe:
         verify_file(options.universe)
         U = pickle.loads(open(options.universe).read())
-        U.play() # Invoke the Universe
-        return
+        return U.play() # Invoke the Universe
 
-    # Otherwise install the nodeconf that we found and run it.
+
+    ## After this point it's assumed we're using a node-conf,
+    ## whether it is specified explicitly or assumed.  the cases for
+    ## the command-line options should not use 'return'
+
+    # augment nodeconf with additional services?
+    if options.services:
+        from cortex.core import api
+        services = options.services.split(',')
+        for s in services:
+            api.do([['load_service', (s,), {}]])
+    verify_file(nodeconf_file)
     install_nodeconf(nodeconf_file, options, args)
-    s=Universe.play() # Invoke the Universe
+    return Universe.play() # Invoke the Universe
 
-def verify_file(f):
-    """ """
+def verify_file(f,err="Path does not exist."):
     if not os.path.exists(f):
-        print "Path does not exist."
+        print err
         sys.exit()
 
 if __name__ == '__main__':
