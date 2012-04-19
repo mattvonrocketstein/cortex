@@ -20,3 +20,6 @@ jinja2==2.6
 #apt-get install graphviz-dev
 #networkx
 #matplotlib
+
+# search-service
+git+git://github.com/mattvonrocketstein/xgoogle.git#egg=xgoogle
