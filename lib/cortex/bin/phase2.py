@@ -59,16 +59,17 @@ def use_client(args):
         err = '--client is not sure what to do with these arguments: {0}'
         err = err.format(args)
         return Universe.fault(err)
-    _use_client(host, port)
+    return _use_client(host, port)
 
 def _use_client(host, port):
-    """ """
+    """
+       1) make the peer, ensure it is available in the TUI
+       2) load the services that are required to run the tui
+       3) we set everything up by hand; the universe uses nil-config
+    """
     report('connecting to ctx://{0}:{1} .. '.format(host, port))
     peer = CortexPeer(addr = host, port = port)
     api.contribute(peer=peer)
     api.load_services('postoffice _linda terminal'.split())
-
-    #Universe.__class__.Nodes = []
     Universe.set_nodes([])
-    print 'setem'
     return Universe.play()
