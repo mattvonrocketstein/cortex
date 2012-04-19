@@ -55,10 +55,6 @@ class __Universe__(AutoReloader, UniverseNotation,
         blammo = getattr(self, '_use_nodeconf', self.read_nodeconf)
         return blammo()
 
-    @property
-    def nodes(self):
-        """ nodes: dynamic definition """
-
     def load(self):
         """ call load for all embedded managers """
         self.services.load()
@@ -102,22 +98,21 @@ class __Universe__(AutoReloader, UniverseNotation,
             return _api.get(instruction)
 
         # Interprets all the instructions in the nodeconf
-        if hasattr(self, 'nodeconf_file') and self.nodeconf_file:
-            for node in self.Nodes:
-                original = node
-                instruction, args = node[0], node[1:]
+        for node in self.Nodes:
+           original = node
+           instruction, args = node[0], node[1:]
 
-                report("parsing node", node)
-                if len(args)==1:
-                    kargs = {}
-                else:
-                    args = args[:-1]
-                    kargs = (args and args[-1]) or {}
+           report("parsing node", node)
+           if len(args)==1:
+               kargs = {}
+           else:
+               args = args[:-1]
+               kargs = (args and args[-1]) or {}
 
-                handler = get_handler(instruction)
-                if not handler:
-                    parse_error("No instruction handler!", instruction, args, kargs)
-                handler(*args, **kargs)
+           handler = get_handler(instruction)
+           if not handler:
+               parse_error("No instruction handler!", instruction, args, kargs)
+           handler(*args, **kargs)
 
         # is this working?
         for name, kls, kls_kargs in self.agents._pending:
