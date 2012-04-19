@@ -165,10 +165,19 @@ class __Universe__(AutoReloader, UniverseNotation,
             except Exception,e:
                 failure_stopping_agent(agent, e)
 
-        self.threadpool.stop()
+        # we have to check first,
+        # maybe bootstrap didn't even get this far
+        if hasattr(self,'threadpool'):
+            self.threadpool.stop()
+
         for thr in self.threads:
             thr._Thread__stop()
-        self.reactor.stop()
+
+        import twisted
+        try:
+            self.reactor.stop()
+        except twisted.internet.error.ReactorNotRunning:
+            pass
         report("Stopped: ", [x for x in stopped] )
 
     def decide_name(self):
