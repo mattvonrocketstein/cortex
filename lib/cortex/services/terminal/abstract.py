@@ -1,6 +1,6 @@
 """ cortex.services.terminal.abstract
-     stuff that all terminal services have in common.
 
+     stuff that all terminal services have in common.
      this is useless until it's bound to the concrete
      ipython console or gui aspect.
 """
@@ -13,10 +13,11 @@ from cortex.core.util import report, console
 from cortex.util.decorators import constraint
 
 class ATerminal(Service, LocalQueue):
+    """ """
     @constraint(boot_first='postoffice')
     def start(self):
         """ """
-        print 'start'
+        report('start')
         from twisted.internet.error import ReactorAlreadyRunning
         # Hack: this raises an exception but everything breaks
         #        without the call itself. hrm.
@@ -55,9 +56,13 @@ class ATerminal(Service, LocalQueue):
             from the postoffice.
         """
         super(ATerminal,self).stop()
-        postoffice=(self.universe|'postoffice')
+        postoffice = (self.universe|'postoffice')
         if postoffice:
             postoffice.unsubscribe(EVENT_T, self.push_q)
+        try:
+            self.shell.IP.ipmagic('exit')
+        except:
+            report('failure with ipmagic exit.  (is this the gui?)')
         report('the Terminal Service Dies.')
 
     @staticmethod
