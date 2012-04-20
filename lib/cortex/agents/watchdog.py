@@ -16,6 +16,14 @@ class WatchDog(Agent):
         """ NOTE: if "bark" function is passed it will be used,
                   even if there is already a bark() method defined!
         """
+        # Sanity check
+        if not isinstance(watch_list,(tuple,list)):
+            self.fault('watch-list does not look iterable: '+type(watch_list))
+        for predicate in watch_list:
+            if not callable(predicate):
+                self.fault('watch-list contains non-callable: '+str(predicate))
+
+
         self.watch_list = watch_list
         if bark and getattr(self, 'bark', None):
             warn  = "bark function was passed in, but this class already has a bark() method!: "
