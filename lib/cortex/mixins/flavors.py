@@ -40,7 +40,7 @@ class ReactorRecursion(Autonomy):
 class Threaded(Autonomy):
 
     @classmethod
-    def from_function(kls, func):
+    def from_function(kls, func, ignore_result=False):
         """ turns a function into an agent.  you might think
             that you can do this with any agent, but it's a
             little more tricky than that.. functions return,
@@ -50,6 +50,7 @@ class Threaded(Autonomy):
             a *single* parent (multiple-return is no different
             than multiple-subscribers)
         """
+        use_result = not ignore_result
         from cortex.core.agent import Agent
         from cortex.core.util import getcaller
         def _post_init(self, **kargs):
@@ -57,11 +58,13 @@ class Threaded(Autonomy):
 
         def run(self):
             r = func(**self.fun_kargs)
-            self._return_bus(r)
+            if use_result:
+                self._return_bus(r)
+            self.stop()
 
         def fault(self, *args, **kargs):
             super(self.__class__, self).fault(*args, **kargs)
-            raise
+            self.universe.halt()
 
         def start(self):
             parent = getattr(self, 'parent', None)
@@ -76,7 +79,7 @@ class Threaded(Autonomy):
                     self.fault('agents created with .from_function() '
                                'need to have a parent with a "bus" attribute '
                                'in order to return results!',)
-            if bus is None:
+            if use_result and bus is None:
                 self.fault('the parent of agents created with '
                            'Threaded.from_function should have a bus')
             self._return_bus = bus
@@ -118,7 +121,8 @@ class ThreadedIterator(Threaded):
 
         if 'run' in ns:
             if ns['run'] != AbstractAutonomy.run:
-                raise Exception,"NonAbstract run already defined for {0}".format(klazz)
+                err = "NonAbstract run already defined for {0}".format(klazz)
+                raise Exception, err
         else:
             report('replacing run() method')
             old_run = ns.pop('run')
