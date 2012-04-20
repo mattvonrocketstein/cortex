@@ -12,7 +12,7 @@
 """
 
 from cortex.core.util import report
-from cortex.core.service import Service
+from cortex.services import Service
 from cortex.mixins.flavors import ThreadedIterator
 from cortex.agents.watchdog import WatchDog
 
