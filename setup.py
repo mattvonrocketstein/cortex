@@ -104,6 +104,7 @@ if __name__=='__main__':
         entry_points = {
             'console_scripts': [
                 'cortex = cortex.bin.go:entry',
+                'ctxcl = cortex.bin.client:entry',
                 'panic = cortex.bin.panic:entry',
             ],
         },

@@ -20,7 +20,7 @@ def build_parser():
     testHelp      = "run cortex unittest suite"
     clientHelp    = "api client"
     p        = OptionParser()
-    p.add_option("-c",dest="command",default="",help=commandHelp,  metavar="COMMAND")
+    p.add_option("-c",'--cmd', dest="command",default="",help=commandHelp,  metavar="COMMAND")
     p.add_option("--gtk",dest="gtk_reactor", default=False,action="store_true",help=gtkHelp)
     p.add_option("--test",dest="run_tests", default=False,action="store_true", help=testHelp)
     p.add_option("-u","--universe",dest="universe",help=universeHelp, metavar="UNIVERSE")
@@ -53,12 +53,6 @@ def entry():
             execfile(fname)
             return
 
-    #  python interpretter compatability:
-    #    shell$ shell$ cortex somefile
-    elif options.command:
-        exec(options.command)
-        return
-
     # use the gtk-reactor?
     if options.gtk_reactor:
         print "using gtk reactor"
@@ -72,7 +66,7 @@ def entry():
     ##  there goes the neighborhood.
     from cortex.core.universe import Universe
     from cortex.bin.phase2 import install_nodeconf
-    from cortex.bin.phase2 import use_client
+    from cortex.bin.client import use_client
     from cortex.core.reloading_helpers import run as RUN
     Universe.directives = options.directives.split(",")
 
@@ -83,7 +77,14 @@ def entry():
 
     # use the cortex api client?
     if options.client:
-        return use_client(args)
+        return use_client(options, args)
+
+    #  python interpretter compatability:
+    #    shell$ cortex -c"print 3"
+    #  NB: comes after options.client because it might want to consume that
+    elif options.command:
+        exec(options.command)
+        return
 
     # run tests?
     if options.run_tests:
