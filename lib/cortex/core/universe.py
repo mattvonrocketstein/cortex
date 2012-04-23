@@ -73,9 +73,7 @@ class __Universe__(AutoReloader, UniverseNotation,
         self.agents.load()
 
     def play(self):
-        """
-            Post-conditions:
-        """
+        """ entry point.  this guy does not return """
         report("Universe.play!")
         self.decide_name()
         self.started = True
@@ -137,6 +135,7 @@ class __Universe__(AutoReloader, UniverseNotation,
         self.threadpool = reactor.getThreadPool()
 
         # Main loop
+
         reactor.run()
 
 
@@ -147,17 +146,14 @@ class __Universe__(AutoReloader, UniverseNotation,
             # TODO: use os/pid mixins.
             os.system('kill -KILL '+str(pid))
 
-        # hack for terminal to exit cleanly
-        try: sys.exit()
-        except SystemExit:
-            pass
-
     def halt(self):
         """ override controllable """
         return self.reactor.callFromThread(self.stop)
 
     def stop(self):
         """ override autonomy """
+        if not self.started:
+            return
         self.started = False
         stopped = []
 
@@ -168,7 +164,7 @@ class __Universe__(AutoReloader, UniverseNotation,
 
             report(err_msg)
             report(str(e))
-
+            raise e
         ## stop any other agents
         for agent in set(self.agents.values() + self.services.values()):
             try:
@@ -267,7 +263,8 @@ class __Universe__(AutoReloader, UniverseNotation,
                         if not val==Service and issubclass(val, Service):
                             #report('discovered service in ' + mod_name)
                             if not getattr(val, 'do_not_discover', False):
-                                ret_vals.append(self.start_service(val, ask=False, **kargs)) # THUNK
+                                # THUNK
+                                ret_vals.append(self.start_service(val, ask=False, **kargs))
                 return ret_vals
 
         if isinstance(service, types.StringTypes):
@@ -278,7 +275,9 @@ class __Universe__(AutoReloader, UniverseNotation,
 
 
     def start_service(self, obj, ask=False, **kargs):
-        """ obj is actually a service_kls?
+        """ TODO: bad name?  this is a load() style command,
+                  i don't think it really starts look back at
+                  manage implementation specifics
         """
         if ask:
             raise Exception,'obsolete'
