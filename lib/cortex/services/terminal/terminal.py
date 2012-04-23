@@ -77,10 +77,15 @@ class IPShellTwisted(threading.Thread):
             while True and not self.quitting:
                 reactorrun_orig()
         self.reactor.run = reactorrun
-        #either the universe stopped the terminal or the
-        #        the terminal stopped the universe.. need to think
-        #        more about this case
-        on_kill = [ self.mainquit, self.controller.universe.stop ]
+        # either the universe stopped the terminal or the
+        # the terminal stopped the universe.. need to think
+        # more about this case.  the shell can be exited with
+        # control-d, but you have to hit 'return' to make it final.
+        # suspect this is related to on_timer() / runcode(), but
+        # this code is really fragile and changing it can make the
+        # situation even worse.
+        on_kill = [ self.mainquit,
+                    self.controller.universe.stop ]
         self.IP = make_IPython(argv, user_ns=user_ns, debug=debug,
                                shell_class=shell_class, on_kill=on_kill)
 

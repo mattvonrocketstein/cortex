@@ -45,9 +45,8 @@ class ShellAspect:
                    "but you're trying to use the console-based ipython terminal.")
             ctx = 'test'
             self.fault(err, ctx)
-            self.universe.stop()
-            self.universe.reactor.stop()
-            import sys;sys.exit()
+            self.universe.halt()
+            #import sys;sys.exit()
 
         self.shell.reactor.callWhenRunning(self.shell.on_timer)
         self.shell.start()

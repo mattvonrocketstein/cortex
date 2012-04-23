@@ -56,9 +56,8 @@ class ATerminal(Service, LocalQueue):
             from the postoffice.
         """
         super(ATerminal,self).stop()
-        postoffice = (self.universe|'postoffice')
-        if postoffice:
-            postoffice.unsubscribe(EVENT_T, self.push_q)
+        if self.universe.started:
+            (self.universe|'postoffice').unsubscribe(EVENT_T, self.push_q)
         try:
             self.shell.IP.ipmagic('exit')
         except:
