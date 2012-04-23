@@ -14,7 +14,9 @@ class Peer(object):
     def __init__(self, addr=None, port=None):
         self.addr = addr
         self.port = port
-
+        # hack
+        from cortex.core.universe import Universe
+        self.universe = Universe
     def mutate_if_cortex(self):
         handshake = 'helo'
         potentially = self._cortex
@@ -26,7 +28,9 @@ class Peer(object):
                         #report('replacing myself with something better')
                         break
             else:
-                report("hrm, got an answer back, but it's not the handshake.."+str(result))
+
+                if self.universe.started:
+                    report("got an answer back, but it's not the handshake.."+str(result))
         #def failure(whatever):
         #    report('failed ' + str(whatever))
         potentially.is_cortex(handshake).addCallback(success)#,failure)
@@ -35,14 +39,6 @@ class Peer(object):
         port = str(getattr(self,'port','00'))
         addr = getattr(self,'addr','0')
         return 'Peer@' + str(addr) + ':' + str(port)
-
-    @property
-    def age(self):
-        """ time since last successful connection """
-        if hasattr(self,'_last_connection'):
-            return datetime.datetime.now() - self._last_connection
-        else:
-            return datetime.datetime(1800,1,1)
 
     def _log_last_connection(self, result):
         """ the most basic success callback, last_connection is the minimum
@@ -63,7 +59,7 @@ class Peer(object):
             without a check, the screen clogs with errors during shutdown.
         """
         if hasattr(self,'_manager'):
-            if self._manager.universe.started:
+            if self.universe.started:
                 report('failure in peer',dict(self=self, type=failure.type,
                                               value=failure.value, tb=failure.tb))
                 return failure
@@ -184,8 +180,9 @@ class PeerManager(Manager):
              (called by Manager.register when present)
         """
         # note: event_T not peer_T
-        (self.universe|'postoffice').event(peer)
         peer._manager = self
+        (self.universe|'postoffice').event(peer)
+
         peer.mutate_if_cortex()
         return peer
 
