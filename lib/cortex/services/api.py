@@ -8,7 +8,6 @@ from txjsonrpc.netstring import jsonrpc
 from twisted.internet.error import CannotListenError
 
 from cortex.core.util import report, console
-
 from cortex.core.api import publish
 from cortex.services import Service
 from cortex.util.decorators import constraint

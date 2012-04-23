@@ -28,13 +28,28 @@ class UniverseNotation:
               "postoffice"
 
         """
-        if type(other) in types.StringTypes:
+        def get_string_from_services(name):
             try:
-                out = self.services[other]
+                out = self.services[name]
                 return out and out.obj
             except self.services.NotFound:
-                report('no such service found', other)
                 return None
+        def get_string_from_agents(name):
+            try:
+                out = self.agents[name]
+                return out and out.obj
+            except self.agents.NotFound:
+                return None
+
+        if type(other) in types.StringTypes:
+            result = get_string_from_services(other) or \
+                     get_string_from_agents(other)
+            if result is None:
+                report('no such service/agent', other)
+                return None
+            else:
+                return result
+
         elif isinstance(other, Service):
             return other.__class__.__name__.lower()
         else:
