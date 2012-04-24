@@ -6,7 +6,6 @@ import sys
 from cortex.core.util import report
 from cortex.core.universe import Universe
 from cortex.core.data import CORTEX_PORT_RANGE
-from cortex.mixins.flavors import Threaded
 from cortex.core.peer import CortexPeer
 from cortex.core import api
 
@@ -51,9 +50,7 @@ def _use_client(host, port, options):
 
     report('connecting to ctx://{0}:{1} .. '.format(host, port))
     peer = CortexPeer(addr = host, port = port)
-    peer.__manager = type('asdad',(object,),dict(universe=Universe))
     api.contribute(peer=peer)
-
 
     cmd = 'peer.' + options.command if options.command else None
     api.load_services('postoffice _linda'.split())
@@ -61,26 +58,12 @@ def _use_client(host, port, options):
     if cmd is None:
         api.load_service('terminal')
     else:
-        def finished():
-            #return 'CommandAgent' in Universe.agents and \
-            return Universe.started and \
-                   (Universe|'CommandAgent').stopped
+        callback = lambda *args, **kargs: [report(*args, **kargs), Universe.halt()]
+        command = lambda peer=peer: eval(cmd).addCallbacks(callback, callback)
+        CommandAgent = api.function_to_agent(command)
+        Universe.agents.manage(kls=CommandAgent, name='CommandAgent')
 
-        def cmd_func(peer):
-            report(cmd)
-            eval(cmd).addCallbacks(report,report)
-            # we're finished here, but if the goalmon sees it right away
-            # he'll trigger the eschaton.  lets just hangout for a while
-            import time; time.sleep(1)
-            return True
 
-        api.load_service('goalmonitor', goals=[finished])
-        CommandAgent = Threaded.from_function(lambda: cmd_func(peer=peer), ignore_result=True)
-        Universe.agents.manage(kls = CommandAgent,
-                               kls_kargs = {},
-                               name = 'CommandAgent')
-        #Agent(lambda: eval(cmd))
-        report('got command: ',cmd)
     return Universe.play()
 
 def entry():

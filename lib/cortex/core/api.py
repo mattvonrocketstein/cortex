@@ -10,6 +10,11 @@ from cortex.core.parsing import Nodeconf
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
+
+def function_to_agent(func, ignore_result=True):
+    from cortex.mixins.flavors import Threaded
+    return Threaded.from_function(func, ignore_result=ignore_result)
+
 def contribute(**kargs):
     from cortex.core import api
     for k,v in kargs.items():
