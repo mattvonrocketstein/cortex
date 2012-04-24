@@ -147,7 +147,15 @@ class __Universe__(AutoReloader, UniverseNotation,
             os.system('kill -KILL '+str(pid))
 
     def halt(self):
-        """ override controllable """
+        """ override from ControllableMixin
+
+            sometimes the universe needs to have it's shutdown triggered by another
+            agent, for example when the terminal agent received control-D.  in those
+            circumstances, until there is a signal for this, the caller should
+            *always* use halt instead of 'stop'.
+        """
+        #from cortex.core.util import getcaller
+        #report('shutting down at the request of:'); print getcaller()
         return self.reactor.callFromThread(self.stop)
 
     def stop(self):
