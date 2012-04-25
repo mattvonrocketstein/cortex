@@ -132,7 +132,8 @@ class __Universe__(AutoReloader, UniverseNotation,
 
         reactor.run()
 
-
+    def children(self):
+        return self.agents.children() + self.services.children()
     def sleep(self):
         """
             TODO: send a better signal and use os/pid mixins.
