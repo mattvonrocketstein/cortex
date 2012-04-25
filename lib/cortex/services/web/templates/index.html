@@ -33,6 +33,22 @@
         <link rel="apple-touch-icon" sizes="72x72" href="/static/img/apple-touch-icon-72x72.png">
         <link rel="apple-touch-icon" sizes="114x114" href="/static/img/apple-touch-icon-114x114.png">
 
+        <script src="/static/js/libs/jquery-1.7.1.js"></script>
+        <script src="/static/js/tabs.js"></script>
+        <script>
+          var last_name = 0;
+          function menu(name){
+            console.debug('menu name is ' + name)
+            $('.menu').hide();
+            $('#'+name).show()
+            if (name==last_name){
+              last_name=0;
+              $('.menu').hide();
+            } else{}
+          last_name=name;
+          }
+          $(document).ready(function(){$('#main_nav').load('/main_nav');})
+        </script>
 </head>
 <body>
 
@@ -70,25 +86,6 @@
           </div>
 {%endblock%}
         </div><!-- container -->
-
-        <!-- JS
-        ================================================== -->
-        <script src="/static/js/libs/jquery-1.7.1.js"></script>
-        <script src="/static/js/tabs.js"></script>
-        <script>
-          var last_name = 0;
-          function menu(name){
-            console.debug('menu name is ' + name)
-            $('.menu').hide();
-            $('#'+name).show()
-            if (name==last_name){
-              last_name=0;
-              $('.menu').hide();
-            } else{}
-          last_name=name;
-          }
-          $(document).ready(function(){$('#main_nav').load('/main_nav');})
-        </script>
 <!-- End Document
 ================================================== -->
 </body>

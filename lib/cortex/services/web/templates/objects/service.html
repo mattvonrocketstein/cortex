@@ -17,12 +17,17 @@
 {%endblock%}
 
   {%block extra_status%}
-{%if obj.port%}
+
 <tr>
   <td><strong>port</strong></td>
-  <td>{{obj.port}}</td>
+  <td id=id_port_holder>
+    <a href="{{base_url}}?getattr=port">loading..</a>
+      <script>
+      jQuery(document).ready(function(){jQuery('#id_port_holder').load('{{base_url}}?getattr=port');});
+    </script>
+</td>
 </tr>
-{%endif%}
+
   {%endblock%}
 
 {%block obj_main%}
@@ -51,4 +56,4 @@
   </tr>
 
   {{super()}}
-  {%endblock%}
+{%endblock%}

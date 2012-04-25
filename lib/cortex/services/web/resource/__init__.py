@@ -28,13 +28,12 @@ from cortex.core.hds import HDS
 
 
 def get_source(obj):
-    if obj==type or isinstance(obj,HDS):
+    if obj==type or isinstance(obj, HDS):
         return 'Could not retrieve source.'
     try:
         return inspect.getsource(obj)
     except:
         return get_source(getattr(obj,'im_func', obj.__class__))
-    #get_source(obj.__class__)
 
 def classtree(cls, indent=0, out='', base_url='', pfx=[]):
     cname = cls.__name__
@@ -113,11 +112,23 @@ class ObjectResource(Resource):
         if len(result) > 6: result = result[-6:]
         return result
 
+    def _dispatcher(self, request):
+        for k in request.args:
+            func_name = '_dispatch_' + k
+            if hasattr(self, func_name ):
+                return getattr(self,func_name)
+
+    def _dispatch_getattr(self, request):
+        name = request.args['getattr'][0]
+        return str(getattr(self.target, name, 'N/A')).replace('<','(').replace('>',')')
 
     def render_GET(self, request):
         """ """
         obj_path = filter(None, request.postpath)
         self.target = self.resolve_object(obj_path)
+        dispatch_to = self._dispatcher(request)
+        if dispatch_to is not None:
+            return dispatch_to(request)
         breadcrumbs = self.breadcrumbs(request)
         ctx = dict(obj=self.target, path=request.postpath,
                    breadcrumbs=breadcrumbs,
