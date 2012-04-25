@@ -91,7 +91,7 @@ class EventHub(LocalQueue, Agent):
         peer        = args[0]
 
         url      = 'http://127.0.0.1:1339/event/'
-        values   = peer.__dict__
+        values   = getattr(peer,'__dict__', dict(peer=peer))
         postdata = urllib.urlencode(values)
 
         def callback(*args): "any processing on page string here."
