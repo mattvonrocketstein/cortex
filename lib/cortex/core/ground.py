@@ -76,7 +76,7 @@ class Memory(TSpace, PersistenceMixin):
     def _john_hancock(self):
         """ Sign it. """
         self.add(('__name__',  self.name))
-        self.add(('__stamp__', str(datetime.datetime.now())))
+        #self.add(('__stamp__', str(datetime.datetime.now())))
 
     def as_keyspace(self, name=None):
         """
@@ -90,7 +90,10 @@ class Memory(TSpace, PersistenceMixin):
         return k
 
     def shutdown(self):
-        """ TODO: proxy to TSpace shutdown? """
+        """ Memory.shutdown effects persistence whenever it is turned on
+            TODO: proxy to TSpace shutdown?
+        """
+        #self.save()
         report("Shutting down Memory.")
 
     def serialize(self):
@@ -120,7 +123,7 @@ class Memory(TSpace, PersistenceMixin):
         """
         remove = kargs.pop('remove', False)
         out    = tuple()
-        for item in iter(self.values(safe=True)):
+        for item in iter(Memory.values(self, safe=True)):
             #item =self.get(item)
             passes = True
             for test in tests:
@@ -182,7 +185,9 @@ class DefaultKeyMapper(object):
         """ dictionary compatibility """
         if key in self.keys():
             old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
+
 class NotFound(object): pass
+
 class Keyspace(Memory, DefaultKeyMapper):
     """ Thin wrapper around <Memory> to make it look like a dictionary
     """
@@ -215,13 +220,45 @@ class Keyspace(Memory, DefaultKeyMapper):
         return other in self.keys()
 
     def keys(self):
-        """ dictionary compatibility """
-        return [ self.tuple2key(x) for x in self.values() ]
+        """ dictionary compatibility
+
+            1) compute keys from tuplespace
+            2) de-dupe the keys
+        """
+        tspace_values = Memory.values(self, safe=True)
+        tspace_keys = [ self.tuple2key(x) for x in tspace_values ]
+        return list(set(tspace_keys))
 
     def __iter__(self):
         """ dictionary compatibility """
         return iter(self.keys())
 
+    def _tspace_as_dict(self):
+        """ instead of rewriting functionality for values() and items()
+            they will compute their own results directly from what this
+            function returns.  essentially, given the tuplespace that
+            our KeySpace is being mapped on to, we need to:
+
+            1) compute the de-duped keys from the tuple space
+            2) aggregate for every value-set that uses a given key
+            TODO: 3) de-dupe the aggregation?
+        """
+        keys    = [ k for k in self.keys() if not k.startswith('__') ]
+        results = {}
+        for k in keys:
+            test      = lambda tpl: self.tuple2key(tpl)==k
+            value_set = Memory.filter(self, test)
+            aggregate = tuple()
+            for same_key, this_val in value_set:
+                aggregate += this_val
+            results[k] = aggregate
+        return results
+
+
+    def values(self,**kargs):
+        """ dictionary compatibility """
+        return self._tspace_as_dict().values()
+
     def items(self):
         """ dictionary compatibility """
-        return [ [ self.tuple2key(x), self.tuple2value(x) ] for x in self.values() ]
+        return self._tspace_as_dict().items()
