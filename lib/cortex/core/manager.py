@@ -322,7 +322,7 @@ class Manager(object):
             if name!=name.lower():
                 return self.__getitem__(name.lower())
             else:
-                raise self.NotFound('No such service: ' + name)
+                raise self.NotFound('No such asset: ' + name)
 
     @property
     def as_dict(self):
