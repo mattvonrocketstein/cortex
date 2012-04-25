@@ -21,7 +21,7 @@
         <td>
           {%if cb_list%}
           {% for f in cb_list%}
-          {{f.__name__}} {%if not loop.last%}|{%endif%}
+          {{f.__name__}} of {{f.im_class.__name__}} {%if not loop.last%}|{%endif%}
           {%endfor%}
           {%else%}<small>(..empty..)</small>
           {%endif%}

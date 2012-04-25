@@ -82,23 +82,17 @@ class __Universe__(AutoReloader, UniverseNotation,
         _api = publish()
 
         def parse_error(error, instruction, args, kargs, api=_api):
-
             api_header = "Cortex-API @ {H}://{F}"
             api_header = api_header.format(F=API,
                                            H=platform.node(),)
             fhandle    = StringIO.StringIO();
             pprint.pprint(api, fhandle)
-            api_body   = ''# fhandle.getvalue()
-            zapi   = api_header + api_body
-            #api_body   = '\n'.join(([x[0] for x in api.items()]))
-            opts   = dict(api=zapi, instruction=instruction,args=args,kargs=kargs)
+            opts   = dict(api=api_header, instruction=instruction,args=args,kargs=kargs)
             header = "ParseError: {E}:".format(E=error)
-            body   = """
-            instruction = {instruction}
-            args        = {args}
-            kargs       = {kargs}
-            with api    = {api}
-            """
+            body   = ("instruction = {instruction}\n"
+                      "args        = {args}\n"
+                      "kargs       = {kargs}\n"
+                      "with api    = {api}\n")
             error  = (header + body).format(**opts)
             report(error)
             sys.exit()
@@ -140,11 +134,13 @@ class __Universe__(AutoReloader, UniverseNotation,
 
 
     def sleep(self):
-        """ """
+        """
+            TODO: send a better signal and use os/pid mixins.
+        """
         self.stop()
         for pid in self.pids['children']:
-            # TODO: use os/pid mixins.
-            os.system('kill -KILL '+str(pid))
+            os.system('kill -KILL ' + str(pid))
+        # self.persist()
 
     def halt(self):
         """ override from ControllableMixin
@@ -173,6 +169,7 @@ class __Universe__(AutoReloader, UniverseNotation,
             report(err_msg)
             report(str(e))
             raise e
+
         ## stop any other agents
         for agent in set(self.agents.values() + self.services.values()):
             try:
@@ -197,7 +194,7 @@ class __Universe__(AutoReloader, UniverseNotation,
         report("Stopped: ", [x for x in stopped] )
 
     def decide_name(self):
-        """ """
+        """ most agents get a name, but the universe computes hers """
         name_args = dict( alfa    = str(id(self)),
                           bravo   = getattr(self,'bravo', ''),
                           charlie = getattr(self,'charlie',''),
