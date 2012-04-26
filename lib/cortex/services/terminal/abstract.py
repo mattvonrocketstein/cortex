@@ -17,6 +17,7 @@ class ATerminal(Service, LocalQueue):
     @constraint(boot_first='postoffice')
     def start(self):
         """ """
+        super(ATerminal, self).start()
         report('start')
         from twisted.internet.error import ReactorAlreadyRunning
         # Hack: this raises an exception but everything breaks
