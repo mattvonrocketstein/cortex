@@ -48,7 +48,7 @@ def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lamb
 #Dynamically build one of the subclasses from the core API definitions
 ApiWrapper = api_wrapper()
 
-class API(Service, ApiWrapper):
+class API(Service):
     """ API Service:
          publishes the cortex api via jsonRPC
 
@@ -70,10 +70,11 @@ class API(Service, ApiWrapper):
     contribute = augment_with
 
     def __init__(self, *args, **kargs):
+        from cortex.core.util import getcaller
+        report(str(getcaller()))
         self.port = kargs.pop('port', None)
         kargs.update(name='API')
         super(Service,self).__init__(*args, **kargs)
-        ApiWrapper.__init__(self)
         from cortex.core import api
 
     def _post_init(self):
@@ -88,9 +89,9 @@ class API(Service, ApiWrapper):
     @constraint(boot_first='terminal')
     @constraint(boot_first='gui')
     def start(self):
-        """ """
-        factory = jsonrpc.RPCFactory(API)
-
+        """ TODO: ^^ currently only the last constriant is used"""
+        super(API, self).start()
+        factory = jsonrpc.RPCFactory(ApiWrapper)
         count   = self.port or PORT_START
         while count!= PORT_FINISH:
             try:
