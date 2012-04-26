@@ -29,6 +29,8 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     """
     __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP
+    _instances   = []
+
     name          = 'default-name'
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
@@ -47,6 +49,8 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
 
         for cb in cbs:
             cb.bootstrap(self)
+
+        Agent._instances.append(self)
         self._post_init(**kargs)
 
     @property
