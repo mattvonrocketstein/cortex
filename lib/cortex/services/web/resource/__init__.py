@@ -69,7 +69,12 @@ class ObjectResource(Resource):
         if self.is_atom:
             T = template('objects/primitive')
         else:
-            ctx.update(source=get_source(self.target))
+            try:
+                file_name = inspect.getfile(self.target)
+            except TypeError:
+                file_name = self.target.__module__
+            ctx.update(file_name=file_name,
+                       source=get_source(self.target))
             from cortex.services.web import Service
             target=self.target
 
