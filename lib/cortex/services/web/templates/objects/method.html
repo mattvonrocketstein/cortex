@@ -5,18 +5,8 @@
 
 {%block one%}
 <strong>Docs:</strong><hr/>
-<pre>{{obj.__doc__.replace('<','(').replace('>',')').replace('\n','<br/>')}}</pre>
-
+<pre>{{obj.__doc__.replace('<','(').replace('>',')').replace('\n','<br/>')}}</
 {%endblock%}
-
-
-{%block two%}
-<strong>Source:</strong><hr/>
-{% code 'python' %}
-{{source}}
-{% endcode %}
-{%endblock%}
-
 
 {%block three%}
 <strong>Namespace:</strong><br/>

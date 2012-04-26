@@ -1,8 +1,4 @@
 """ cortex.services.web
-    TODO: constraint solving is sometimes broken?
-        determined boot order:', ['web', 'postoffice', 'terminal', 'linda', 'mapper', 'api']
-    TODO: occasional message delivery issues or unintended queue sharing?
-
 """
 import os
 import time
@@ -14,6 +10,7 @@ from twisted.application import service, internet
 from twisted.internet import reactor
 from twisted.web.client import HTTPClientFactory, getPage
 from twisted.internet.task import LoopingCall
+
 import cortex
 from cortex.core.util import report
 from cortex.services import Service
@@ -21,7 +18,6 @@ from cortex.core.agent import Agent
 from cortex.core.data import EVENT_T
 from cortex.util.decorators import constraint
 from cortex.services.web.resource import Root, ObjResource, NavResource
-
 from cortex.services.web.eventdemo import rootpage
 from cortex.mixins import LocalQueue
 from cortex.mixins.flavors import ThreadedIterator
@@ -83,7 +79,7 @@ class WebRoot(Agent):
         import pygraphviz as pgv
         from pygraphviz import *
         H = nx.from_agraph(A)
-        A.graph_attr['label']='known universe topology'
+        #A.graph_attr['label']='known universe topology'
         A.edge_attr['color']='red'
         A.layout()
         #nx.draw_graphviz(G)
@@ -99,12 +95,11 @@ class WebRoot(Agent):
         A.draw(tmp)
         self.graph_f = tmp
         from twisted.web.static import File
-        self.root.putChild('test', File(tmp))
+        self.root.putChild('ugraph.png', File(tmp))
 
     def stop(self):
         super(WebRoot,self).stop()
         if hasattr(self,'graph_f'):
-            import os
             report('wiping graph file')
             os.remove(self.graph_f)
 
@@ -112,17 +107,14 @@ class WebRoot(Agent):
         d          = os.path.dirname(__file__)
         static_dir = os.path.join(d, 'static')
         favicon    = os.path.join(static_dir, 'favicon.ico')
-        root = Root(favicon=favicon, static=static_dir)
-        self.root = root
-        site = server.Site(root)
+        self.root = Root(favicon=favicon, static=static_dir)
+        site = server.Site(self.root)
 
-        #G,img_f = f(self.universe)
-
-        root.putChild('web',         ObjResource(self))
-        root.putChild('universe',    ObjResource(self.universe))
-        root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
+        self.root.putChild('web',         ObjResource(self))
+        self.root.putChild('universe',    ObjResource(self.universe))
+        self.root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
-        self.universe.reactor.callFromThread(self.f)
+        self.universe.reactor.callInThread(self.f)
 # TODO: from channel import declare_callback
 #push_q = declare_callback(channel=EVENT_T)
 
