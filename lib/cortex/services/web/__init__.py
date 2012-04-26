@@ -20,7 +20,7 @@ from cortex.services import Service
 from cortex.core.agent import Agent
 from cortex.core.data import EVENT_T
 from cortex.util.decorators import constraint
-from cortex.services.web.resource import Root, ObjResource, NavResource
+from cortex.services.web.resource import Root, ObjResource, NavResource, MyStatic
 
 from cortex.services.web.eventdemo import rootpage
 from cortex.mixins import LocalQueue
@@ -63,17 +63,51 @@ class Web(LocalQueue, Service, AgentManager):
 
 
 class WebRoot(Agent):
+    def f(self):
+        u = self.universe
+        import tempfile
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        G = nx.Graph()
+        stuff = u.children()+[u]
+        stuff = [[x, x.children()] for x in stuff if hasattr(x,'children')]
+        stuff = dict(stuff)
+    #[ G.add_node(x.name) for x in stuff.keys() ]
+        for node, children in stuff.items():
+            [ G.add_edge(node.name, z.name) for z in children ]
+        G.remove_node(u)#from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        nx.draw(G)
+        #nx.draw_random(G)
+        #nx.draw_circular(G)
+        #nx.draw_spectral(G)
+        tmp = tempfile.mktemp()+'.png'
+        report('saving '+tmp)
+        plt.savefig(tmp)
+        self.graph_f=tmp
+        from twisted.web.static import File
+        self.root.putChild('test', File(tmp))
+
+    def stop(self):
+        super(WebRoot,self).stop()
+        report('wiping graph file')
+        import os
+        os.remove(self.graph_f)
+
     def start(self):
         d          = os.path.dirname(__file__)
         static_dir = os.path.join(d, 'static')
         favicon    = os.path.join(static_dir, 'favicon.ico')
         root = Root(favicon=favicon, static=static_dir)
+        self.root = root
         site = server.Site(root)
+
+        #G,img_f = f(self.universe)
+
         root.putChild('web',         ObjResource(self))
         root.putChild('universe',    ObjResource(self.universe))
         root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
-
+        self.universe.reactor.callFromThread(self.f)
 # TODO: from channel import declare_callback
 #push_q = declare_callback(channel=EVENT_T)
 
