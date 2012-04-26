@@ -57,7 +57,18 @@
 
 {%block obj_source%}
 <div style="margin-left:15px;width:100%" id=source_code class="menu hidden">
-  <h4>Source:</h4><hr/>
+  <table>
+    <tr>
+      <td>
+        <h4>Source:</h4>
+      </td>
+      <td>
+        <small> &nbsp; ({{file_name}})</small>
+      </td>
+    </tr>
+  </table>
+  <hr/>
+
   {% code 'python' %}
   {{source}}
   {% endcode %}

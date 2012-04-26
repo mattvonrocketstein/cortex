@@ -5,5 +5,13 @@
 {%block page_subtitle%}&nbsp;&nbsp;&nbsp;home{%endblock%}
 
 {%block main%}
+<table style="width:100%;margin-left:15px;"><tr>
+    <td>
+      <div id=id_graph></div>
+    </td></tr><tr>
+    <td>
 {%include "events.html"%}
+</td></tr></table>
+
+<script>jQuery(document).ready(function(){$('#id_graph').html('<strong>Universe Topology</strong><hr/><img src="/ugraph.png">');})</script>
 {%endblock%}
