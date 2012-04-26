@@ -20,7 +20,7 @@ from cortex.services import Service
 from cortex.core.agent import Agent
 from cortex.core.data import EVENT_T
 from cortex.util.decorators import constraint
-from cortex.services.web.resource import Root, ObjResource, NavResource, MyStatic
+from cortex.services.web.resource import Root, ObjResource, NavResource
 
 from cortex.services.web.eventdemo import rootpage
 from cortex.mixins import LocalQueue
@@ -64,18 +64,17 @@ class Web(LocalQueue, Service, AgentManager):
 
 class WebRoot(Agent):
     def f(self):
-        u = self.universe
+
         import tempfile
         import networkx as nx
         import matplotlib.pyplot as plt
         G = nx.Graph()
-        stuff = u.children()+[u]
+        stuff = self.universe.children() + [self.universe]
         stuff = [[x, x.children()] for x in stuff if hasattr(x,'children')]
         stuff = dict(stuff)
-    #[ G.add_node(x.name) for x in stuff.keys() ]
         for node, children in stuff.items():
             [ G.add_edge(node.name, z.name) for z in children ]
-        G.remove_node(u)#from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        G.remove_node(self.universe)
         nx.draw(G)
         #nx.draw_random(G)
         #nx.draw_circular(G)
