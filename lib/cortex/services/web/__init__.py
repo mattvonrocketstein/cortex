@@ -28,7 +28,7 @@ from cortex.mixins.flavors import ThreadedIterator
 from cortex.core.agent.manager import AgentManager
 from cortex.mixins.autonomy import Autonomy
 
-#class Web(Service, AgentManager):
+
 class Web(LocalQueue, Service, AgentManager):
     """ Web Service:
         start: start main webserver, and secondary event-hub
@@ -63,11 +63,8 @@ class Web(LocalQueue, Service, AgentManager):
 
 
 class WebRoot(Agent):
-    def f(self):
-
-        import tempfile
+    def ugraph(self):
         import networkx as nx
-        import matplotlib.pyplot as plt
         G = nx.Graph()
         stuff = self.universe.children() + [self.universe]
         stuff = [[x, x.children()] for x in stuff if hasattr(x,'children')]
@@ -75,22 +72,41 @@ class WebRoot(Agent):
         for node, children in stuff.items():
             [ G.add_edge(node.name, z.name) for z in children ]
         G.remove_node(self.universe)
-        nx.draw(G)
+        return G
+
+    def f(self):
+        import tempfile
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        G = self.ugraph()
+        A=nx.to_agraph(G)
+        import pygraphviz as pgv
+        from pygraphviz import *
+        H = nx.from_agraph(A)
+        A.graph_attr['label']='known universe topology'
+        A.edge_attr['color']='red'
+        A.layout()
+        #nx.draw_graphviz(G)
+        #nx.write_dot(G,'file.dot')
+        #nx.draw(A)
         #nx.draw_random(G)
         #nx.draw_circular(G)
         #nx.draw_spectral(G)
         tmp = tempfile.mktemp()+'.png'
         report('saving '+tmp)
-        plt.savefig(tmp)
-        self.graph_f=tmp
+        #plt.savefig(tmp)
+        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        A.draw(tmp)
+        self.graph_f = tmp
         from twisted.web.static import File
         self.root.putChild('test', File(tmp))
 
     def stop(self):
         super(WebRoot,self).stop()
-        report('wiping graph file')
-        import os
-        os.remove(self.graph_f)
+        if hasattr(self,'graph_f'):
+            import os
+            report('wiping graph file')
+            os.remove(self.graph_f)
 
     def start(self):
         d          = os.path.dirname(__file__)
