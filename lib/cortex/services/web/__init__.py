@@ -54,19 +54,21 @@ class Web(LocalQueue, Service, AgentManager):
             self.manage(kls=kls, kls_kargs=ctx,
                         name=kls.__name__)
         self.load()
-
         Service.start(self)
 
 
 class WebRoot(Agent):
+    """ TODO: smarter if you can't import networkx et al '"""
     def ugraph(self):
         import networkx as nx
         G = nx.Graph()
         stuff = self.universe.children() + [self.universe]
         stuff = [[x, x.children()] for x in stuff if hasattr(x,'children')]
         stuff = dict(stuff)
+        def name(q):
+            return q.name if q!=self.universe else 'universe'
         for node, children in stuff.items():
-            [ G.add_edge(node.name, z.name) for z in children ]
+            [ G.add_edge(name(node), name(z)) for z in children ]
         G.remove_node(self.universe)
         return G
 
@@ -114,7 +116,8 @@ class WebRoot(Agent):
         self.root.putChild('universe',    ObjResource(self.universe))
         self.root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
-        self.universe.reactor.callInThread(self.f)
+        # working but mad slow.. think i'm calling it wrong or else this is pygraphviz..
+        self.universe.reactor.callLater(1, self.f)
 # TODO: from channel import declare_callback
 #push_q = declare_callback(channel=EVENT_T)
 
@@ -142,6 +145,7 @@ class EventHub(LocalQueue, Agent):
                 method="POST", postdata=postdata).addCallback(*callbacks)
 
     def start(self):
+        super(EventHub,self).start()
         self.init_q() # safe to call in start or __init__
         tmp = rootpage.RootPage2()
         event_hub = appserver.NevowSite(tmp)
