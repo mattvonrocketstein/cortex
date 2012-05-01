@@ -28,6 +28,7 @@ class EventCreator(rend.Page):
             eventID = json.dumps(['/'.join(filter(None, request.path.split('/'))[1:]),
                                   dict([[x, f[x].value] for x in f])])
             self.eventHandler.fireEvent(eventID)
+            report("Event Created with ID: %s" % (eventID,))
             return "Event Created with ID: %s" % (eventID,)
         return "No dat found.  Are you using POST ?"
 

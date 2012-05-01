@@ -10,7 +10,8 @@ def function_annotator(prefix, **function_metadata):
             setattr(fxn, '_'+prefix+'_'+label, val)
 
         # store an inversion and summary function
-        fxn.remove_annotations  = lambda: [ delattr(fxn, '_'+prefix+'_', val) for val in function_metadata ]
+        fxn.remove_annotations  = lambda: [ delattr(fxn, '_'+prefix+'_', val) \
+                                            for val in function_metadata ]
         fxn.summary_annotations = lambda: [ '_'+prefix+'_'+val for val in function_metadata ]
 
         return fxn
