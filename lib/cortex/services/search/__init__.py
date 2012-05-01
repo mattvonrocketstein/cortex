@@ -34,8 +34,7 @@ class Search(Service, AgentManager):
         Service.__init__(self, *args, **kargs)
         AgentManager.__init__(self, *args, **kargs)
 
-    @constraint(boot_first='api')
-    @constraint(boot_first='postoffice')
+    @constraint(boot_first='api postoffice'.split())
     def start(self):
         """ <start> is an operation, called once (and typically by <play>), which may or
             may not return and so may be blocking or non-blocking.
@@ -47,7 +46,7 @@ class Search(Service, AgentManager):
         Service.start(self) # TODO: why not super() ?
         poffice = (self.universe|'postoffice')
         api = (self.universe|'api')
-        api.contribute(h=self.spawn_searcher)
+        api.contribute(xxx=self.h)
 
         # 'bus' name is important here.  it is assumed by from_function functions.
         # if that is a requirement.. doesn't it make sense that actually parents
@@ -70,7 +69,8 @@ class Search(Service, AgentManager):
     def search_callback(self, results, **kargs):
         msg = 'Searcher {0} finished, unpacked {1} results total.  top {2}'
         report(msg.format('(unknown)', len(results), MAX_RESULTS))
-        report.pprint(results.weighted[:MAX_RESULTS])
+        results = getattr(results, 'weighted', results)
+        report.pprint(results[:MAX_RESULTS])
         self.results = results
 
     def h(self, search_string):
@@ -81,17 +81,25 @@ class Search(Service, AgentManager):
 
 from xgoogle.search import GoogleSearch, SearchError
 def search_with_google(search=None, **kargs):
+    """ it seems that having a xgoogle.search.SearchResult
+        does not buy us much; better to just return a dictionary.
+
+        currently this always returns 10 results; i wonder about that.
+        maybe there is gs.next_page(), but results_per_page down there
+        seems like it's not working at all
+    """
     try:
         gs = GoogleSearch(search)
         gs.results_per_page = 50
         results = gs.get_results()
-        for res in results:
-            report(res.title.encode('utf8'))
-            #print res.desc.encode('utf8')
-            report(res.url.encode('utf8'))
     except SearchError, e:
         report("Search failed: %s" % e)
-    return gs
+        return []
+    else:
+        results = [ dict(title=r.title.encode('utf8'),
+                         description=r.desc.encode('utf8'),
+                         url=r.url.encode('utf8')) for r in results ]
+        return results
 GGLer = Threaded.from_function(search_with_google)
 
 def search_with_ack(wd=None, search=None):
