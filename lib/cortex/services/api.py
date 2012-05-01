@@ -43,9 +43,11 @@ def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object),
     def _update_api_wrapper(kls):
         """ induces this class to replace itself with a fresher copy.
             this is called when the api is augmented with api.contribute()
+            TODO: doesn't need to be in the wrapper.. move back into
+            api service.
         """
         report('recomputing the api wrapper')
-        kls = api_wrapper()
+        (_api.universe|'api').factory.protocol = api_wrapper()
 
 
     # wrap the whole namespace we were passed in..
@@ -103,13 +105,13 @@ class API(Service):
     def start(self):
         """ TODO: ^^ currently only the last constriant is used"""
         super(API, self).start()
-        factory = jsonrpc.RPCFactory(ApiWrapper)
+        self.factory = jsonrpc.RPCFactory(ApiWrapper)
         count   = self.port or PORT_START
         while count!= PORT_FINISH:
             try:
                 # enables system.listMethods method, etc
-                factory.addIntrospection()
-                self.universe.reactor.listenTCP(count, factory)
+                self.factory.addIntrospection()
+                self.universe.reactor.listenTCP(count, self.factory)
             except CannotListenError:
                 count += 1
             else:
