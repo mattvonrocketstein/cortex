@@ -1,12 +1,3 @@
-""" cortex.core.__init__
-
-    TODO: stub out this one
-
-       def django_service(self):
-           import django.core.handlers.wsgi
-           application = django.core.handlers.wsgi.WSGIHandler()
-"""
-
 """ cortex.core.service
 """
 
@@ -48,10 +39,7 @@ class ServiceManager(AgentManager):
             return False
 
         # figure out which service is first
-        if boot_order1 < boot_order2:
-            first, second = s1, s2
-        else:
-            first, second = s2, s1
+        first, second = (s1, s2) if (boot_order1 < boot_order2) else (s2, s1)
 
         # ensure the second isn't in the first's
         #  table of dependancies
@@ -61,11 +49,19 @@ class ServiceManager(AgentManager):
     def build_constraint_table(self):
         """ TODO: allow multiple boot-first constraints?
         """
-        self.table = {}
+        from collections import defaultdict
+        self.table = defaultdict(lambda:[])
         for item in self._pending:
-                name, kls, kargs = item
-                self.table[name] = getattr(kls.start, '_constraint_boot_first', [])
+            name, kls, kargs = item
+            tmp = getattr(kls.start, '_constraint_boot_first', [])
+            if not isinstance(tmp,(list,tuple)): tmp = [tmp]
+            self.table[name] += tmp
+        for item in self.table:
+            self.table[item] = filter(None, self.table[item])
+        self.table=dict(self.table)
+        report(self.table)
         return self.table
+
 
     def resolve_boot_order(self, **kargs):
         """ TODO: try a different underlying CSP algorithm? it looks like
@@ -87,17 +83,19 @@ class ServiceManager(AgentManager):
                                       service2!=service]] for service in names ])
 
         # vars: variables to solve over
-        vars       = [ name for name in names ]
+        vars = [ name for name in names ]
 
         # domains: every service could potentially be booted in any order
-        domains     = dict([ [service, range(len(names))] for service in names])
+        domains = dict([ [service, range(len(names))] for service in names])
 
         # the totality of the problem.  nothing to do with this now, but here it is.
         csp_definition = dict( vars = vars, domains = domains, neighbors = neighbors,
                                constraint = self._boot_order_constraint )
+
         # compute solution
         csp_problem    = csp.CSP(vars, domains, neighbors, self._boot_order_constraint)
-        csp_algorithm  = csp.min_conflicts #backtracking_search #AC3 #
+        #csp_algorithm  = csp.min_conflicts #backtracking_search #AC3 #
+        csp_algorithm  = csp.backtracking_search #AC3 #
         answer         = csp_algorithm(csp_problem, **kargs)
         nassigns       = csp_problem.nassigns
 
