@@ -142,7 +142,7 @@ class EventHub(LocalQueue, Agent):
         def callback(*args): "any processing on page string here."
         def errback(*args): report('error with getPage:',str(args))
         getPage(url, headers=EventHub.POST_HDR, method="POST",
-                postdata=postdata).addCallback(callbacks, errback)
+                postdata=postdata).addCallback(callback, errback)
 
     def start(self):
         super(EventHub,self).start()
