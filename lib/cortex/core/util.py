@@ -166,3 +166,8 @@ def service_is_stopped(name):
     """
     from cortex.core import api
     return lambda:  (api.universe|name).stopped
+
+
+def uuid():
+    import uuid
+    return str(uuid.uuid1())
