@@ -86,8 +86,7 @@ class API(Service):
         super(API,self).stop()
         report('the API Service Dies.')
 
-    @constraint(boot_first='terminal')
-    @constraint(boot_first='gui')
+    @constraint(boot_first='gui terminal'.split())
     def start(self):
         """ TODO: ^^ currently only the last constriant is used"""
         super(API, self).start()
