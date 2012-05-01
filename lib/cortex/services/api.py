@@ -8,7 +8,7 @@ from txjsonrpc.netstring import jsonrpc
 from twisted.internet.error import CannotListenError
 
 from cortex.core.util import report, console
-from cortex.core.api import publish
+from cortex.core import api as _api
 from cortex.services import Service
 from cortex.util.decorators import constraint
 from cortex.core.data import CORTEX_PORT_RANGE
@@ -27,7 +27,8 @@ def wrap(func):
         return func(*args[1:], **kargs)
     return newf
 
-def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lambda: publish()):
+def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object),
+                _dict= lambda: _api.publish()):
     """ """
 
     # if _dict is not a dict then it should be a callable that returns one.
@@ -38,10 +39,20 @@ def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object,), _dict= lamb
     # TODO: use NSPart here
     test    = lambda k: hasattr(_dict[k], '__call__') and not k.startswith('_')
 
+    @classmethod
+    def _update_api_wrapper(kls):
+        """ induces this class to replace itself with a fresher copy.
+            this is called when the api is augmented with api.contribute()
+        """
+        report('recomputing the api wrapper')
+        kls = api_wrapper()
+
+
     # wrap the whole namespace we were passed in..
     #  just maps to a different name if item is callable
     wrapped = dict([ ['jsonrpc_' + k,
                       wrap(_dict[k]) ]  for k in _dict if test(k)])
+    wrapped.update(_update_api_wrapper=_update_api_wrapper)
     report('publishing', _dict.keys())
     return type(name, bases, wrapped)
 
@@ -62,11 +73,13 @@ class API(Service):
             TODO: define an api-contribute-signal which this
                   service and the terminal service both respond to.
         """
-        for name,value in namespace.items():
-            assert hasattr(value, '__call__'), "value added to api must be callable"
-            name = 'jsonrpc_' + name
-            setattr(self, name, value)
-        return namespace
+        _api.contribute(**namespace)
+        ApiWrapper._update_api_wrapper()
+        #for name,value in namespace.items():
+        #    assert hasattr(value, '__call__'), "value added to api must be callable"
+        #    name = 'jsonrpc_' + name
+        #    setattr(ApiWrapper, name, value)
+        #return namespace
     contribute = augment_with
 
     def __init__(self, *args, **kargs):

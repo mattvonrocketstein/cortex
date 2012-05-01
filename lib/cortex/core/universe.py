@@ -74,7 +74,7 @@ class __Universe__(AutoReloader, UniverseNotation,
 
     def play(self):
         """ entry point.  this guy does not return """
-        report("Universe.play!")
+        #report("Universe.play!")
         self.decide_name()
         self.started = True
         from cortex.core import api as API

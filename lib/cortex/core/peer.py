@@ -11,12 +11,18 @@ from cortex.core.util import report
 class Peer(object):
     """ an abstraction representing a generic peer
     """
+    # hack for ipython tab completion
+    def _getAttributeNames(self):
+        return []
+    trait_names = _getAttributeNames
+
     def __init__(self, addr=None, port=None):
         self.addr = addr
         self.port = port
-        # hack
+        # HACK
         from cortex.core.universe import Universe
         self.universe = Universe
+
     def mutate_if_cortex(self):
         handshake = 'helo'
         potentially = self._cortex
