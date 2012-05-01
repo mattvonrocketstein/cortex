@@ -58,8 +58,7 @@ class ServiceManager(AgentManager):
             self.table[name] += tmp
         for item in self.table:
             self.table[item] = filter(None, self.table[item])
-        self.table=dict(self.table)
-        report(self.table)
+        self.table = dict(self.table)
         return self.table
 
 

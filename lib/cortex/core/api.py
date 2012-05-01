@@ -10,6 +10,7 @@ from cortex.core.parsing import Nodeconf
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
+
 def msg(name,content):
     poffice = (universe|'postoffice')
     chan = getattr(poffice, name)
@@ -25,11 +26,22 @@ def contribute(**kargs):
         if k in dir(api):
             raise ValueError,"{0} is already in the API.".format(k)
         else:
-            setattr(api,k,v)
+            setattr(api, k, v)
+    #postoffice = (universe|'postoffice')
+    #try:
+    #    chan = postoffice.api_contribution
+    #except AttributeError:
+    #    report('could not send api_contribution event')
+    #else:
+    #    chan(**kargs)
 
 def publish(**kargs):
     """ return a dictionary of the namespace for this module,
-        after a small bit of postprocessing """
+        after a small bit of postprocessing.
+
+        NOTE: in general the result of this operation is not serializable,
+              because it contains the universe itself..
+    """
 
     from cortex.core import api
     from cortex.util.namespaces import NamespacePartition
@@ -44,15 +56,15 @@ def publish(**kargs):
         extra    += services
     out = base_api.cleaned + extra
     return out
-def test_api(*args, **kargs):
-    print '*'*80,args,kargs
+
+def api_names(): return sorted(publish().keys())
 
 def do(instructions, _api=None):
     """ do: execute a set of instructions wrt api <_api> """
     this_api = _api or publish()
 
     def unpack(i):
-        ''' potentially unserialize/unencrypt? '''
+        ''' potentially unserialize/deencrypt, etc '''
         try:
             name, args, kargs = i
         except ValueError:

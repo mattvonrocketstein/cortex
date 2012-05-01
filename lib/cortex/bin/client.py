@@ -58,8 +58,11 @@ def _use_client(host, port, options):
     if cmd is None:
         api.load_service('terminal')
     else:
+        from IPython import Shell;
         callback = lambda *args, **kargs: [report(*args, **kargs), Universe.halt()]
-        command = lambda peer=peer: eval(cmd).addCallbacks(callback, callback)
+        errback = callback
+        #errback = lambda *args, **kargs: Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        command = lambda peer=peer: eval(cmd).addCallbacks(callback, errback)
         CommandAgent = api.function_to_agent(command)
         Universe.agents.manage(kls=CommandAgent, name='CommandAgent')
 
