@@ -117,7 +117,7 @@ class WebRoot(Agent):
         self.root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
         # working but mad slow.. think i'm calling it wrong or else this is pygraphviz..
-        self.universe.reactor.callLater(1, self.f)
+        #self.universe.reactor.callLater(1, self.f)
 # TODO: from channel import declare_callback
 #push_q = declare_callback(channel=EVENT_T)
 
@@ -132,17 +132,17 @@ class EventHub(LocalQueue, Agent):
     def handle_event(self, e):
         """ """
         args, kargs = e
+
         peer        = args[0]
 
         url      = 'http://127.0.0.1:1339/event/'
-        values   = getattr(peer,'__dict__', dict(peer=peer))
+        values   = getattr(peer, '__dict__', dict(data=peer))
         postdata = urllib.urlencode(values)
 
         def callback(*args): "any processing on page string here."
         def errback(*args): report('error with getPage:',str(args))
-        callbacks = (callback, errback)
-        getPage(url, headers=EventHub.POST_HDR,
-                method="POST", postdata=postdata).addCallback(*callbacks)
+        getPage(url, headers=EventHub.POST_HDR, method="POST",
+                postdata=postdata).addCallback(callbacks, errback)
 
     def start(self):
         super(EventHub,self).start()

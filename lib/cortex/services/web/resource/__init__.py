@@ -33,7 +33,7 @@ def get_source(obj):
     try:
         return inspect.getsource(obj)
     except:
-        return get_source(getattr(obj,'im_func', obj.__class__))
+        return get_source(getattr(obj, 'im_func', obj.__class__))
 
 def classtree(cls, indent=0, out='', base_url='', pfx=[]):
     cname = cls.__name__

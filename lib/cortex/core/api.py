@@ -10,6 +10,10 @@ from cortex.core.parsing import Nodeconf
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
+def msg(name,content):
+    poffice = (universe|'postoffice')
+    chan = getattr(poffice, name)
+    chan(content)
 
 def function_to_agent(func, ignore_result=True):
     from cortex.mixins.flavors import Threaded
@@ -136,9 +140,8 @@ def build_agent(name, kls=object, kls_kargs={}):
     """
     universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
 
-def is_cortex(msg):
-    return msg
-ping = chat
+def is_cortex(msg): return msg
+def ping(): return chat('ping')
 
 # Shortcuts into the Universe
 load_service = universe.loadService
