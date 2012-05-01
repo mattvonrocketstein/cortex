@@ -1,11 +1,23 @@
 """ cortex.core.util
 """
 import inspect
+import time, uuid
 
 from report import report, console
 report.console = console
 
+from StringIO import StringIO
+from pprint import pprint
+
 from cortex.core.data import SERVICES_DOTPATH
+
+def rpprint(obj,pad=' '*4):
+    s = StringIO();
+    pprint(obj,s);
+    s.seek(0);
+    report.console.draw_line('',display=False)
+    print console.color('\n'.join(['\n']+map(lambda x: pad + x, s.read().split('\n'))))
+report.pprint = rpprint
 
 def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
     """ stupid helper for universe to snag modules
@@ -22,8 +34,6 @@ def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
         out[name] = val
     return out
 
-import time
-import uuid
 def uniq():
     return str(uuid.uuid1()).split('-')[0]+str(time.time())[:-3]
 
@@ -135,7 +145,7 @@ Semaphore = threading.BoundedSemaphore
 
 from inspect import ismethod, isclass
 def isclassmethod( m ):
- return ismethod(m) and isclass(m.__self__)
+    return ismethod(m) and isclass(m.__self__)
 
 #
 ################################################################################
