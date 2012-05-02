@@ -46,7 +46,6 @@ def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object),
             TODO: doesn't need to be in the wrapper.. move back into
             api service.
         """
-        report('recomputing the api wrapper')
         (_api.universe|'api').factory.protocol = api_wrapper()
 
 
@@ -55,7 +54,6 @@ def api_wrapper(name="ApiWrapper", bases=(jsonrpc.JSONRPC, object),
     wrapped = dict([ ['jsonrpc_' + k,
                       wrap(_dict[k]) ]  for k in _dict if test(k)])
     wrapped.update(_update_api_wrapper=_update_api_wrapper)
-    report('publishing', _dict.keys())
     return type(name, bases, wrapped)
 
 #Dynamically build one of the subclasses from the core API definitions
@@ -85,8 +83,6 @@ class API(Service):
     contribute = augment_with
 
     def __init__(self, *args, **kargs):
-        from cortex.core.util import getcaller
-        report(str(getcaller()))
         self.port = kargs.pop('port', None)
         kargs.update(name='API')
         super(Service,self).__init__(*args, **kargs)

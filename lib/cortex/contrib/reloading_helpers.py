@@ -94,7 +94,7 @@ class ModuleWatcher:
 
     def stop(self):
         if not self.running:
-            print "# autoreload not running"
+            #print "# autoreload not running"
             return
         self.running = 0
         self.thread.join()

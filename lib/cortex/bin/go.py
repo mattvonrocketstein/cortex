@@ -67,7 +67,7 @@ def entry():
     from cortex.core.universe import Universe
     from cortex.bin.phase2 import install_nodeconf
     from cortex.bin.client import use_client
-    from cortex.core.reloading_helpers import run as RUN
+    from cortex.contrib.reloading_helpers import run as RUN
     Universe.directives = options.directives.split(",")
 
     # reflect command-line options in universe's config

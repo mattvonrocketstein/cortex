@@ -18,7 +18,6 @@ class ATerminal(Service, LocalQueue):
     def start(self):
         """ """
         super(ATerminal, self).start()
-        report('start')
         from twisted.internet.error import ReactorAlreadyRunning
         # Hack: this raises an exception but everything breaks
         #        without the call itself. hrm.

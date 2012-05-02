@@ -105,8 +105,7 @@ class __Universe__(AutoReloader, UniverseNotation,
         for node in self.Nodes:
            original = node
            instruction, args = node[0], node[1:]
-
-           report("parsing node", node)
+           #report("parsing node", node)
            if len(args)==1:
                kargs = {}
            else:
