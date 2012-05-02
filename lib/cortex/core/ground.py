@@ -108,11 +108,11 @@ class Memory(TSpace, PersistenceMixin):
         report('persisted memory to', self.filename)
 
     def get_many(self, pattern):
-        """ """
-        out=[]
+        """ revisit this.. probably undermining the underlying optimization """
+        out = []
         while True:
             try:
-                out.append(self.get(pattern,remove=True))
+                out.append(self.get(pattern, remove=True))
             except KeyError:
                 break
         return out
