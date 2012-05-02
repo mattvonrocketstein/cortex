@@ -16,9 +16,9 @@ def msg(name,content):
     chan = getattr(poffice, name)
     chan(content)
 
-def function_to_agent(func, ignore_result=True):
+def function_to_agent(func, return_bus=None):
     from cortex.mixins.flavors import Threaded
-    return Threaded.from_function(func, ignore_result=ignore_result)
+    return Threaded.from_function(func, return_bus=None)
 
 def contribute(**kargs):
     from cortex.core import api
