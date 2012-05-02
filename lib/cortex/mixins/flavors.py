@@ -126,8 +126,9 @@ class ThreadedIterator(Threaded):
     @classmethod
     def from_class(kls, klazz):
         """ Modifies class to use the ThreadedIterator concurrency flavor.
-            This works in place, if you don't like that you'll need to make
-            a copy first.
+
+            WARNING! This works in place, if you don't like that you'll
+                     need to make a copy / empty subclass first.
         """
         if kls in klazz.__bases__:
             return klazz
@@ -145,7 +146,7 @@ class ThreadedIterator(Threaded):
             klazz.run = kls.run
         if getattr(klazz, 'start'):
             import new
-            report('augmenting start() method')
+            #report('augmenting start() method')
             old_start = klazz.start
             new_start = callchain([old_start, kls.start])
             new_start = new.instancemethod(new_start, None, klazz)
@@ -155,7 +156,7 @@ class ThreadedIterator(Threaded):
             klazz.start = new_start
         #else:
         #    report(""
-        report("augmenting __bases__")
+        #report("augmenting __bases__")
         klazz.__bases__ += (kls,)
         return klazz
 
