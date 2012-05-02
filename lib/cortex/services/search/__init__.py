@@ -12,14 +12,17 @@
       TODO: start's first constraint is overwritten actually, but is implied by second anyway
       TODO: report inconsistent constraints: if bootfirst is mentioned but not honored fault()
 """
+import os
+import json
 from channel import Channel
 
-from cortex.core.util import report
+from cortex.core.util import report, uuid
 from cortex.services import Service
-from cortex.util.pyack import pyack
 from cortex.mixins.flavors import Threaded
 from cortex.util.decorators import constraint
 from cortex.core.agent.manager import AgentManager
+from cortex.core.ground import Memory
+from .util import search_with_ack, search_with_google
 
 MAX_RESULTS = 5
 
@@ -44,67 +47,43 @@ class Search(Service, AgentManager):
             of this function and iterate()
         """
         Service.start(self) # TODO: why not super() ?
+        self.mem = Memory(self, name='SearchStore')
         poffice = (self.universe|'postoffice')
-        api = (self.universe|'api')
-        api.contribute(xxx=self.h)
+        (self.universe|'api').contribute(goog=self.google)
+        (self.universe|'api').contribute(ack=self.ack)
 
-        # 'bus' name is important here.  it is assumed by from_function functions.
-        # if that is a requirement.. doesn't it make sense that actually parents
-        # should themselves extend bus
+        def getter(name):
+            tpl = (name, object)
+            out = self.mem.get(tpl)
+            key, data = out
+            data = json.loads(data)
+            return data
+        (self.universe|'api').contribute(get=getter)
+
         self.bus = Channel.search_bus
         self.bus.bind(poffice)
         self.bus.subscribe(self.search_callback)
+        GGLer.bind_result_bus(self.bus)
+        ACKer.bind_result_bus(self.bus)
 
-    @property
-    def uuid(self):
-        import uuid
-        return str(uuid.uuid1())
+    def google(self, query):
+        u = uuid()
+        self(GGLer, name='Phase1:internet:' + u, search=search, _id=u,)
+        return dict(callback='get("{0}")'.format(u))
 
-    def spawn_searcher(self, wd, search):
-        """ """
-        report('spawning search for "{0}", starting from "{1}"'.format(search,wd))
-        #return self(ACKer, name='Phase1:VeryLocal:'+self.uuid, wd=wd, search=search)
-        return self(GGLer, name='Phase1:internet:' + self.uuid, wd=wd, search=search)
+    def ack(self, search, wd=os.getcwd()):
+        u = uuid()
+        self(ACKer, name='Phase1:VeryLocal:'+u,_id=u, wd=wd, search=search)
+        return dict(callback='get("{0}")'.format(u))
 
     def search_callback(self, results, **kargs):
         msg = 'Searcher {0} finished, unpacked {1} results total.  top {2}'
         report(msg.format('(unknown)', len(results), MAX_RESULTS))
-        results = getattr(results, 'weighted', results)
-        report.pprint(results[:MAX_RESULTS])
+        _results = getattr(results, 'weighted', results)
+        report.pprint(_results[:MAX_RESULTS])
         self.results = results
+        tpl = (results.id, json.dumps(_results))
+        self.mem.add(tpl)
 
-    def h(self, search_string):
-        import os
-        working_dir = os.getcwd()
-        self.spawn_searcher(working_dir, search_string)
-
-
-from xgoogle.search import GoogleSearch, SearchError
-def search_with_google(search=None, **kargs):
-    """ it seems that having a xgoogle.search.SearchResult
-        does not buy us much; better to just return a dictionary.
-
-        currently this always returns 10 results; i wonder about that.
-        maybe there is gs.next_page(), but results_per_page down there
-        seems like it's not working at all
-    """
-    try:
-        gs = GoogleSearch(search)
-        gs.results_per_page = 50
-        results = gs.get_results()
-    except SearchError, e:
-        report("Search failed: %s" % e)
-        return []
-    else:
-        results = [ dict(title=r.title.encode('utf8'),
-                         description=r.desc.encode('utf8'),
-                         url=r.url.encode('utf8')) for r in results ]
-        return results
-GGLer = Threaded.from_function(search_with_google)
-
-def search_with_ack(wd=None, search=None):
-    """ """
-    acker = pyack('{search} {dir}'.format(search=search, dir=wd))
-    acker();
-    return acker
-ACKer = Threaded.from_function(search_with_ack)
+GGLer = Threaded.from_function(search_with_google)#, return_bus=self.bus)
+ACKer = Threaded.from_function(search_with_ack)#, return_bus=self.bus)
