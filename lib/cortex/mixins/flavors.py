@@ -7,6 +7,7 @@
 import time
 import threading
 
+
 from cortex.core.util import report
 from cortex.mixins.autonomy import Autonomy
 from cortex.util.namespaces import NSPart
@@ -37,10 +38,13 @@ class ReactorRecursion(Autonomy):
         go = lambda: self.universe.reactor.callFromThread(self.run)
         self.universe.reactor.callWhenRunning(self.run)
 
+from channel import ChannelType
+from cortex.core.agent import Agent
+from cortex.core.util import getcaller
 class Threaded(Autonomy):
 
     @classmethod
-    def from_function(kls, func, ignore_result=False):
+    def from_function(kls, func, return_bus=None):
         """ turns a function into an agent.  you might think
             that you can do this with any agent, but it's a
             little more tricky than that.. functions return,
@@ -50,16 +54,18 @@ class Threaded(Autonomy):
             a *single* parent (multiple-return is no different
             than multiple-subscribers)
         """
-        use_result = not ignore_result
-        from cortex.core.agent import Agent
-        from cortex.core.util import getcaller
         def _post_init(self, **kargs):
             self.fun_kargs = kargs
 
+        @classmethod
+        def bind_result_bus(self, bus):
+            self._return_bus = bus
+
         def run(self):
             r = func(**self.fun_kargs)
-            if use_result:
-                self._return_bus(r)
+            bus = getattr(self, '_return_bus', None)
+            if bus is not None:
+                bus(r)
             self.stop()
 
         def fault(self, *args, **kargs):
@@ -67,27 +73,37 @@ class Threaded(Autonomy):
             self.universe.halt()
 
         def start(self):
-            parent = getattr(self, 'parent', None)
-            bus = getattr(parent, 'bus', None)
-            if parent is None:
-                try:
-                    # You should really make sure that parent is
-                    # set, because this magic might not work for you
-                    parent = getcaller(3)['self']
-                    bus = parent.bus
-                except:
-                    self.fault('agents created with .from_function() '
-                               'need to have a parent with a "bus" attribute '
-                               'in order to return results!',)
-            if use_result and bus is None:
-                self.fault('the parent of agents created with '
-                           'Threaded.from_function should have a bus')
-            self._return_bus = bus
-            super(self.__class__, self).start()
-        name = 'Agentized:'+func.__name__
-        bases = (kls,Agent)
-        namespace = dict(_post_init = _post_init, run=run,
-                         fault      = fault, start = start)
+            # interpret return_bus as an attribute name
+            #  on the parent (the parent must also exist)
+            if isinstance(return_bus, basestring):
+                parent = getattr(self, 'parent', None)
+                if parent is None:
+                    try:
+                        # You should really make sure that parent is
+                        # set, because this magic might not work for you
+                        parent = getcaller(3)['self']
+                    except:
+                        self.fault('agents created with .from_function() '
+                                   'need to have a parent that exists ')
+                bus = getattr(parent, return_bus, None)
+                if bus is None:
+                    self.fault('parent should have a return_bus '
+                               'in order to return results!')
+
+            elif isinstance(return_bus, ChannelType):
+                self._return_bus = return_bus
+                super(self.__class__, self).start()
+            elif return_bus is None:
+                super(self.__class__, self).start()
+            else:
+                err = "return_bus should be string or channel type"
+                self.fault(err)
+
+        name      = 'Agentized:'+func.__name__
+        bases     = (kls, Agent)
+        namespace = dict(_post_init=_post_init,
+                         run=run, fault=fault, start=start,
+                         bind_result_bus=bind_result_bus)
         return type(name, bases, namespace)
 
     def start(self):
