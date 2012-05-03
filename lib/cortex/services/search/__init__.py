@@ -49,12 +49,15 @@ class Search(Service, AgentManager):
         Service.start(self) # TODO: why not super() ?
         self.mem = Memory(self, name='SearchStore')
         poffice = (self.universe|'postoffice')
-        (self.universe|'api').contribute(goog=self.google)
+        (self.universe|'api').contribute(google=self.google)
         (self.universe|'api').contribute(ack=self.ack)
 
         def getter(name):
             tpl = (name, object)
-            out = self.mem.get(tpl)
+            try:
+                out = self.mem.get(tpl)
+            except KeyError:
+                return 'NotFound'
             key, data = out
             data = json.loads(data)
             return data
@@ -68,8 +71,8 @@ class Search(Service, AgentManager):
 
     def google(self, query):
         u = uuid()
-        self(GGLer, name='Phase1:internet:' + u, search=search, _id=u,)
-        return dict(callback='get("{0}")'.format(u))
+        self(GGLer, name='Phase1:internet:' + u, search=query, _id=u,)
+        return dict(callback="get('{0}')".format(u))
 
     def ack(self, search, wd=os.getcwd()):
         u = uuid()
