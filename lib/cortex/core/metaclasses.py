@@ -101,32 +101,6 @@ class META1(META):
             else:                subclass_registry[bases].append(class_obj)
             mcls.subclass_registry = subclass_registry
 
-    def subclasses(kls, deep=False, dictionary=False, normalize=False):
-            """ get subclasses for class """
-
-            matches = []
-            meta    = kls.__metaclass__
-
-            # keep it simple stupid
-            if not deep:
-                for bases in meta.subclass_registry:
-                    if kls in bases:
-                        matches += meta.subclass_registry[bases]
-
-            # use a bigger hammer..
-            if deep:
-                import operator
-                matches = filter(lambda k: issubclass(k,kls),\
-                                 reduce(operator.add, meta.subclass_registry.values()))
-
-            # convert output to { subclass_name : subclass_object }
-            if dictionary:
-                matches = [ [m.__name__, m] for m in matches ]
-                if normalize: matches = [ [x[0].lower(),x[1]] for x in matches]
-                matches = dict(matches)
-            return matches
-
-
 """
 class ClassTracking(type):
     ''' '''
