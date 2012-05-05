@@ -1,0 +1,14 @@
+{# display dictionary completely (not just keys and then links to the objects) #}
+<div style="margin-left:10px;">
+  {%if obj %}
+  <table>
+    {% for x,y in obj.items() %}
+    <tr>
+      <td><strong>{{x}}</strong></td>
+      <td>{{y}}</td>
+    </tr>
+
+    {%endfor%}
+  </table>
+  {%else%}<b>Nada</b>{%endif%}
+</div>
