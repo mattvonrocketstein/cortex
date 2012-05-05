@@ -1,0 +1,42 @@
+{%extends "objects/services/service.html"%}
+{%block obj_type%}POSTOFFICE(SERVICE(AGENT)){%endblock%}
+{%block obj_main%}
+{{super()}}
+<tr class="menu" id=services>
+  <td align=left>
+
+
+    <table style="border:1px dotted black;margin-left:15px;">
+      <tr>
+        <td colspan=2><h4>Channels:</h4></td>
+      </tr>
+      {% for x,cb_list in obj.items()%}
+      {%if not x.startswith('_')%}
+      <tr>
+        <td style="padding:5px;">
+          &nbsp;
+          &nbsp;
+          <small>{{x}}</small>
+        </td>
+        <td>
+          {%if cb_list%}
+          {% for f in cb_list%}
+          {{f.__name__}} of {{f.im_class.__name__}} {%if not loop.last%}|{%endif%}
+          {%endfor%}
+          {%else%}<small>(..empty..)</small>
+          {%endif%}
+
+        </td>
+
+      </tr>
+      {%endif%}
+      {%endfor%}
+
+    </table>
+    {%if children%}{%else%}
+    {%endif%}
+  </td>
+</tr>
+
+<tr><td>
+    {%endblock%}
