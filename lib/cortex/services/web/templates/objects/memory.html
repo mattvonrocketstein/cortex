@@ -1,0 +1,52 @@
+{%extends "objects/base.html"%}
+
+
+{%block page_title%}{{obj.__class__.__name__}} instance{%endblock%}
+{%block obj_type%}Memory{%endblock%}
+
+{%block obj_nav%}
+<a href="javascript:menu('_mem_contents')">Contents</a>
+{{super()}}
+{%endblock%}
+
+{%block obj_namespace%}
+{{super()}}
+<td>
+  <strong>Beliefs:</strong><br/>
+  {#% with namespace=data%}{%include "objects/_namespace.html"%}{%endwith%#}
+</td>
+{%endblock%}
+
+{%block obj_main%}
+<table style="width:100%;margin-left:15px;">
+  <tr>
+    <td style="margin-left:15px;">
+      <h4>Status:</h4><hr/>
+      <table style="width:80%;margin-left:15px;" border=1>
+        <tr>
+          <td>
+            <strong>name</strong>
+          </td>
+          <td>{{obj.name}}</td>
+        </tr>
+        <tr>
+          <td>
+            <strong>owner</strong>
+          </td>
+          <td>{{obj.owner}}</td>
+        </tr>
+        {%block extra_status%}
+        {%endblock%}
+      </table>
+      <hr/>
+  </td></tr>
+  <tr class="menu hidden" id=_mem_contents>
+    <td>
+      <h4>Contents:</h4>
+      <hr/>
+      {% with obj=obj.tspace%}{%include "objects/_dictionary.html"%}{%endwith%}
+    </td>
+  </tr>
+</table>
+{{super()}}
+{%endblock%}
