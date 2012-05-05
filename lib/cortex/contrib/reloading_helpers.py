@@ -6,7 +6,7 @@ Thu, 15 Nov 2001 19:55:16 +0100
 I wrote a script which
 - automatically reloads changed modules depending on their timestamp
 - updates existing objects in a running program: classes,
-  functions, bound and unbound methods
+    functions, bound and unbound methods
 
 The purpose is to speed up the development process, not to
 update long running programs on the fly.
@@ -142,6 +142,54 @@ def update_function(old, new, attrnames):
     for name in attrnames:
         setattr(old, name, getattr(new, name))
 
+import gc
+def update_class_t(old, new):
+#    bfail=0
+#    try:
+#        old.__dict__.update
+#    except AttributeError: # dictproxy?
+#        try:
+#            old.__dict__ = dict(old.__dict__)
+#        except AttributeError:
+#            print 'brutal fail',old
+#            bfail=1
+#            #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+#    if not bfail:
+#        old.__dict__.update(new.__dict__)
+
+    #
+    old.__dict__.update(new.__dict__)
+    refs = gc.get_referrers(old)
+    #refs = [x for x in refs if type(ref) == types.ClassType]
+    for ref in refs:
+        if hasattr(ref, '__dict__'):
+            for x,y in ref.__dict__.items():
+                if ref.__dict__[x] == old:
+                    print '{0}:{1}, '.format(ref,x),
+                    ref.__dict__[x] = new
+
+import inspect
+def update_object(old_obj, new_obj):
+    """ """
+    #if inspect.isclass(new_obj):
+    if type(new_obj) == types.ClassType:
+        print 'class_t'
+        update_class_t(old_obj, new_obj)
+        return 1
+    elif type(new_obj) == types.FunctionType:
+        print 'func_t'
+        update_function(old_obj,
+                        new_obj,
+                        "func_code func_defaults func_doc".split())
+        return 1
+    elif type(new_obj) == types.MethodType:
+        print 'meth_t'
+        update_function(old_obj.im_func,
+                        new_obj.im_func,
+                        "func_code func_defaults func_doc".split())
+        return 1
+    return 0
+
 def superreload(module,
                 reload=reload,
                 _old_objects = {}):
@@ -152,9 +200,10 @@ def superreload(module,
     class in the module with the new one automatically,
     as well as every function's code object.
     """
-##    start = time.clock()
+    start = time.clock()
     # retrieve the attributes from the module before the reload,
     # and remember them in _old_objects.
+
     for name, object in module.__dict__.items():
         key = (module.__name__, name)
         _old_objects.setdefault(key, []).append(object)
@@ -175,21 +224,11 @@ def superreload(module,
     # We should remove those. I have to learn about weak-refs!
     for name, new_obj in module.__dict__.items():
         key = (module.__name__, name)
+        print key
         if _old_objects.has_key(key):
             for old_obj in _old_objects[key]:
-                if type(new_obj) == types.ClassType:
-                    old_obj.__dict__.update(new_obj.__dict__)
-                    count += 1
-                elif type(new_obj) == types.FunctionType:
-                    update_function(old_obj,
-                           new_obj,
-                           "func_code func_defaults func_doc".split())
-                    count += 1
-                elif type(new_obj) == types.MethodType:
-                    update_function(old_obj.im_func,
-                           new_obj.im_func,
-                           "func_code func_defaults func_doc".split())
-                    count += 1
+                count += update_object(old_obj, new_obj)
+
 ##    stop = time.clock()
 ##    print "# updated %d objects from %s" % (count, module)
 ##    print "# This took %.3f seconds" % (stop - start)
