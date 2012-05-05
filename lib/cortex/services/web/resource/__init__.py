@@ -20,32 +20,20 @@ from twisted.web.resource import Resource
 from twisted.web.server import NOT_DONE_YET
 from twisted.internet import reactor
 
+from cortex.core import api
+from cortex.core.hds import HDS
+from cortex.services.api import API
+from cortex.core.ground import Memory
+from cortex.services.web import Service
 from cortex.core.universe import Universe
+from cortex.mixins.autonomy import Autonomy
+from cortex.services.postoffice import PostOffice
 from cortex.services.web.resource.root import Root
 from cortex.services.web.resource.root import NavResource
 
-from cortex.core.hds import HDS
+from .util import get_source, classtree, alligator2paren
 
-
-def get_source(obj):
-    if obj==type or isinstance(obj, HDS):
-        return 'Could not retrieve source.'
-    try:
-        return inspect.getsource(obj)
-    except:
-        return get_source(getattr(obj, 'im_func', obj.__class__))
-
-def classtree(cls, indent=0, out='', base_url='', pfx=[]):
-    cname = cls.__name__
-    if cname=='object': return ''
-    link = '<a class="adepth_{0}" href="{1}">{2}</a>'
-    link = link.format(indent, '/'.join(map(str, pfx)), cname)
-    out += ('<br/>' if indent else '') + '.'*indent + ' ' + link
-    for supercls in cls.__bases__:
-        rellink  = base_url + ('/__class__/' if not indent else '')
-        rellink += '__bases__[{0}]'.format(cls.__bases__.index(supercls))
-        out += classtree(supercls, indent+1, pfx=pfx + [rellink])
-    return out
+ATOMS = ( list, tuple,  float, int, str )
 
 class ObjectResource(Resource):
     isLeaf = True
@@ -54,13 +42,11 @@ class ObjectResource(Resource):
         self._obj = obj
 
     @property
-    def is_atom(self):
-        return isinstance(self.target, ( list, tuple,
-                                         float, int, str ))
+    def is_atom(self): return isinstance(self.target, ATOMS)
 
     @property
-    def is_complex(self):
-        return not self.is_atom
+    def is_complex(self): return not self.is_atom
+
 
     @property
     def template(self):
@@ -68,39 +54,50 @@ class ObjectResource(Resource):
         ctx = {}
         if self.is_atom:
             T = template('objects/primitive')
+
+        elif 'force_template' in self.request.args:
+            T = self.request.args['force_template'][0]
+            T = 'objects/'+T
+            T = template(T)
+
         else:
+            target = self.target
             try:
                 file_name = inspect.getfile(self.target)
             except TypeError:
                 file_name = self.target.__module__
             ctx.update(file_name=file_name,
                        source=get_source(self.target))
-            from cortex.services.web import Service
-            target=self.target
 
             if False:
                 pass
-            elif target == Universe:
+            elif self.target == Universe:
                 T = template('objects/universe')
-            elif isinstance(target, Agent):
-                from cortex.mixins.autonomy import Autonomy
-                from cortex.services.api import API
+            elif isinstance(self.target, Agent):
                 T = template('objects/agent')
-                ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
-                           autonomy=NSPart(target).intersection(NSPart(Autonomy)))
-                if isinstance(target, Service):
-                    T = template('objects/service')
-                    ctx.update(children=target.agents if hasattr(target, 'agents') else [],)
-                if isinstance(target, API):
-                    T = template('objects/service_api')
-                    from cortex.core import api
+                #ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
+                ctx.update(parent=alligator2paren(target.parent),
+                           autonomy=NSPart(self.target).intersection(NSPart(Autonomy)))
+                if isinstance(self.target, Service):
+                    T = template('objects/services/service')
+                    children = self.target.agents if hasattr(self.target, 'agents') else []
+                    ctx.update(children=children)
+
+                if isinstance(self.target, API):
+                    T = template('objects/services/api')
                     ctx.update(api_methods=api.publish())
-                from cortex.services.postoffice import PostOffice
-                if isinstance(target, PostOffice):
-                    T = template('objects/postoffice')
+
+                if isinstance(self.target, PostOffice):
+                    T = template('objects/services/postoffice')
+
+            elif isinstance(self.target, Memory):
+                # keep this one after postoffice
+                T = template('objects/memory')
+
             elif isinstance(self.target, HDS):
                 T = template('objects/HDS')
-            elif isinstance(self.target, types.MethodType):
+            elif isinstance(self.target,
+                            types.MethodType):
                 T = template('objects/method')
             else:
                 T = template('objects/abstract')
@@ -126,12 +123,13 @@ class ObjectResource(Resource):
 
     def _dispatch_getattr(self, request):
         name = request.args['getattr'][0]
-        return str(getattr(self.target, name, 'N/A')).replace('<','(').replace('>',')')
+        return alligator2paren(getattr(self.target, name, 'N/A'))
 
     def render_GET(self, request):
         """ """
         obj_path = filter(None, request.postpath)
         self.target = self.resolve_object(obj_path)
+        self.request = request
         dispatch_to = self._dispatcher(request)
         if dispatch_to is not None:
             return dispatch_to(request)
@@ -186,7 +184,7 @@ class ObjectResource(Resource):
     @property
     def obj_name(self):
         obj_name = getattr(self.target, '__name__', str(self.target))
-        obj_name = obj_name.replace('<','(').replace('>',')')
+        obj_name = alligator2paren(obj_name)
         obj_name = obj_name.replace('object at','@')
         return obj_name
 ObjResource = ObjectResource
