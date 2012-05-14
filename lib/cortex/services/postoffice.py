@@ -48,16 +48,18 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
 
     def __init__(self, *args, **kargs):
         """ """
-        super(PostOffice,self).__init__( *args, **kargs)
-        #Service.__init__(self, *args, **kargs)
+        # initialize keyspace and embedded channels
         default_name   = 'PostOffice::{_id}::keyspace'.format(_id=str(id(self)))
         keyspace_name  = self.universe or default_name
         keyspace_owner = self
         Keyspace.__init__(self, keyspace_owner, name=keyspace_name)
-        SelfHostingTupleBus.__init__(self) # will call self.reset()
-
-        # sets ``self`` as postoffice for each declared channel
         self.bind_embedded_channels()
+
+        # will call self.reset()
+        SelfHostingTupleBus.__init__(self)
+
+        # calling super() here seems correct but is not.. 'name' will be set incorrectly
+        Service.__init__(self, *args, **kargs)
 
     def publish_json(self, label, data):
         """ publish as json """
