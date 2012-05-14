@@ -2,10 +2,11 @@
 """
 
 from cortex.core.util import report, console
-from cortex.core.data import NOOP#, IDENTITY
+
+from cortex.core.data import NOOP
+from cortex.contrib.aima import csp
 from cortex.core.agent import Agent, AgentManager
 from cortex.core.manager import Manager
-from cortex.contrib.aima import csp
 
 
 class ServiceManager(AgentManager):
@@ -13,10 +14,6 @@ class ServiceManager(AgentManager):
         and dictionary api simultaneously.  Additionally, it provides a
         commonly used Exception.
     """
-
-    # registering services can happen all the time..
-    #  we don't want to do anything noisy here like write an event
-    #post_registration = NOOP
 
     # TODO: might need an abstractagentmanager..
     pre_load_obj      = Manager.pre_load_obj

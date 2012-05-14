@@ -7,11 +7,9 @@
       (<bound method Terminal.push_q of <Terminal-Service 176000620>>,)
 
       # get a specific channel object
-      >>> events=postoffice.event
+      >>> events = postoffice.event
       >>> events
       <CHAN-(EVENT_T)>
-
-      see cortex.core.channels for further documentation on what channels can do.
 
 """
 
@@ -40,14 +38,15 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
                 non-blocking.
     """
 
-    ## Begin channel declarations        ( TODO: make this more like promela )
-    notice = channel.NOTICE              # shortcut for publishing notices (unused)
-    error  = getattr(channel, ERROR_T)   # shortcut for publishing errors  (unused)
-    event  = getattr(channel, EVENT_T)   # shortcut for publishing events  (used by term)
-    peers  = getattr(channel,PEER_T)
+    ## Begin embedded channel declarations  ( TODO: make this more like promela )
+    notice = channel.NOTICE                 # shortcut for publishing notices (unused)
+    error  = getattr(channel, ERROR_T)      # shortcut for publishing errors  (unused)
+    event  = getattr(channel, EVENT_T)      # shortcut for publishing events  (used by term)
+    peers  = getattr(channel, PEER_T)
 
     def __init__(self, *args, **kargs):
-        """ """
+        """ PostOffice.__init__
+        """
         # initialize keyspace and embedded channels
         default_name   = 'PostOffice::{_id}::keyspace'.format(_id=str(id(self)))
         keyspace_name  = self.universe or default_name
