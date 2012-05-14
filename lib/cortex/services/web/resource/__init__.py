@@ -73,6 +73,9 @@ class ObjectResource(Resource):
                 pass
             elif self.target == Universe:
                 T = template('objects/universe')
+                ctx.update(procs=Universe.procs + [Universe.pid],
+                           threads=Universe.threads,
+                           )
             elif isinstance(self.target, Agent):
                 T = template('objects/agent')
                 #ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
