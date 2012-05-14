@@ -2,8 +2,9 @@
 
       smart datastructures for storage
 """
-import datetime
+import sys
 import pickle
+import datetime
 
 from lindypy.TupleSpace import TSpace
 
@@ -195,31 +196,31 @@ class Keyspace(Memory, DefaultKeyMapper):
         return other in self.keys()
 
     def public_keys(self):
-        """ like self.keys(), only respects privacy for _ and __
+        """ like _keys(), only respects privacy for _ and __
         """
         FORBIDDEN_PREFIXES = '_ __'.split()
-        return [ k for k in self.keys() if not any( map(k.startswith, FORBIDDEN_PREFIXES) ) ]
+        return [ k for k in self._keys() if not any( map(k.startswith, FORBIDDEN_PREFIXES) ) ]
+    keys = public_keys
 
     def __getitem__(self, key):
         """ TODO: is this tailored too much for the PostOffice, or is it sufficiently generic?
-            TODO: transparent encryption, serialization, perspective warping?
+            TODO: transparent encryption, serialization, perspective warping, etc
         """
-        matching_tuples = self.filter(lambda tpl: self.tuple2key(tpl)==key)
-        #assert len(matching_tuples)<2,"Found duplicate matching tuples.. not really a keyspace then, is it?"
-        if matching_tuples:
-            first_match = matching_tuples[0]
-            return self.tuple2value(first_match)
-        return NotFound
-
-    def subspace(self, name):
-        """ returns a nested keyspace with name <name> """
-        raise Exception,"Not implemented"
+        pattern = (key, object)
+        res = self.many( pattern, sys.maxint)
+        if len(res) not in [0, 1]:
+            raise TypeError("Not really a keyspace then is it?")
+        if len(res)==0:
+            return NotFound
+        else:
+            colid, match = res[0]
+            return self.tuple2value(match)
 
     def __contains__(self,other):
         """ dictionary compatibility """
         return other in self.keys()
 
-    def keys(self):
+    def _keys(self):
         """ dictionary compatibility
 
             1) compute keys from tuplespace
@@ -243,7 +244,8 @@ class Keyspace(Memory, DefaultKeyMapper):
             2) aggregate for every value-set that uses a given key
             TODO: 3) de-dupe the aggregation?
         """
-        keys    = [ k for k in self.keys() if not k.startswith('__') ]
+        #keys    = [ k for k in self.keys() if not k.startswith('__') ]
+        keys    = self.public_keys() #[ k for k in self.public_keys() if not k.startswith('__') ]
         results = {}
         for k in keys:
             test      = lambda tpl: self.tuple2key(tpl)==k

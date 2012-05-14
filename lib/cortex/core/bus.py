@@ -27,10 +27,11 @@ class TupleBus(Bus):
         """ override from cyrusbus enforcing simple callbacks as
             subscriptions (by default cyrusbus uses dictionaries)
         """
+
         if key not in self.keys():
             return False
-        subs=self.subscriptions[key]
-        if subs==NotFound:
+        subs = self.subscriptions[key]
+        if subs == NotFound:
             return False
         return callback in subs
 
