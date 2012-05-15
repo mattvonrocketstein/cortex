@@ -39,15 +39,16 @@
         <tr>
           <td style="margin-left:15px;">
             <h4>Threads:</h4>
-            <p style="margin-left:10px;">
+            <ul style="margin-left:10px;">
               {% for x in threads %}
-              <a href="{{request.path}}/threads[{{threads.index(x)}}]">
+              <li>
+                <a href="{{request.path}}/threads[{{threads.index(x)}}]">
                 {{x.__str__().replace('<','(').replace('>',')')}}
-              </a> |
+                </a>
               {%else%}
-              Empty
+              <li> Empty
               {%endfor%}
-            </p>
+            </ul>
           </td>
         </tr>
         <tr>
