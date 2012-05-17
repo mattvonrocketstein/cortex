@@ -95,7 +95,6 @@ class WebRoot(Agent):
             A.draw(fname)
             report('done drawing')
 
-        #report('saving '+tmp)
         #nx.draw_graphviz(G)
         #nx.write_dot(G,'file.dot')
         #
@@ -110,9 +109,11 @@ class WebRoot(Agent):
         self.universe.reactor.callLater(1, lambda: [p.start(), p.join])
         #p.join()
         from twisted.web.static import File
-        self.root.putChild('ugraph.png', File('testing.png'))
+        self.root.putChild('ugraph.png', File(fname))
 
     def stop(self):
+        """ TODO: stop doesn't stop anything except the eventhub..
+                  make for to turn off the webs also """
         super(WebRoot,self).stop()
         if hasattr(self,'graph_f'):
             report('wiping graph file')
@@ -131,10 +132,26 @@ class WebRoot(Agent):
         self.universe.reactor.listenTCP(1338, site)
         # working but mad slow.. think i'm calling it wrong or else this is pygraphviz..
         self.universe.reactor.callLater(1, self.f)
-# TODO: from channel import declare_callback
-#push_q = declare_callback(channel=EVENT_T)
 
-class EventHub(LocalQueue, Agent):
+class EventHandlerAgent(LocalQueue, Agent):
+    def start(self):
+        self.init_q() # safe to call in start or __init__
+        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
+        super(EventHandlerAgent,self).start()
+
+    def iterate(self):
+        """ """
+        e = self.pop_q()
+        if e:
+            self.handle_event(e)
+
+    def handle_event(self, e):
+        raise TypeError('not implemented error')
+
+class EventHub(EventHandlerAgent):
+    # TODO: from channel import declare_callback
+    #push_q = declare_callback(channel=EVENT_T)(push_q)
+
     POST_HDR    = {'Content-Type':
                    "application/x-www-form-urlencoded;charset=utf-8"}
 
@@ -158,18 +175,11 @@ class EventHub(LocalQueue, Agent):
                 postdata=postdata).addCallback(callback, errback)
 
     def start(self):
-        super(EventHub,self).start()
-        self.init_q() # safe to call in start or __init__
+        super(EventHub, self).start()
         tmp = rootpage.RootPage2()
         event_hub = appserver.NevowSite(tmp)
         self.universe.reactor.listenTCP(self.port, event_hub)
-        (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
 
-    def iterate(self):
-        """ """
-        e = self.pop_q()
-        if e:
-            self.handle_event(e)
 
 
 Web = ThreadedIterator.from_class(Web)
