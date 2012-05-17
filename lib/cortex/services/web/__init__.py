@@ -60,44 +60,57 @@ class Web(LocalQueue, Service, AgentManager):
 class WebRoot(Agent):
     """ TODO: smarter if you can't import networkx et al '"""
     def ugraph(self):
-        import networkx as nx
-        G = nx.Graph()
+        """ builds an adjacency matrix for the universe topology:
+            a list of tuples where every tuple is parent -> child
+
+            TODO: a real traversal for arbitrary depth
+        """
         stuff = self.universe.children() + [self.universe]
-        stuff = [[x, x.children()] for x in stuff if hasattr(x,'children')]
+        stuff = [[x, x.children()] for x in stuff if hasattr(x, 'children')]
         stuff = dict(stuff)
-        def name(q):
-            return q.name if q!=self.universe else 'universe'
+        name = lambda q: q.name if q!=self.universe else 'universe'
+        out = []
         for node, children in stuff.items():
-            [ G.add_edge(name(node), name(z)) for z in children ]
-        G.remove_node(self.universe)
-        return G
+            for z in children:
+                out += [( name(node), name(z) )]
+        return out
 
     def f(self):
         import tempfile
-        import networkx as nx
-        import matplotlib.pyplot as plt
-        G = self.ugraph()
-        A=nx.to_agraph(G)
-        import pygraphviz as pgv
-        from pygraphviz import *
-        H = nx.from_agraph(A)
-        #A.graph_attr['label']='known universe topology'
-        A.edge_attr['color']='red'
-        A.layout()
+        yout = self.ugraph()
+        def doit(k, fname, report):
+            """ actually build a graph"""
+            import networkx as nx
+            G = nx.Graph()
+            G.add_edges_from(k)
+            A=nx.to_agraph(G)
+            import pygraphviz as pgv
+            from pygraphviz import *
+            H = nx.from_agraph(A)
+            #A.graph_attr['label']='known universe topology'
+            A.edge_attr['color']='red'
+            A.layout()
+            #nx.draw(A)
+            #nx.draw_random(G)
+            A.draw(fname)
+            report('done drawing')
+
+        #report('saving '+tmp)
         #nx.draw_graphviz(G)
         #nx.write_dot(G,'file.dot')
-        #nx.draw(A)
+        #
         #nx.draw_random(G)
         #nx.draw_circular(G)
         #nx.draw_spectral(G)
-        tmp = tempfile.mktemp()+'.png'
-        report('saving '+tmp)
-        #plt.savefig(tmp)
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-        A.draw(tmp)
-        self.graph_f = tmp
+
+        from multiprocessing import Process
+        fname = tempfile.mktemp()+'.png'
+        report('drawing to file:',fname)
+        p = Process(target=doit, args=(yout,fname,report))
+        self.universe.reactor.callLater(1, lambda: [p.start(), p.join])
+        #p.join()
         from twisted.web.static import File
-        self.root.putChild('ugraph.png', File(tmp))
+        self.root.putChild('ugraph.png', File('testing.png'))
 
     def stop(self):
         super(WebRoot,self).stop()
@@ -117,7 +130,7 @@ class WebRoot(Agent):
         self.root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         self.universe.reactor.listenTCP(1338, site)
         # working but mad slow.. think i'm calling it wrong or else this is pygraphviz..
-        #self.universe.reactor.callLater(1, self.f)
+        self.universe.reactor.callLater(1, self.f)
 # TODO: from channel import declare_callback
 #push_q = declare_callback(channel=EVENT_T)
 
