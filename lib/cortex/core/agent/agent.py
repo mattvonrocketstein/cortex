@@ -32,6 +32,33 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     _instances   = []
 
     name          = 'default-name'
+    def _handle_cbs1(self):
+        # dead code?
+        cbs = []
+        for x in dir(self):
+            if not isinstance(getattr(self.__class__, x, None), property) and \
+                is_declared_callback(getattr(self,x)):
+                    cbs.append(getattr(self,x))
+        for cb in cbs:
+            cb.bootstrap(self)
+
+    @property
+    def _opts(self):
+        return getattr(self.__class__,'Meta', None)
+
+    def _handle_cbs2(self):
+        """ TODO: check for boot_first.. consistency """
+
+        subscriptions = getattr(self._opts, 'subscriptions', {})
+        for chan_name in subscriptions:
+            cb_list = subscriptions[chan_name]
+            if isinstance(cb_list,basestring):
+                cb_list = [cb_list]
+            for cb in cb_list:
+                cb = getattr(self, cb)
+                report('subscribing',[self,chan_name,str(cb)])
+                (self.universe|'postoffice').subscribe(chan_name, cb)
+
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
             TODO: "host" is bad.  use a better address formalism instead.
@@ -40,16 +67,7 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
         self.host     = host or DEFAULT_HOST
         self.name     = name
         self.parents  = []
-
-        cbs = []
-        for x in dir(self):
-            if not isinstance(getattr(self.__class__, x, None), property) and \
-                is_declared_callback(getattr(self,x)):
-                    cbs.append(getattr(self,x))
-
-        for cb in cbs:
-            cb.bootstrap(self)
-
+        self._handle_cbs1()
         Agent._instances.append(self)
         self._post_init(**kargs)
 
@@ -124,6 +142,11 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
                 new_iterate = lambda self: iterate()
             dct['iterate'] = new_iterate
         return name,dct
+
+    def start(self):
+        """ """
+        super(Agent, self).start()
+        self._handle_cbs2()
 
     def stop(self):
         """ autonomy override:
