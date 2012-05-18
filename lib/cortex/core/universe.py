@@ -9,6 +9,7 @@ import types
 import inspect
 import os, sys
 import platform, pprint, StringIO
+from multiprocessing import Process
 
 from twisted.internet import reactor
 
@@ -26,8 +27,31 @@ from cortex.mixins import OSMixin, PIDMixin
 from cortex.core.notation import UniverseNotation
 from cortex.mixins import FaultTolerant
 
+
+class ReactorAspect(object):
+    reactor       = reactor
+    callLater     = reactor.callLater
+    getThreadPool = reactor.getThreadPool
+
+    def callInProcess(self, target, args=tuple(),
+                      name='DefaultProcessName', delay=1, **kargs):
+        """ """
+        p = Process(target=target, args=args, name=name, **kargs)
+        def start():
+            self.procs.append(p)
+            report('starting process "{0}" ({1} total)'.format(p.name, len(self.procs)))
+            p.start()
+        def finish():
+            p.join()
+            self.procs.remove(p)
+            report('finished with process "{0}" ({1} left)'.format(p.name,len(self.procs)))
+        def go():
+            start()
+            finish()
+        self.callLater(delay, go)
+
 class __Universe__(AutoReloader, UniverseNotation,
-                   OSMixin, PIDMixin,
+                   OSMixin, PIDMixin, ReactorAspect,
                    ControllableMixin, AutonomyMixin,
                    PerspectiveMixin, PersistenceMixin,
                    FaultTolerant):
@@ -35,7 +59,7 @@ class __Universe__(AutoReloader, UniverseNotation,
         TODO: clones,processes = CloneManager(), ProcessManager()
     """
     agents, services = AGENTS, SERVICES
-    reactor       = reactor
+
     peers         = PEERS
     nodeconf_file = u''
     config        = HDS()
@@ -125,14 +149,15 @@ class __Universe__(AutoReloader, UniverseNotation,
         self.load()
 
         # Setup threadpool
-        self.threadpool = reactor.getThreadPool()
+        self.threadpool = self.getThreadPool()
 
         # Main loop
-
-        reactor.run()
+        self.reactor.run()
 
     def children(self):
+        """ """
         return self.agents.children() + self.services.children()
+
     def sleep(self):
         """
             TODO: send a better signal and use os/pid mixins.
