@@ -87,8 +87,8 @@ class AbstractAutonomy(Mixin):
         # first setup if it's around
         # start by default does nothing but set flags, so the
         # next line ensures that even stupid default agents get to
-        # iterate exactly once.  this makes "the trivial agent"
-        # reducible to a function.
+        # iterate exactly once.  this has the desirable property of
+        # making "the trivial agent" reduce to a function.
         if hasattr(self, 'setup'): self.setup()
         self.start()
         if Autonomy not in self.__class__.__bases__:
