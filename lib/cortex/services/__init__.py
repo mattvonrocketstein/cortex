@@ -19,8 +19,7 @@ class ServiceManager(AgentManager):
     pre_load_obj      = Manager.pre_load_obj
 
     def pre_manage(self, name=None, kls=None, **kls_kargs):
-        """ undo agentmanager's hook for pre_manager..
-        """
+        """ undo agentmanager's hook for pre_manager.. """
         return name, kls, kls_kargs
 
     def _boot_order_constraint(self, s1, boot_order1, s2, boot_order2):
