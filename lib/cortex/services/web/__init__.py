@@ -2,7 +2,6 @@
 """
 import os
 import urllib
-import tempfile
 
 from nevow import appserver
 from twisted.web import static, server
@@ -58,7 +57,7 @@ class WebRoot(Agent):
     """ TODO: smarter if you can't import networkx et al '"""
 
     def iterate(self):
-        self.graph_f = tempfile.mktemp() + '.png'
+        self.graph_f = self.universe.tmpfname(suffix='png')
         self.root.putChild('ugraph.png', File(self.graph_f))
         self.universe.callInProcess(draw_ugraph,
                                     name='drawing to file@' + self.graph_f,

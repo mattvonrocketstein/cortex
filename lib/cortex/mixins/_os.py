@@ -1,9 +1,10 @@
 """ cortex.mixins._os
 """
 
+import tempfile
 import os, sys, platform
 from cortex.core.util import report
-from tempfile import NamedTemporaryFile
+
 
 class PIDMixin(object):
     """ os pid properties """
@@ -92,18 +93,30 @@ class OSMixin(PIDMixin):
         import platform
         import socket
         return socket.gethostname()#, platform.node
+    host = hostname
 
     @property
     def tmpdir(self):
-        """ """
-        #assert is_cortex_venv(sys.prefix), 'Expected sys.prefix would be a cortex venv'
+        """ tempfile.gettempdir() would return /tmp,
+            but we prefer to use something relative to
+            sys.prefix in case this is an environment
+            constructed with 'virtualenv'.
+        """
         tmpdir = os.path.join(sys.prefix, 'tmp')
         if not os.path.exists(tmpdir):
-            #report('making temporary directory:',tmpdir)
             os.mkdir(tmpdir)
         return tmpdir
 
-    def tmpfile(self):
-        """ return a new temporary file """
+    def tmpfname(self, suffix=''):
+        """ suggest a name for temporary file.
+            if suffix is provided it will be treated
+            as a file extension
+        """
         tmpdir = self.tmpdir
-        return NamedTemporaryFile(delete=False, dir=tmpdir)
+        if suffix and not suffix.startswith('.'): suffix='.'+suffix
+        return tempfile.mktemp(suffix=suffix, dir=tmpdir)
+
+    def tmpfile(self):
+        """ return an open file object pointing at a new temporary file """
+        tmpdir = self.tmpdir
+        return tempfile.NamedTemporaryFile(delete=False, dir=tmpdir)
