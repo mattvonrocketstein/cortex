@@ -14,49 +14,15 @@ from cortex.core.util import report
 from cortex.services import Service
 from cortex.core.agent import Agent
 from cortex.core.data import EVENT_T
-from cortex.util.decorators import constraint
-from cortex.services.web.resource import Root, ObjResource
-from cortex.services.web.eventdemo import rootpage
 from cortex.mixins import LocalQueue
+from cortex.util.decorators import constraint
+from cortex.services.web.eventdemo import rootpage
 from cortex.mixins.flavors import ThreadedIterator
 from cortex.core.agent.manager import AgentManager
+from cortex.services.web.resource import Root, ObjResource
+from cortex.agents.eventhandler import AbstractEventHandler
+from cortex.services.web.util import draw_ugraph, ugraph
 
-
-def doit(k, fname, report):
-    """ actually build a graph"""
-    import networkx as nx
-    from pygraphviz import *
-    G = nx.Graph()
-    G.add_edges_from(k)
-    A=nx.to_agraph(G)
-    H = nx.from_agraph(A)
-    A.edge_attr['color']='red'
-    A.layout()
-    A.draw(fname)
-    #A.graph_attr['label']='known universe topology'
-    #nx.draw(A)
-    #nx.draw_random(G)
-    #nx.draw_spectral(G)
-    #nx.draw_graphviz(G) #nx.write_dot(G,'file.dot')
-    #nx.draw_random(G) #nx.draw_circular(G)
-
-class EventHandlerAgent(LocalQueue, Agent):
-
-    class Meta:
-        subscriptions = {EVENT_T: 'push_q'}
-
-    def start(self):
-        self.init_q() # safe to call in start or __init__
-        super(EventHandlerAgent, self).start()
-
-    def iterate(self):
-        """ """
-        e = self.pop_q()
-        if e:
-            self.handle_event(e)
-
-    def handle_event(self, e):
-        raise TypeError('not implemented error')
 
 class Web(LocalQueue, Service, AgentManager):
     """ Web Service:
@@ -88,30 +54,13 @@ class Web(LocalQueue, Service, AgentManager):
         self.load()
         Service.start(self)
 
-def ugraph(universe):
-    """ builds an adjacency matrix for the universe topology:
-        a list of tuples where every tuple is parent -> child
-
-        TODO: a real traversal for arbitrary depth
-    """
-    stuff = universe.children() + [universe]
-    stuff = [[x, x.children()] for x in stuff if hasattr(x, 'children')]
-    stuff = dict(stuff)
-    name = lambda q: q.name if q!=universe else 'universe'
-    out = []
-    for node, children in stuff.items():
-        for z in children:
-            out.append( (name(node), name(z)) )
-    return out
-
-
 class WebRoot(Agent):
     """ TODO: smarter if you can't import networkx et al '"""
 
     def iterate(self):
         self.graph_f = tempfile.mktemp() + '.png'
         self.root.putChild('ugraph.png', File(self.graph_f))
-        self.universe.callInProcess(doit,
+        self.universe.callInProcess(draw_ugraph,
                                     name='drawing to file@' + self.graph_f,
                                     args = ( ugraph(self.universe),
                                              self.graph_f, report ) )
@@ -136,7 +85,7 @@ class WebRoot(Agent):
         self.universe.reactor.listenTCP(1338, site)
 
 @ThreadedIterator.from_class
-class EventHub(EventHandlerAgent):
+class EventHub(AbstractEventHandler):
 
     POST_HDR    = {'Content-Type':
                    "application/x-www-form-urlencoded;charset=utf-8"}
