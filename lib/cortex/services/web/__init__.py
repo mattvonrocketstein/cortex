@@ -98,16 +98,15 @@ class EventHub(AbstractEventHandler):
         """ """
         args, kargs = e
         peer        = args[0]
-        url      = 'http://127.0.0.1:1339/event/'
-        values   = getattr(peer, '__dict__', dict(data=peer))
-        postdata = urllib.urlencode(values)
+        url         = 'http://127.0.0.1:1339/event/'
+        values      = getattr(peer, '__dict__', dict(data=peer))
+        postdata    = urllib.urlencode(values)
         def callback(*args): "any processing on page string here."
         def errback(*args): report('error with getPage:',str(args))
         getPage(url, headers=EventHub.POST_HDR, method="POST",
                 postdata=postdata).addCallback(callback, errback)
 
-    def start(self):
-        super(EventHub, self).start()
+    def setup(self):
         tmp = rootpage.RootPage2()
         event_hub = appserver.NevowSite(tmp)
         self.universe.reactor.listenTCP(self.port, event_hub)
