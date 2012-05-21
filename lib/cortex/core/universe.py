@@ -310,8 +310,11 @@ class __Universe__(AutoReloader, UniverseNotation,
                   i don't think it really starts look back at
                   manage implementation specifics
         """
-        if ask:
-            raise Exception,'obsolete'
+        def service_is_abstract(kls):
+            opts = getattr(kls, 'Meta', None)
+            return bool(getattr(opts, 'abstract', False))
+        if service_is_abstract(obj):
+            report('refusing to start an abstract service:', obj)
         else:
             kargs.update(dict(universe=self))
             return self.services.manage(kls = obj,
