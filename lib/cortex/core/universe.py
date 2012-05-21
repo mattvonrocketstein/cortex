@@ -31,6 +31,7 @@ from cortex.mixins import FaultTolerant
 class ReactorAspect(object):
     reactor       = reactor
     callLater     = reactor.callLater
+    listenTCP     = reactor.listenTCP
     getThreadPool = reactor.getThreadPool
 
     def callInProcess(self, target, args=tuple(),

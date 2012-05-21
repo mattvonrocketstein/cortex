@@ -15,13 +15,12 @@ from cortex.core.agent import Agent
 from cortex.core.data import EVENT_T
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
-from cortex.services.web.eventdemo import rootpage
 from cortex.mixins.flavors import ThreadedIterator
 from cortex.core.agent.manager import AgentManager
 from cortex.services.web.resource import Root, ObjResource
-from cortex.agents.eventhandler import AbstractEventHandler
 from cortex.services.web.util import draw_ugraph, ugraph
 
+from .eventhub import EventHub
 
 class Web(LocalQueue, Service, AgentManager):
     """ Web Service:
@@ -66,7 +65,11 @@ class WebRoot(Agent):
 
     def stop(self):
         """ TODO: stop doesn't stop anything except the eventhub..
-            make for to turn off the webs also """
+            make for to turn off the webs also
+
+            http://mumak.net/stuff/twisted-disconnect.html
+        """
+        self.listener.stopListening()
         super(WebRoot, self).stop()
         if hasattr(self,'graph_f'):
             report('wiping graph file')
@@ -81,31 +84,4 @@ class WebRoot(Agent):
         self.root.putChild('universe',    ObjResource(self.universe))
         self.root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         site       = server.Site(self.root)
-        self.universe.reactor.listenTCP(1338, site)
-
-@ThreadedIterator.from_class
-class EventHub(AbstractEventHandler):
-
-    POST_HDR    = {'Content-Type':
-                   "application/x-www-form-urlencoded;charset=utf-8"}
-
-    @property
-    def port(self):
-        return 1339
-
-    def handle_event(self, e):
-        """ """
-        args, kargs = e
-        peer        = args[0]
-        url         = 'http://127.0.0.1:1339/event/'
-        values      = getattr(peer, '__dict__', dict(data=peer))
-        postdata    = urllib.urlencode(values)
-        def callback(*args): "any processing on page string here."
-        def errback(*args): report('error with getPage:',str(args))
-        getPage(url, headers=EventHub.POST_HDR, method="POST",
-                postdata=postdata).addCallback(callback, errback)
-
-    def setup(self):
-        tmp = rootpage.RootPage2()
-        event_hub = appserver.NevowSite(tmp)
-        self.universe.reactor.listenTCP(self.port, event_hub)
+        self.listener = self.universe.listenTCP(1338, site)
