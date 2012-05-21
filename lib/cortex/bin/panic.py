@@ -4,7 +4,7 @@ import os
 def entry():
     """ think about it.. this is not cortex --panic for a good reason."""
     print '-'*80
-    _procs = "ps aux|grep {user}|grep python|grep cortex"
+    _procs = "ps aux|grep cortex|grep \"sh -c\""
     _procs = _procs.format(user=os.environ['USER'])
     procs = os.popen(_procs).read()
     print procs

@@ -142,6 +142,9 @@ class Service(Agent):
               agent because ?
         """
         super(Service, self).stop()
+        from cortex.core.agent.manager import AgentManager
+        if isinstance(self, AgentManager):
+            self.stop_all()
 
     def play(self):
         """
