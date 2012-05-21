@@ -22,29 +22,19 @@ from cortex.services.web.util import draw_ugraph, ugraph
 
 from .eventhub import EventHub
 
-class Web(LocalQueue, Service, AgentManager):
+class Web(Service, AgentManager):
     """ Web Service:
         start: start main webserver, and secondary event-hub
         stop:  brief description of shutdown here
     """
 
-    # NOTE: currently this is the time it will take for shutdown too :(
-    _iteration_period = 2
-
-    __str__  = Service.__str__
-    __repr__ = Service.__repr__
-
     def __init__(self, *args, **kargs):
         Service.__init__(self, **kargs)
         AgentManager.__init__(self, **kargs)
 
-    def stop(self):
-        """ TODO: put am.stop_all() in service? """
-        Service.stop(self)
-        AgentManager.stop_all(self)
-
     @constraint(boot_first='postoffice')
     def start(self):
+        """ TODO: move these children to Meta.children=[] .. """
         ctx = dict(universe=self.universe)
         for kls in [EventHub, WebRoot]:
             self.manage(kls=kls, kls_kargs=ctx,
@@ -73,7 +63,9 @@ class WebRoot(Agent):
         super(WebRoot, self).stop()
         if hasattr(self,'graph_f'):
             report('wiping graph file')
-            os.remove(self.graph_f)
+            try: os.remove(self.graph_f)
+            except OSError,e:
+                report("Ignoring error: "+str(e))
 
     def setup(self):
         d          = os.path.dirname(__file__)
