@@ -11,50 +11,18 @@ from twisted.web.client import getPage
 
 import cortex
 from cortex.core.util import report
-from cortex.services import Service
+from cortex.services import FecundService
+
 from cortex.core.agent import Agent
 from cortex.core.data import EVENT_T
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 from cortex.mixins.flavors import ThreadedIterator
-from cortex.core.agent.manager import AgentManager
+
 from cortex.services.web.resource import Root, ObjResource
 from cortex.services.web.util import draw_ugraph, ugraph
 
 from .eventhub import EventHub
-
-class FecundService(Service, AgentManager):
-    """ FecundService describes a service with children.
-
-        You get mostly the semantics you'd expect.  When the
-        parent is start()'ed, the children start, and similarly
-        for stop().
-
-        To use, subclassers should define a Meta like this:
-
-
-           class Meta:
-               children = [ChildClass-1, ChildClass-2, .. ]
-    """
-
-    class Meta:
-        abstract = True
-
-    def __init__(self, *args, **kargs):
-        Service.__init__(self, **kargs)
-        AgentManager.__init__(self, **kargs)
-
-    def start(self):
-        """ """
-        ctx = dict(universe=self.universe)
-        child_classes = self.__class__.Meta.children
-        for kls in child_classes:
-            name = kls.__name__
-            kargs = dict(kls=kls, kls_kargs=ctx, name=name)
-            self.manage(**kargs)
-        self.load()
-        Service.start(self)
-
 
 class WebRoot(Agent):
     """ TODO: act smarter if you can't import networkx et al '"""
