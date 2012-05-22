@@ -1,7 +1,6 @@
 """ cortex.services.web.resource
 """
 import re
-import time
 import types
 import inspect
 
@@ -9,16 +8,6 @@ from twisted.web.resource import Resource
 from cortex.util.namespaces import NSPart
 from cortex.services.web.template import template
 from cortex.core.agent import Agent
-
-from twisted.internet import reactor, task
-from twisted.web.server import Site
-from twisted.web import server
-from twisted.web.resource import Resource
-
-from twisted.internet.task import deferLater
-from twisted.web.resource import Resource
-from twisted.web.server import NOT_DONE_YET
-from twisted.internet import reactor
 
 from cortex.core import api
 from cortex.core.hds import HDS
@@ -28,8 +17,6 @@ from cortex.services import Service
 from cortex.core.universe import Universe
 from cortex.mixins.autonomy import Autonomy
 from cortex.services.postoffice import PostOffice
-from cortex.services.web.resource.root import Root
-from cortex.services.web.resource.root import NavResource
 
 from .util import get_source, classtree, alligator2paren
 
