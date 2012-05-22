@@ -19,7 +19,8 @@ from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 from cortex.mixins.flavors import ThreadedIterator
 
-from cortex.services.web.resource import Root, ObjResource
+from cortex.services.web.resource import ObjResource
+from cortex.services.web.resource.root import Root
 from cortex.services.web.util import draw_ugraph, ugraph
 
 from .eventhub import EventHub
