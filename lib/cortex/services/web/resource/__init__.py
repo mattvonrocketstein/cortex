@@ -24,7 +24,7 @@ from cortex.core import api
 from cortex.core.hds import HDS
 from cortex.services.api import API
 from cortex.core.ground import Memory
-from cortex.services.web import Service
+from cortex.services import Service
 from cortex.core.universe import Universe
 from cortex.mixins.autonomy import Autonomy
 from cortex.services.postoffice import PostOffice

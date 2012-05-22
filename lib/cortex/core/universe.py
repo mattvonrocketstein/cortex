@@ -236,7 +236,13 @@ class __Universe__(AutoReloader, UniverseNotation,
                 s, kargs = s
             else:
                 kargs = {}
-            self.loadService(s,**kargs)
+            try: self.loadService(s,**kargs)
+            except (SyntaxError, ImportError), e:
+                error   = "Failed to get module {mod} to load service.".format(mod=mod_name)
+                context = dict(exception=e)
+                self.fault(error, context)
+
+
 
     def loadService(self, service, **kargs):
         """ """
@@ -247,15 +253,11 @@ class __Universe__(AutoReloader, UniverseNotation,
                 if len(service) == 2:
                     mod_name, class_name = service
 
-                    try: namespace = get_mod(mod_name)
-                    except ImportError, e:
-                        error   = "Failed to get module {mod} to load service.".format(mod=mod_name)
-                        context = dict(exception=e)
-                        self.fault(error, context)
-                    else:
-                        if class_name in namespace:
-                            obj = namespace[class_name]
-                            return self.start_service(obj, **kargs)
+                    namespace = get_mod(mod_name)
+
+                    if class_name in namespace:
+                        obj = namespace[class_name]
+                        return self.start_service(obj, **kargs)
                 else:
                     raise Exception,'will not interpret that dotpath yet'
 
@@ -272,7 +274,7 @@ class __Universe__(AutoReloader, UniverseNotation,
                     error = "Failed to get module '{mod}' to load service.".format(mod=mod_name)
                     error = [error, dict(exception=e)]
                     errors.append(error)
-
+                    report(errors)
                     ## Attempt discovery by asking Service's who actually subclasses him
                     subclasses = Service.subclasses(deep=True, dictionary=True, normalize=True)
                     if mod_name.lower() in subclasses:
