@@ -7,6 +7,7 @@
 import time
 import threading
 
+from twisted.internet.task import LoopingCall
 
 from cortex.core.util import report
 from cortex.mixins.autonomy import Autonomy
@@ -14,7 +15,6 @@ from cortex.util.namespaces import NSPart
 from cortex.util.calltools import callchain
 
 class Eventful(Autonomy): pass
-
 
 class ReactorRecursion(Autonomy):
     """ """

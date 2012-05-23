@@ -28,7 +28,7 @@ class WebRoot(Agent):
     """ TODO: act smarter if you can't import networkx et al '"""
 
     def iterate(self):
-        """ WebRoot is a trivial Agent with no  true concurrency
+        """ WebRoot is a trivial Agent with no true concurrency
             flavor.  this iterate method will run once, and runs
             only after the system is otherwise bootstrapped.  we
             call the draw_ugraph using multiprocessing, because
