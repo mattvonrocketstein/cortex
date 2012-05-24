@@ -22,6 +22,12 @@ from .util import get_source, classtree, alligator2paren
 
 ATOMS = ( list, tuple,  float, int, str )
 
+class EFrame(Resource):
+    def render_GET(self, request):
+        ctx = dict(chan=request.args['chan'][0])
+        t = template('eframe')
+        return str(t.render(**ctx))
+
 class ObjectResource(Resource):
     isLeaf = True
 
