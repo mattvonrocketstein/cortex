@@ -2,7 +2,7 @@
 """
 
 from nevow import athena, loaders, tags as T, inevow, rend
-from twisted.python import filepath,util
+from twisted.python import filepath, util
 
 from cortex.core.util import report
 
@@ -46,7 +46,7 @@ class AlertPage(athena.LivePage):
         f.setFragmentParent(self)
         return ctx.tag[f]
 
-    def asdfglocateChild(self, ctx, segments):
+    def locateChild(self, ctx, segments):
         result = super(AlertPage,self).locateChild(ctx, segments)
         newres, newpath = result
         if result == (None,tuple()): #why isn't this a nevow.rend.FourOhFour ?

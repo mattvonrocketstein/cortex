@@ -19,7 +19,7 @@ class RootPage2(rend.Page):
         def load(ctx=None, preprocessors=()):
             return "EventHub, rootpage"
 
-    def child_alerts ( self, ctx ):
+    def child_alerts(self, ctx):
         return AlertPage(self.eventHandler)
 
     def child_event ( self, ctx ):
