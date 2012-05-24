@@ -24,7 +24,7 @@ class EventHub(AbstractEventHandler):
         """ """
         args, kargs = e
         peer        = args[0]
-        url         = 'http://127.0.0.1:1339/event/'
+        url         = 'http://127.0.0.1:1339/event/peer'
         values      = getattr(peer, '__dict__', dict(data=peer))
         postdata    = urllib.urlencode(values)
         def callback(*args): "any processing on page string here."

@@ -1,4 +1,4 @@
-"""
+""" cortex.services.web.eventhub.events
 """
 import json
 
@@ -18,19 +18,24 @@ class EventHandler():
             subscriber.fireEvent(eventID)
 
 class EventCreator(rend.Page):
+    """ lives underneath /event """
     def __init__(self,eventHandler):
         self.eventHandler = eventHandler
 
     def render_body ( self, ctx, data ):
         request = inevow.IRequest ( ctx )
         f = request.fields
+        rpath = request.path.split('/')
+        rpath = filter(None, rpath)
+        rpath = rpath[1:]
+        channel = '/'.join(rpath)
         if f:
-            eventID = json.dumps(['/'.join(filter(None, request.path.split('/'))[1:]),
-                                  dict([[x, f[x].value] for x in f])])
+            eventID = [channel,dict([[x, f[x].value] for x in f])]
+            eventID = json.dumps(eventID)
             self.eventHandler.fireEvent(eventID)
             #report("Event Created with ID: %s" % (eventID,))
             return "Event Created with ID: %s" % (eventID,)
-        return "No dat found.  Are you using POST ?"
+        return "No data found.  Are you using POST or GET ?"
 
     docFactory = loaders.stan (
         T.html [ T.head [T.title["Event Created"]],
@@ -38,6 +43,7 @@ class EventCreator(rend.Page):
         ])
 
 class CreateEventPage(rend.Page):
+
     def __init__(self, eventHandler):
         self.eventHandler = eventHandler
 
