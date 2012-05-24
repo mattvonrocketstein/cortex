@@ -1,4 +1,4 @@
-"""
+""" cortex.lib.cortex.services.web.eventhub.alerts
 """
 
 from nevow import athena, loaders, tags as T, inevow, rend
@@ -26,11 +26,17 @@ class AlertElement(athena.LiveElement):
         self.callRemote('addRow', unicode(eventID))
 
 class AlertPage(athena.LivePage):
+
+    addSlash = True
+
     def __init__(self, eventHandler, *a, **kw):
+        self.segs = kw.pop('segs', tuple())
         super(AlertPage, self).__init__(*a,**kw)
+
         self.eventHandler = eventHandler
         self.jsModules.mapping.update({'Alerts': modulePath.path})
 
+    # ugh, Just brutal..
     docFactory = loaders.stan(T.html[
         T.head(render=T.directive('liveglue')),
         T.body(render=T.directive('alertElement'))])
@@ -39,3 +45,11 @@ class AlertPage(athena.LivePage):
         f = AlertElement(self.eventHandler)
         f.setFragmentParent(self)
         return ctx.tag[f]
+
+    def asdfglocateChild(self, ctx, segments):
+        result = super(AlertPage,self).locateChild(ctx, segments)
+        newres, newpath = result
+        if result == (None,tuple()): #why isn't this a nevow.rend.FourOhFour ?
+            newres,newpath = self,tuple()
+        return newres,newpath
+        #return ( EventCreator(self.eventHandler), () )

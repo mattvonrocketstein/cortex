@@ -14,7 +14,6 @@ from cortex.core.util import report
 from cortex.services import FecundService
 
 from cortex.core.agent import Agent
-from cortex.core.data import EVENT_T
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 from cortex.mixins.flavors import ThreadedIterator
