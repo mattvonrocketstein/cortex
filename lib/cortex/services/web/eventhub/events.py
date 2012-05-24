@@ -29,13 +29,16 @@ class EventCreator(rend.Page):
         rpath = filter(None, rpath)
         rpath = rpath[1:]
         channel = '/'.join(rpath)
+        if not f and not request.args:
+            return "No data found.  Are you using POST or GET ?"
         if f:
             eventID = [channel,dict([[x, f[x].value] for x in f])]
-            eventID = json.dumps(eventID)
-            self.eventHandler.fireEvent(eventID)
             #report("Event Created with ID: %s" % (eventID,))
-            return "Event Created with ID: %s" % (eventID,)
-        return "No data found.  Are you using POST or GET ?"
+        if request.args:
+            eventID =  [channel, str(request.args)]
+        eventID = json.dumps(eventID)
+        self.eventHandler.fireEvent(eventID)
+        return "Event Created with ID: %s" % (eventID,)
 
     docFactory = loaders.stan (
         T.html [ T.head [T.title["Event Created"]],
