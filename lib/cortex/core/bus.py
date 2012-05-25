@@ -2,7 +2,7 @@
 """
 
 from cyrusbus.bus import Bus
-
+from channel import Message
 from cortex.core.util import report
 from cortex.core.ground import NotFound
 
@@ -56,8 +56,10 @@ class TupleBus(Bus):
 
         if subscribers==NotFound:
             return N
+        kwargs.update(__channel=key)
         for subscriber in subscribers:
             #report(subscriber)
+            #m =Message(*args, **kwargs); subscriber(m)
             subscriber(*args, **kwargs)
             N+=1
         return N
