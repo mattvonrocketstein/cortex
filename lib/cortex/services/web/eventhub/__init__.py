@@ -23,10 +23,12 @@ class EventHub(AbstractEventHandler):
     def handle_event(self, e):
         """ """
         args, kargs = e
-        peer        = args[0]
-        url         = 'http://127.0.0.1:1339/event/peer'
-        values      = getattr(peer, '__dict__', dict(data=peer))
-        postdata    = urllib.urlencode(values)
+        chan = kargs.get('__channel')
+        #peer        = args[0]
+        url         = 'http://127.0.0.1:1339/event/' + chan
+        kargs['__args'] = args
+        #values      = getattr(peer, '__dict__', dict(data=peer))
+        postdata    = urllib.urlencode(kargs)
         def callback(*args): "any processing on page string here."
         def errback(*args): report('error with getPage:',str(args))
         getPage(url, headers=EventHub.POST_HDR, method="POST",
