@@ -9,47 +9,7 @@ from twisted.internet import protocol
 from cortex.core.util import report
 from cortex.core.agent import Agent
 
-class MyPP(protocol.ProcessProtocol):
-    def __init__(self, verses=10):
-        self.stdout = Queue()
-        self.stderr = Queue()
-        self.verses = verses
-
-        self.count = 0
-
-    def connectionMade(self):
-        #report( "connectionMade!")
-        self.transport.closeStdin() # tell them we're done
-
-    def outReceived(self, data):
-        #report( "outReceived! with %d bytes!" % len(data))
-        self.stdout.put(data)
-
-    def errReceived(self, data):
-        #report( "errReceived! with %d bytes!" % len(data))
-        self.stderr.put(data)
-
-    def inConnectionLost(self):
-        pass #report( "inConnectionLost! stdin is closed! (we probably did it)")
-
-    def outConnectionLost(self):
-        report("outConnectionLost! The child closed their stdout! queue-length: ",
-               self.stdout.qsize())
-
-    def errConnectionLost(self):
-        report('errConnectionLost! The child closed their stderr. queue-length: ',
-               self.stderr.qsize())
-
-    def processExited(self, reason): self.finish(reason)
-
-    def finish(self, reason):
-        err = reason.value.exitCode
-        report( "processExited, status", err)
-        if err:
-            txt = q2txt(self._stderr)
-            report(txt)
-
-    def processEnded(self, reason): self.finish(reason)
+#class MyPP(protocol.ProcessProtocol):
 
 def  q2txt(q):
     out = StringIO()
@@ -64,21 +24,49 @@ def  q2txt(q):
     out.seek(0)
     return out.read()
 
-class Process(Agent):
+class Process(Agent, protocol.ProcessProtocol):
     """
         TODO: shutdown the process less brutally when cortex terminates
     """
 
-    @property
-    def _stdout(self): return self.pp.stdout
+    def connectionMade(self):
+        self.transport.closeStdin()
+
+    def outReceived(self, data):
+        #report( "outReceived! with %d bytes!" % len(data))
+        self._stdout.put(data)
+
+    def errReceived(self, data):
+        #report( "errReceived! with %d bytes!" % len(data))
+        self._stderr.put(data)
+
+    def inConnectionLost(self):
+        pass #report( "inConnectionLost! stdin is closed! (we probably did it)")
+
+    def outConnectionLost(self):
+        report("outConnectionLost! The child closed their stdout! queue-length: ",
+               self._stdout.qsize())
+
+    def errConnectionLost(self):
+        report('errConnectionLost! The child closed their stderr. queue-length: ',
+               self._stderr.qsize())
+
+    def processExited(self, reason): self.finish(reason)
+
+    def finish(self, reason):
+        err = reason.value.exitCode
+        report( "processExited, status", err)
+        if err:
+            txt = q2txt(self._stderr)
+            report(txt)
+
+    def processEnded(self, reason): self.finish(reason)
 
     @property
     def stdout(self):
         """ exhausts the queue"""
         return q2txt(self._stdout)
 
-    @property
-    def _stderr(self): return self.pp.stderr
 
     @property
     def stderr(self):
@@ -87,7 +75,7 @@ class Process(Agent):
 
     def _kill(self):
         """ This will eventually result in processEnded being called. """
-        self.pp.transport.signalProcess('KILL')
+        self.transport.signalProcess('KILL')
 
     def stop(self):
         report('Killing process: ', self._cmd)
@@ -96,6 +84,11 @@ class Process(Agent):
         except twisted.internet.error.ProcessExitedAlready:
             pass
         super(Process, self).stop()
+
+    def setup(self):
+        self._stdout = Queue()
+        self._stderr = Queue()
+        self.count = 0
 
     @property
     def cmd(self):
@@ -106,7 +99,6 @@ class Process(Agent):
         return executable, args
 
     def iterate(self):
-        self.pp = MyPP()
         env = {}
         executable, args = self.cmd
-        self.process = self.universe.reactor.spawnProcess(self.pp, executable, args, env)
+        self.process = self.universe.reactor.spawnProcess(self, executable, args, env)
