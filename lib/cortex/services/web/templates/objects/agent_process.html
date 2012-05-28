@@ -17,7 +17,7 @@
 {%block extra_status%}
 <tr>
   <td><strong>command</strong></td>
-  <td id=yamml>
+  <td>
     "{{obj._cmd}}"
   </td>
 </tr>
@@ -38,33 +38,36 @@
           <table><tr>
               <td><h5>stdout</h5></td>
               <td>&nbsp;<small>
-                  <a href="javascript:refresh('stdout')">refresh</a>
-                  <a href="javascript:hide('stdout')">hide</a>
-                  <a href=#>clear</a>
+                  <a href="javascript:refresh('stdout')">refresh</a> |
+                  <a href="javascript:hide('stdout')">toggle view</a> |
+                  <a href="javascript:clear('stdout')">clear</a>
               </small></td>
-          </tr></table>
-        </td></tr><tr>
+            </tr>
+          </table>
+          <div style="font-size:10px;margin-left:15px;width:100%" id=id_stdout></div>
+        </td>
+      </tr>
+      <tr>
         <td>
           <table><tr>
               <td><h5>stderr</h5></td>
               <td>&nbsp;<small>
-                  <a href="javascript:refresh('stderr')">refresh</a>
-                  <a href="javascript:hide('stderr')">hide</a>
-                  <a href=#>clear</a>
+                  <a href="javascript:refresh('stderr')">refresh</a> |
+                  <a href="javascript:hide('stderr')">toggle view</a> |
+                  <a href="javascript:clear('stderr')">clear</a>
               </small></td>
           </tr></table>
-      </tr>
-      <tr>
-        <td><div style="background:black;width:100%" id=id_stdout></div></td>
-        <td><div style="width:100%" id=id_stderr></div></td>
+          <div style="font-size:10px;margin-left:15px;width:100%" id=id_stderr></div>
       </tr>
     </table>
 </table>
 <script>
+  function hide(name){$('#id_'+name).toggle()}
+  function clear(name){$('#id_'+name).html('')}
   function refresh(name){
-    var url = window.location+'/'+name+'?postprocess=reverse_console&force_template=raw';
-    $('#id_'+name).html('loading <a href="'+url+'">"'+url+'"</a>');
-    $('#id_'+name).load(url);
+  var url = window.location+'/'+name+'?postprocess=reverse_console&force_template=raw';
+  $('#id_'+name).html('loading <a href="'+url+'">"'+url+'"</a>');
+  $('#id_'+name).load(url);
   }
 </script>
 {%endblock%}
