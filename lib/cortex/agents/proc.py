@@ -9,8 +9,6 @@ from twisted.internet import protocol
 from cortex.core.util import report
 from cortex.core.agent import Agent
 
-#class MyPP(protocol.ProcessProtocol):
-
 def  q2txt(q):
     out = StringIO()
     while True:
