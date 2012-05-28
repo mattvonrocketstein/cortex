@@ -165,6 +165,12 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
               times.
         """
 
+    @property
+    def siblings(self):
+        out = [ x for x in self.parent.children() if x!=self ]
+        out = dict([ [x.name, x] for x in out ])
+        return out
+
     # play(self):: inherited from Autonomy
 
 Node    = Agent         # Alias
