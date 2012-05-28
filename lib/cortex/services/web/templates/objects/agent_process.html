@@ -35,9 +35,10 @@
     <table style="width:100%;margin-left:15px;">
       <tr>
         <td>
-          <table><tr>
+          <table width=50%><tr>
               <td><h5>stdout</h5></td>
-              <td>&nbsp;<small>
+              <td align=right>unread lines: <span id=id_stdout_size>?</span></td>
+              <td align=right>&nbsp;<small>
                   <a href="javascript:refresh('stdout')">refresh</a> |
                   <a href="javascript:hide('stdout')">toggle view</a> |
                   <a href="javascript:clear('stdout')">clear</a>
@@ -49,9 +50,10 @@
       </tr>
       <tr>
         <td>
-          <table><tr>
+          <table width=50%><tr>
               <td><h5>stderr</h5></td>
-              <td>&nbsp;<small>
+              <td align=right>unread lines: <span id=id_stderr_size>?</span></td>
+              <td align=right>&nbsp;<small>
                   <a href="javascript:refresh('stderr')">refresh</a> |
                   <a href="javascript:hide('stderr')">toggle view</a> |
                   <a href="javascript:clear('stderr')">clear</a>
@@ -69,5 +71,17 @@
   $('#id_'+name).html('loading <a href="'+url+'">"'+url+'"</a>');
   $('#id_'+name).load(url);
   }
+  function refresh_sizes(){
+     $('#id_stdout_size').html('..');
+     $('#id_stderr_size').html('..');
+     function geturl(name){
+     var url = window.location.pathname + '/_'+name+'/qsize()?&force_template=raw';
+     return url.replace('//','/')
+     }
+     $('#id_stdout_size').load(geturl('stdout'))
+     $('#id_stderr_size').load(geturl('stderr'))
+     setTimeout("refresh_sizes()", 3000)
+  }
+  $(document).ready(refresh_sizes)
 </script>
 {%endblock%}
