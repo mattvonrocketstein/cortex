@@ -1,0 +1,70 @@
+{%extends "objects/agent.html"%}
+
+
+{%block page_title%}{{obj.name}}{%endblock%}
+{%block obj_type%}PROCESS(AGENT){%endblock%}
+
+
+{%block obj_nav%}
+{{super()}}
+{%endblock%}
+
+
+{%block obj_namespace%}
+{{super()}}
+{%endblock%}
+
+{%block extra_status%}
+<tr>
+  <td><strong>command</strong></td>
+  <td id=yamml>
+    "{{obj._cmd}}"
+  </td>
+</tr>
+{%endblock%}
+
+{%block obj_main%}
+{{super()}}
+<table style="width:100%;margin-left:15px;">
+  <td style="margin-left:15px;">
+    <table><tr>
+        <td><h4>Results:</h4></td>
+        <td>&nbsp;&nbsp;<small>Split | Stack</small></td>
+    </tr></table>
+    <hr/>
+    <table style="width:100%;margin-left:15px;">
+      <tr>
+        <td>
+          <table><tr>
+              <td><h5>stdout</h5></td>
+              <td>&nbsp;<small>
+                  <a href="javascript:refresh('stdout')">refresh</a>
+                  <a href="javascript:hide('stdout')">hide</a>
+                  <a href=#>clear</a>
+              </small></td>
+          </tr></table>
+        </td></tr><tr>
+        <td>
+          <table><tr>
+              <td><h5>stderr</h5></td>
+              <td>&nbsp;<small>
+                  <a href="javascript:refresh('stderr')">refresh</a>
+                  <a href="javascript:hide('stderr')">hide</a>
+                  <a href=#>clear</a>
+              </small></td>
+          </tr></table>
+      </tr>
+      <tr>
+        <td><div style="background:black;width:100%" id=id_stdout></div></td>
+        <td><div style="width:100%" id=id_stderr></div></td>
+      </tr>
+    </table>
+</table>
+<script>
+  function refresh(name){
+    var url = window.location+'/'+name+'?postprocess=reverse_console&force_template=raw';
+    $('#id_'+name).html('loading <a href="'+url+'">"'+url+'"</a>');
+    $('#id_'+name).load(url);
+  }
+</script>
+{%endblock%}

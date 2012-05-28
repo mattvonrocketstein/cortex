@@ -17,16 +17,22 @@ from cortex.services import Service
 from cortex.core.universe import Universe
 from cortex.mixins.autonomy import Autonomy
 from cortex.services.postoffice import PostOffice
+from cortex.agents.proc import Process
+from cortex.core.util import report
 
 from .util import get_source, classtree, alligator2paren
 
 ATOMS = ( list, tuple,  float, int, str )
+
 
 class EFrame(Resource):
     def render_GET(self, request):
         ctx = dict(chan=request.args['chan'][0])
         t = template('eframe')
         return str(t.render(**ctx))
+
+post_processors = type('sdasdasd',(object,),
+                       dict(reverse_console = staticmethod(report.console.html)))
 
 class ObjectResource(Resource):
     isLeaf = True
@@ -40,59 +46,69 @@ class ObjectResource(Resource):
     @property
     def is_complex(self): return not self.is_atom
 
+    def _from_req(self, name):
+        return self.request.args[name][0]
 
     @property
     def template(self):
         """ """
         ctx = {}
-        if self.is_atom:
-            T = template('objects/primitive')
+        target = self.target
 
-        elif 'force_template' in self.request.args:
-            T = self.request.args['force_template'][0]
+        if 'force_template' in self.request.args:
+            #T = self.request.args['force_template'][0]
+            T = self._from_req('force_template')
             T = 'objects/'+T
             T = template(T)
-
         else:
-            target = self.target
             try:
-                file_name = inspect.getfile(self.target)
+                file_name = inspect.getfile(target)
             except TypeError:
                 file_name = self.target.__module__
             ctx.update(file_name=file_name,
-                       source=get_source(self.target))
+                       source=get_source(target))
 
             if False:
                 pass
-            elif self.target == Universe:
+            elif self.is_atom:
+                T = template('objects/primitive')
+
+
+            elif target == Universe:
                 T = template('objects/universe')
                 ctx.update(procs=Universe.procs + [Universe.pid],
                            threads=Universe.threads,
                            )
-            elif isinstance(self.target, Agent):
+            elif isinstance(target, Agent):
                 T = template('objects/agent')
                 #ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
                 ctx.update(parent=alligator2paren(target.parent),
-                           autonomy=NSPart(self.target).intersection(NSPart(Autonomy)))
-                if isinstance(self.target, Service):
+                           autonomy=NSPart(target).intersection(NSPart(Autonomy)))
+
+                if isinstance(target, Process):
+                    T = template('objects/agent_process')
+                    #children = target.agents if hasattr(target, 'agents') else []
+                    #ctx.update(children=children)
+
+                if isinstance(target, Service):
                     T = template('objects/services/service')
-                    children = self.target.agents if hasattr(self.target, 'agents') else []
+                    children = target.agents if hasattr(target, 'agents') else []
                     ctx.update(children=children)
 
-                if isinstance(self.target, API):
+                if isinstance(target, API):
                     T = template('objects/services/api')
                     ctx.update(api_methods=api.publish())
 
-                if isinstance(self.target, PostOffice):
+                if isinstance(target, PostOffice):
                     T = template('objects/services/postoffice')
 
-            elif isinstance(self.target, Memory):
+            elif isinstance(target, Memory):
                 # keep this one after postoffice
                 T = template('objects/memory')
 
-            elif isinstance(self.target, HDS):
+            elif isinstance(target, HDS):
                 T = template('objects/HDS')
-            elif isinstance(self.target,
+            elif isinstance(target,
                             types.MethodType):
                 T = template('objects/method')
             else:
@@ -123,9 +139,10 @@ class ObjectResource(Resource):
 
     def render_GET(self, request):
         """ """
-        obj_path = filter(None, request.postpath)
-        self.target = self.resolve_object(obj_path)
         self.request = request
+        obj_path = filter(None, self.request.postpath)
+        self.target = self.resolve_object(obj_path)
+
         dispatch_to = self._dispatcher(request)
         if dispatch_to is not None:
             return dispatch_to(request)
@@ -174,7 +191,9 @@ class ObjectResource(Resource):
                 target = getattr(target,func)()
             else:
                 target = getattr(target, component)
-
+        if 'postprocess' in self.request.args:
+            func = getattr(post_processors, self._from_req('postprocess'))
+            target = func(target)
         return target
 
     @property
