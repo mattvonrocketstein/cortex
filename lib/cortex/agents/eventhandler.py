@@ -3,13 +3,13 @@
 
 from cortex.core.agent import Agent
 from cortex.mixins import LocalQueue
-from cortex.core.data import EVENT_T
+from cortex.core.data import EVENT_T, PEER_T
 
 class AbstractEventHandler(LocalQueue, Agent):
     """ AbstractEventHandler """
 
     class Meta:
-        subscriptions = {EVENT_T: 'push_q'}
+        subscriptions = {EVENT_T: 'push_q',PEER_T: 'push_q'}
 
     def start(self):
         self.init_q() # safe to call in start or __init__
