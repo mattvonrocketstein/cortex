@@ -67,8 +67,11 @@ class ObjectResource(Resource):
             try:
                 file_name = inspect.getfile(target)
             except TypeError:
-                file_name = self.target.__module__
-            
+                try:
+                    file_name = self.target.__module__
+                except AttributeError:
+                    file_name = '(unknown)'
+
             tname = type(target).__name__.lower()
             try:
                 T = template('objects/' + tname)
