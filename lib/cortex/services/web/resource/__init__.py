@@ -4,7 +4,9 @@ import re
 import types
 import inspect
 
+from jinja2.loaders import TemplateNotFound
 from twisted.web.resource import Resource
+
 from cortex.util.namespaces import NSPart
 from cortex.services.web.template import template
 from cortex.core.agent import Agent
@@ -19,6 +21,7 @@ from cortex.mixins.autonomy import Autonomy
 from cortex.services.postoffice import PostOffice
 from cortex.agents.proc import Process
 from cortex.core.util import report
+
 
 from .util import get_source, classtree, alligator2paren
 
@@ -65,11 +68,21 @@ class ObjectResource(Resource):
                 file_name = inspect.getfile(target)
             except TypeError:
                 file_name = self.target.__module__
+            
+            tname = type(target).__name__.lower()
+            try:
+                T = template('objects/' + tname)
+            except TemplateNotFound:
+                report('greedy failed', tname)
+                tname = None
+                T = None
+
             ctx.update(file_name=file_name,
                        source=get_source(target))
 
-            if False:
-                pass
+            if T is not None:
+                report("greedy found T", tname)
+
             elif self.is_atom:
                 T = template('objects/primitive')
 
