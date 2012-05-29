@@ -18,10 +18,14 @@ def is_open(port, ip=LOOPBACK_HOST):
     except:
         return False
 
-def ipaddr_with_internet():
+def ipaddr_with_LAN():
     """ you need to make an outbound connection to get
         an ip-address on a particular interface.. this
-        function requires interwebs
+        function requires interwebs.
+
+        this might actually be an address on the internet,
+        more likely you are behind a router and this is
+        a class C.
     """
     port = 80
     host = "gmail.com"
