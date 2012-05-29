@@ -47,7 +47,13 @@ class Search(Service, AgentManager):
             of this function and iterate()
         """
         Service.start(self) # TODO: why not super() ?
-        self.mem = Memory(self, name='SearchStore')
+        if os.path.exists(self.memf):
+            import pickle
+            self.mem = pickle.loads(open(self.memf).read())
+            self.mem.owner = self
+        else:
+            self.mem = Memory(self, name='SearchStore')
+            self.mem.filename = self.memf
 
         ## send a message that things tracking the API need to update.
         ## by default this will update but the RPC methods as well as the
@@ -59,7 +65,6 @@ class Search(Service, AgentManager):
         poffice.publish(CHAN_NAME, google=self.google)
         poffice.publish(CHAN_NAME, ack=self.ack)
 
-
         def getter(name):
             tpl = (name, object)
             try:
@@ -69,13 +74,21 @@ class Search(Service, AgentManager):
             key, data = out
             data = json.loads(data)
             return data
-        (self.universe|'api').contribute(get=getter)
+        poffice.publish(CHAN_NAME, get=getter)
 
         self.bus = Channel.search_bus
         self.bus.bind(poffice)
         self.bus.subscribe(self.search_callback)
         GGLer.bind_result_bus(self.bus)
         ACKer.bind_result_bus(self.bus)
+
+    @property
+    def memf(self):
+        return os.path.join(self.universe.tmpdir, self.name + '.pickle')
+
+    def stop(self):
+        super(Search, self).stop()
+        self.mem.save()
 
     def google(self, query):
         u = uuid()
