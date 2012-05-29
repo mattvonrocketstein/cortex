@@ -244,9 +244,9 @@ class Keyspace(Memory, DefaultKeyMapper):
             1) compute the de-duped keys from the tuple space
             2) aggregate for every value-set that uses a given key
             TODO: 3) de-dupe the aggregation?
+            TODO: 4) flatten(ks[key]) if len(ks[key])==1 ?
         """
-        #keys    = [ k for k in self.keys() if not k.startswith('__') ]
-        keys    = self.public_keys() #[ k for k in self.public_keys() if not k.startswith('__') ]
+        keys    = self.public_keys()
         results = {}
         for k in keys:
             test      = lambda tpl: self.tuple2key(tpl)==k
