@@ -23,7 +23,7 @@ from cortex.util.decorators import constraint
 from cortex.core.agent.manager import AgentManager
 from cortex.core.ground import Memory
 from .util import search_with_ack, search_with_google
-
+from cortex.services.api import CHAN_NAME
 MAX_RESULTS = 5
 
 class Search(Service, AgentManager):
@@ -48,9 +48,17 @@ class Search(Service, AgentManager):
         """
         Service.start(self) # TODO: why not super() ?
         self.mem = Memory(self, name='SearchStore')
+
+        ## send a message that things tracking the API need to update.
+        ## by default this will update but the RPC methods as well as the
+        ## namespace available to the interactive shell.  to verify, you
+        ##
+        ## to verify it, you can also list the RPC methods at this url:
+        ##   http://127.0.0.1:1338/universe/services/registry[api]/obj
         poffice = (self.universe|'postoffice')
-        (self.universe|'api').contribute(google=self.google)
-        (self.universe|'api').contribute(ack=self.ack)
+        poffice.publish(CHAN_NAME, google=self.google)
+        poffice.publish(CHAN_NAME, ack=self.ack)
+
 
         def getter(name):
             tpl = (name, object)
