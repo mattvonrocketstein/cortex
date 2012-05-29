@@ -1,18 +1,18 @@
 """ cortex.services.api
 
-      This service publishes cortex.core.api via json-rpc.
+    This service publishes cortex.core.api via json-rpc.
 """
 
 
 from txjsonrpc.netstring import jsonrpc
 from twisted.internet.error import CannotListenError
 
-from cortex.core.util import report, console
+from cortex.core.util import report
 from cortex.core import api as _api
 from cortex.services import Service
 from cortex.util.decorators import constraint
 from cortex.core.data import CORTEX_PORT_RANGE
-
+CHAN_NAME = 'cortex_api'
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
 def wrap(func):
@@ -61,18 +61,25 @@ ApiWrapper = api_wrapper()
 
 class API(Service):
     """ API Service:
-         publishes the cortex api via jsonRPC
+        publishes the cortex api via jsonRPC
 
-           start:
-           stop:
     """
+
+    class Meta:
+        """ NOTE: mentioning a channel in subscriptions always
+                  means it will be created if it does not exist.
+        """
+        subscriptions = {CHAN_NAME: 'augment_with'}
+
     def augment_with(self, **namespace):
         """ dynamically increase the (json) published api
             using <namespace>
 
             TODO: define an api-contribute-signal which this
-                  service and the terminal service both respond to.
+                service and the terminal service both respond to.
         """
+        came_from = namespace.pop('__channel', None)
+        #[ namespace.pop(k) for k in namespace if k.startswith('__')]
         _api.contribute(**namespace)
         ApiWrapper._update_api_wrapper()
         #for name,value in namespace.items():
@@ -86,7 +93,6 @@ class API(Service):
         self.port = kargs.pop('port', None)
         kargs.update(name='API')
         super(Service,self).__init__(*args, **kargs)
-        from cortex.core import api
 
     def _post_init(self):
         """ """
@@ -97,21 +103,21 @@ class API(Service):
         super(API,self).stop()
         report('the API Service Dies.')
 
-    @constraint(boot_first='gui terminal'.split())
-    def start(self):
-        """ TODO: ^^ currently only the last constriant is used"""
-        super(API, self).start()
-        self.factory = jsonrpc.RPCFactory(ApiWrapper)
+    def bind_port(self, factory):
         count   = self.port or PORT_START
         while count!= PORT_FINISH:
             try:
                 # enables system.listMethods method, etc
                 self.factory.addIntrospection()
-                self.universe.reactor.listenTCP(count, self.factory)
+                self.universe.listenTCP(count, factory)
             except CannotListenError:
                 count += 1
             else:
                 self.port = count
-                return self
 
-        return ERROR_T
+    @constraint(boot_first='gui terminal'.split())
+    def start(self):
+        """ TODO: ^^ currently only the last constriant is used"""
+        super(API, self).start()
+        self.factory = jsonrpc.RPCFactory(ApiWrapper)
+        self.bind_port(self.factory)
