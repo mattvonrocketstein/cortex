@@ -6,10 +6,12 @@ from nevow import appserver
 from twisted.web.client import getPage
 
 from cortex.core.util import report
+from cortex.core.data import LOOPBACK_HOST
 from cortex.services.web.eventhub import rootpage
 from cortex.mixins.flavors import ThreadedIterator
 from cortex.agents.eventhandler import AbstractEventHandler
 
+URL_T  = 'http://{host}:{port}/event/{chan}'
 
 @ThreadedIterator.from_class
 class EventHub(AbstractEventHandler):
@@ -27,8 +29,7 @@ class EventHub(AbstractEventHandler):
         args, kargs = e
         kargs['__args'] = args # TODO: should be done in channel.py if at all
         chan = kargs['__channel']
-        url  = 'http://127.0.0.1:{port}/event/{chan}'
-        url  = url.format(port=self.port,chan=chan)
+        url  = URL_T.format(host=LOOPBACK_HOST, port=self.port,chan=chan)
         postdata    = urllib.urlencode(kargs)
         def callback(*args): "any processing on page string here."
         def errback(*args): report('error with getPage:',str(args))
