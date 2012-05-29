@@ -20,20 +20,25 @@ def function_to_agent(func, return_bus=None):
     from cortex.mixins.flavors import Threaded
     return Threaded.from_function(func, return_bus=None)
 
-def contribute(**kargs):
+def contribute(**namespace):
+    """ cortex.core.api.contribute()
+
+        simply adds a function to the namespace of the module
+        ``cortex.core.api``.  this may not affect any agents who
+        have already acted on the basis of the contents of that
+        module.  to request that those agents update, you need to
+        do something like this:
+
+           >>> from cortex.core.data import CORTEX_API_UPDATE_T
+           >>> postoffice = (universe|'postoffice')
+           >>> postoffice.publish(CORTEX_API_UPDATE_T,**namespace)
+    """
     from cortex.core import api
-    for k,v in kargs.items():
+    for k,v in namespace.items():
         if k in dir(api):
             raise ValueError,"{0} is already in the API.".format(k)
         else:
             setattr(api, k, v)
-    #postoffice = (universe|'postoffice')
-    #try:
-    #    chan = postoffice.api_contribution
-    #except AttributeError:
-    #    report('could not send api_contribution event')
-    #else:
-    #    chan(**kargs)
 
 def publish(**kargs):
     """ return a dictionary of the namespace for this module,
