@@ -11,9 +11,13 @@ from cortex.mixins import LocalQueue
 from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
 from cortex.util.decorators import constraint
+from cortex.services.api import CHAN_NAME
 
 class ATerminal(Service, LocalQueue):
     """ """
+    class Meta:
+        subscriptions = {CHAN_NAME: 'contribute_to_api'}
+
     @constraint(boot_first='postoffice')
     def start(self):
         """ """
@@ -28,7 +32,6 @@ class ATerminal(Service, LocalQueue):
             pass
         else:
             self.after_start()
-        return self
 
     def before_start(self):
         report('abstract before_start')
@@ -64,11 +67,15 @@ class ATerminal(Service, LocalQueue):
             report('failure with ipmagic exit.  (is this the gui?)')
         report('the Terminal Service Dies.')
 
+    def contribute_to_api(self, **namespace):
+        came_from = namespace.pop('__channel', None)
+        self.shell.IP.user_ns.update(**namespace)
+
     @staticmethod
     def compute_terminal_namespace():
         """ populates the namespace that is available within the shell """
         import inspect
-        universe = {'__name__' : '__cortex_shell__',}
-        universe.update(api.publish())
-        universe.update(dict(getfile=inspect.getfile))
-        return universe
+        namespace = {'__name__' : '__cortex_shell__',}
+        namespace.update(api.publish())
+        namespace.update(dict(getfile=inspect.getfile))
+        return namespace
