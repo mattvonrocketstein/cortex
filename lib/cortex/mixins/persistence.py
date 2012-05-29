@@ -1,7 +1,15 @@
+""" cortex.mixins.persistence
+"""
+
+import pickle
+
+from cortex.core.util import report
 from cortex.mixins.mixin import Mixin
+
 
 class Persistence(Mixin):
     """ Something that's persistent """
+
     def persist(self):
         """ Convention:
              <persist> for "complex" structures is:
@@ -16,19 +24,20 @@ class Persistence(Mixin):
 
     def save(self, fname=None):
         """ """
-        print fname
-        if not fname and hasattr(self, 'universe'):
-             fname = self.universe.tmpfile().name
-        elif not fname and hasattr(self,'tmpfile'):
-            fname = self.tmpfile().name
-        else:
-            raise Exception,'no way to derive fname'
-        report('persisting memory to', fname)
+        if not fname:
+            if hasattr(self, 'universe'):
+                fname = self.universe.tmpfname()
+            elif hasattr(self,'tmpfile'):
+                fname = self.tmpfile
+        if not fname:
+            raise Exception, 'no way to derive fname'
+        report('persisting memory@{1} to {2}', self, fname)
         _str = self.serialize()
-        ___f = open(fname,'w')
-        ___f.write(_str)
-        ___f.close()
+        with open(fname, 'w') as ___f:
+            ___f.write(_str)
         report('persisted memory to', fname)
+        return fname
+
 PersistenceMixin=Persistence
 
 def is_persistent(obj):
