@@ -12,8 +12,7 @@ from cortex.core import api as _api
 from cortex.services import Service
 from cortex.util.decorators import constraint
 from cortex.core.data import CORTEX_PORT_RANGE
-CHAN_NAME = 'cortex_api'
-
+from cortex.core.data import CORTEX_API_UPDATE_T
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
 def wrap(func):
@@ -70,7 +69,7 @@ class API(Service):
         """ NOTE: mentioning a channel in subscriptions always
                   means it will be created if it does not exist.
         """
-        subscriptions = {CHAN_NAME: 'augment_with'}
+        subscriptions = {CORTEX_API_UPDATE_T: 'augment_with'}
 
     def augment_with(self, **namespace):
         """ dynamically increase the (json) published api

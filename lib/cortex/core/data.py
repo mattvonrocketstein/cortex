@@ -10,11 +10,12 @@ def IDENTITY(*args, **kargs):
 
 # pseudo-types for message-passing.. mainly used in conjunction with postoffice
 ################################################################################
-NOTICE_T = "NOTICE_T"
-EVENT_T  = "EVENT_T"
-PEER_T   = "PEER_T"
-WARN_T   = "WARN_T"
-ERROR_T  = "ERROR_T"
+NOTICE_T            = "NOTICE_T"
+EVENT_T             = "EVENT_T"
+PEER_T              = "PEER_T"
+WARN_T              = "WARN_T"
+ERROR_T             = "ERROR_T"
+CORTEX_API_UPDATE_T = 'cortex_api'
 
 # reflections on cortex codebase
 ################################################################################

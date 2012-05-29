@@ -11,12 +11,12 @@ from cortex.mixins import LocalQueue
 from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
 from cortex.util.decorators import constraint
-from cortex.services.api import CHAN_NAME
+from cortex.services.api import CORTEX_API_UPDATE_T
 
 class ATerminal(Service, LocalQueue):
     """ """
     class Meta:
-        subscriptions = {CHAN_NAME: 'contribute_to_api'}
+        subscriptions = { CORTEX_API_UPDATE_T: 'contribute_to_api' }
 
     @constraint(boot_first='postoffice')
     def start(self):
