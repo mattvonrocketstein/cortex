@@ -13,6 +13,7 @@ from cortex.services import Service
 from cortex.util.decorators import constraint
 from cortex.core.data import CORTEX_PORT_RANGE
 CHAN_NAME = 'cortex_api'
+
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
 def wrap(func):
@@ -76,10 +77,9 @@ class API(Service):
             using <namespace>
 
             TODO: define an api-contribute-signal which this
-                service and the terminal service both respond to.
+                  service and the terminal service both respond to.
         """
         came_from = namespace.pop('__channel', None)
-        #[ namespace.pop(k) for k in namespace if k.startswith('__')]
         _api.contribute(**namespace)
         ApiWrapper._update_api_wrapper()
         #for name,value in namespace.items():
@@ -103,21 +103,19 @@ class API(Service):
         super(API,self).stop()
         report('the API Service Dies.')
 
-    def bind_port(self, factory):
-        count   = self.port or PORT_START
-        while count!= PORT_FINISH:
-            try:
-                # enables system.listMethods method, etc
-                self.factory.addIntrospection()
-                self.universe.listenTCP(count, factory)
-            except CannotListenError:
-                count += 1
-            else:
-                self.port = count
-
     @constraint(boot_first='gui terminal'.split())
     def start(self):
         """ TODO: ^^ currently only the last constriant is used"""
         super(API, self).start()
         self.factory = jsonrpc.RPCFactory(ApiWrapper)
-        self.bind_port(self.factory)
+        count   = self.port or PORT_START
+        while count!= PORT_FINISH:
+            try:
+                # enables system.listMethods method, etc
+                self.factory.addIntrospection()
+                self.universe.listenTCP(count, self.factory)
+            except CannotListenError:
+                count += 1
+            else:
+                self.port = count
+                return self
