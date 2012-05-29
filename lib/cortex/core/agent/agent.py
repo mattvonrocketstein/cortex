@@ -1,23 +1,20 @@
 """ cortex.core.agent
 """
-
-import os
 import time
 
 from pep362 import Signature
 from cortex.core.util import report
-from cortex.core.manager import Manager
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
 from cortex.extensions.logic import Doctrine
-from cortex.core.ground import HierarchicalData
 from cortex.mixins import MobileCodeMixin, FaultTolerant
 from cortex.mixins import  AutonomyMixin, PerspectiveMixin
 
-from cortex.core.data import NOOP, LOOPBACK_HOST
-from cortex.core.data import GENERIC_LOCALHOST, DEFAULT_HOST
+from channel import channel
+from channel import is_declared_callback, declare_callback
 
-from channel import is_declared_callback,unpack, declare_callback
+from cortex.core.data import NOOP, DEFAULT_HOST
+
 
 class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     """
@@ -32,13 +29,15 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
     _instances   = []
 
     name          = 'default-name'
+
     def _handle_cbs1(self):
-        # dead code?
+        # TODO: dead code? revaluate
         cbs = []
         for x in dir(self):
             if not isinstance(getattr(self.__class__, x, None), property) and \
                 is_declared_callback(getattr(self,x)):
                     cbs.append(getattr(self,x))
+                    report('ok, actually using cbs1',x)
         for cb in cbs:
             cb.bootstrap(self)
 
@@ -56,8 +55,17 @@ class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
                 cb_list = [cb_list]
             for cb in cb_list:
                 cb = getattr(self, cb)
-                report('subscribing',[self,chan_name,str(cb)])
-                (self.universe|'postoffice').subscribe(chan_name, cb)
+                report('subscribing {0}.{1} to {2}'.format(self.name, str(cb.__name__),chan_name))
+                poffice = (self.universe|'postoffice')
+                if chan_name not in poffice.keys():
+                    report('Channel "{0}" does not exist in postoffice, creating it'.format(chan_name))
+
+                    new_chan = getattr(channel, chan_name)
+                    new_chan.bind(poffice)
+
+
+                poffice.subscribe(chan_name, cb)
+
 
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
