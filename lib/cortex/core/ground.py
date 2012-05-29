@@ -97,16 +97,17 @@ class Memory(TSpace, PersistenceMixin):
         #self.save()
         report("Shutting down Memory.")
 
-    def serialize(self):
-        """ """
-        _str = pickle.dumps(self.values())
-        return _str
-
     def save(self):
         """ """
         report('persisting memory to', self.filename)
-        PersistenceMixin.save(self.filename)
+        PersistenceMixin.save(self, self.filename)
         report('persisted memory to', self.filename)
+
+    def __getstate__(self):
+        """ typically owner is an agent.. can't serialize those yet. """
+        tmp = self.__dict__
+        tmp.pop('owner',None)
+        return tmp
 
     def get_many(self, pattern):
         """ revisit this.. probably undermining the underlying optimization """
@@ -252,7 +253,13 @@ class Keyspace(Memory, DefaultKeyMapper):
             value_set = Memory.filter(self, test)
             aggregate = tuple()
             for same_key, this_val in value_set:
-                aggregate += this_val
+                try:
+                    aggregate += this_val
+                except TypeError:
+                    if aggregate:
+                        raise
+                    else:
+                        aggregate=(this_val,)
             results[k] = aggregate
         return results
 
