@@ -69,9 +69,9 @@ class API(Service):
         """ NOTE: mentioning a channel in subscriptions always
                   means it will be created if it does not exist.
         """
-        subscriptions = {CORTEX_API_UPDATE_T: 'augment_with'}
+        subscriptions = {CORTEX_API_UPDATE_T: 'contribute_to_api'}
 
-    def augment_with(self, **namespace):
+    def contribute_to_api(self, **namespace):
         """ dynamically increase the (json) published api
             using <namespace>
 
@@ -81,12 +81,6 @@ class API(Service):
         came_from = namespace.pop('__channel', None)
         _api.contribute(**namespace)
         ApiWrapper._update_api_wrapper()
-        #for name,value in namespace.items():
-        #    assert hasattr(value, '__call__'), "value added to api must be callable"
-        #    name = 'jsonrpc_' + name
-        #    setattr(ApiWrapper, name, value)
-        #return namespace
-    contribute = augment_with
 
     def __init__(self, *args, **kargs):
         self.port = kargs.pop('port', None)
