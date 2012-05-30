@@ -23,7 +23,8 @@ from cortex.util.decorators import constraint
 from cortex.core.agent.manager import AgentManager
 from cortex.core.ground import Memory
 from .util import search_with_ack, search_with_google
-from cortex.services.api import CHAN_NAME
+from cortex.core.data import CORTEX_API_UPDATE_T
+
 MAX_RESULTS = 5
 
 class Search(Service, AgentManager):
@@ -62,8 +63,8 @@ class Search(Service, AgentManager):
         ## to verify it, you can also list the RPC methods at this url:
         ##   http://127.0.0.1:1338/universe/services/registry[api]/obj
         poffice = (self.universe|'postoffice')
-        poffice.publish(CHAN_NAME, google=self.google)
-        poffice.publish(CHAN_NAME, ack=self.ack)
+        poffice.publish(CORTEX_API_UPDATE_T, google=self.google)
+        poffice.publish(CORTEX_API_UPDATE_T, ack=self.ack)
 
         def getter(name):
             tpl = (name, object)
@@ -74,7 +75,7 @@ class Search(Service, AgentManager):
             key, data = out
             data = json.loads(data)
             return data
-        poffice.publish(CHAN_NAME, get=getter)
+        poffice.publish(CORTEX_API_UPDATE_T, get=getter)
 
         self.bus = Channel.search_bus
         self.bus.bind(poffice)
