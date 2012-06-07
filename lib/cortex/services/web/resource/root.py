@@ -1,10 +1,11 @@
-"""
+""" cortex.services.web.resource.root
 """
 
 from twisted.web.resource import Resource
 
 from twisted.web import static as _static
 from cortex.services.web.template import template
+
 class CBR(Resource):
     " Cortex base-resource "
 
