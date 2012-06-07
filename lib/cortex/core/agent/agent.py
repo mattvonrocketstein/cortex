@@ -8,7 +8,7 @@ from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
 from cortex.extensions.logic import Doctrine
 from cortex.mixins import MobileCodeMixin, FaultTolerant
-from cortex.mixins import  AutonomyMixin, PerspectiveMixin
+from cortex.mixins import  AutonomyMixin
 
 from channel import channel
 from channel import is_declared_callback, declare_callback
@@ -16,7 +16,7 @@ from channel import is_declared_callback, declare_callback
 from cortex.core.data import NOOP, DEFAULT_HOST
 
 
-class Agent(MobileCodeMixin, AutonomyMixin, PerspectiveMixin, FaultTolerant):
+class Agent(MobileCodeMixin, AutonomyMixin, FaultTolerant):
     """
         CONVENTION: __init__ always passes unconsumed kargs to _post_init()
 
