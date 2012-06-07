@@ -1,3 +1,4 @@
+raise Exception
 """ cortex.services.contrib.autodiscovery
 
       Your milage may vary with this approach to peer discovery.
