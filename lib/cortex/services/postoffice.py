@@ -40,7 +40,6 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
 
     ## Begin embedded channel declarations  ( TODO: make this more like promela )
     notice = channel.NOTICE                 # shortcut for publishing notices (unused)
-    error  = getattr(channel, ERROR_T)      # shortcut for publishing errors  (unused)
     event  = getattr(channel, EVENT_T)      # shortcut for publishing events  (used by term)
     peers  = getattr(channel, PEER_T)
 
