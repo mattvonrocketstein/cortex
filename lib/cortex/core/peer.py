@@ -2,6 +2,8 @@
 """
 import datetime
 
+from txjsonrpc.netstring.jsonrpc import Proxy
+
 from cortex.core.agent import Agent as Node
 from cortex.core.manager import Manager
 from cortex.core.hds import HDS
@@ -9,8 +11,23 @@ from cortex.core.data import API_PORT
 from cortex.core.util import report
 
 class Peer(object):
-    """ an abstraction representing a generic peer
+    """ peer-ish
     """
+
+    @property
+    def agent(self):
+        if hasattr(self,'_agent'):
+            return self._agent
+        else:
+            autodiscover = [ x for x in self.universe.children() \
+                             if getattr(x, 'port', None) == self.port ]
+            if autodiscover:
+                return autodiscover[0]
+            else:
+                return None
+
+    def local(self):
+        """ boolean for whether this peer is local """
     # hack for ipython tab completion
     def _getAttributeNames(self):
         return []
@@ -29,7 +46,7 @@ class Peer(object):
         def success(result):
             if result==handshake:
                 for name,peer in self._manager.registry.items():
-                    if peer==self:
+                    if peer == self:
                         self._manager.registry[name] = potentially
                         #report('replacing myself with something better')
                         break
@@ -42,8 +59,8 @@ class Peer(object):
         potentially.is_cortex(handshake).addCallback(success)#,failure)
 
     def __repr__(self):
-        port = str(getattr(self,'port','00'))
-        addr = getattr(self,'addr','0')
+        port = str(getattr(self, 'port', '00'))
+        addr = getattr(self, 'addr', '0')
         return 'Peer@' + str(addr) + ':' + str(port)
 
     def _log_last_connection(self, result):
@@ -88,7 +105,6 @@ class MethodHandle(object):
     def __call__(self, *args, **kargs):
         return self.callable(*args, **kargs)
 
-from txjsonrpc.netstring.jsonrpc import Proxy
 
 #def ifCortex(peer,):
 #    p = Proxy(str(peer.addr), int(peer.port))

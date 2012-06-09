@@ -25,22 +25,46 @@ from cortex.core.universe.node_reader import NodeConfAspect
 from cortex.core.universe.servicing import ServiceAspect
 
 
+from collections import defaultdict
 
-class __Universe__(AutoReloader, UniverseNotation,
-                   OSMixin, PIDMixin, ReactorAspect,
-                   Controllable, AutonomyMixin,
-                   PersistenceMixin,
-                   FaultTolerant, NodeConfAspect,
-                   ServiceAspect):
-    """
-        TODO: clones,processes = CloneManager(), ProcessManager()
-    """
-    agents, services = AGENTS, SERVICES
+class Tracking(object):
+    """ topologies for connective tissue """
+    agents        = AGENTS
+    services      = SERVICES
 
     peers         = PEERS
+    ports         = defaultdict(lambda: [])     # map ports -> agent
+
+    def declare_peer(self, peer, agent):
+        """ """
+        peer._agent = agent
+        self.ports[peer.port].append(agent)
+
+    def peer2agent(self, peer):
+        # TODO: this is an agentizer.. move it to api?
+        return self.ports[peer.port]
+
+    def children(self):
+        """ """
+        return self.agents.children() + self.services.children()
+
+class __Universe__(Tracking,
+                   AutoReloader,
+                   ServiceAspect,
+                   UniverseNotation,
+                   OSMixin, PIDMixin,
+                   ReactorAspect, Controllable,
+                   FaultTolerant, NodeConfAspect,
+                   AutonomyMixin, PersistenceMixin,):
+    """
+    """
+    # TODO: clones,processes = CloneManager(), ProcessManager()
+
+
+
     nodeconf_file = u''
     config        = HDS()
-    parent = None # agent.__init__ never called?
+    parent        = None # agent.__init__ never called?
 
     def load(self):
         """ call load for all embedded managers """
@@ -49,7 +73,7 @@ class __Universe__(AutoReloader, UniverseNotation,
 
     def play(self):
         """ entry point.  this guy does not return """
-        #report("Universe.play!")
+        # report("Universe.play!")
         self.decide_name()
         self.started = True
         from cortex.core import api as API
@@ -105,9 +129,6 @@ class __Universe__(AutoReloader, UniverseNotation,
         # Main loop
         self.reactor.run()
 
-    def children(self):
-        """ """
-        return self.agents.children() + self.services.children()
 
     def sleep(self):
         """
@@ -171,7 +192,9 @@ class __Universe__(AutoReloader, UniverseNotation,
         report("Stopped: ", [x for x in stopped] )
 
     def decide_name(self):
-        """ most agents get a name, but the universe computes hers """
+        """ the universe should never be explicitly named, a universe
+            should derive it's own
+        """
         name_args = dict( alfa    = str(id(self)),
                           bravo   = getattr(self,'bravo', ''),
                           charlie = getattr(self,'charlie',''),
