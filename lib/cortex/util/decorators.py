@@ -1,4 +1,7 @@
 """ cortex.util.decorators
+
+    TODO:  logilabs over AIMA for constraints?
+           http://pypi.python.org/pypi/constraint/0.4.1
 """
 
 def function_annotator(prefix, **function_metadata):
@@ -27,4 +30,3 @@ def constraint(**labels_and_constraints):
             >>>
     """
     return function_annotator('constraint', **labels_and_constraints)
-
