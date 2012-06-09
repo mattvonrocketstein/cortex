@@ -11,6 +11,14 @@ from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
 
+def update_code():
+    report('updating source code')
+    os.system('git fetch')
+    report('cloning')
+    clone()
+    report('halting')
+    universe.halt()
+
 def msg(name,content):
     poffice = (universe|'postoffice')
     chan = getattr(poffice, name)
@@ -127,12 +135,9 @@ def load_file(fname, adl=False, pdl=False, python=True):
     assert os.path.exists(fname), fileerror
 
     # handler for agent description language
-    if adl:
-        raise Exception, "NIY"
-
     # handler for problem description language
-    if pdl:
-        raise Exception, "NIY"
+    if adl: raise Exception, "NIY"
+    if pdl: raise Exception, "NIY"
 
     # handler for python file
     if python:
@@ -158,7 +163,7 @@ def build_agent(name, kls=object, kls_kargs={}):
     universe.agents.manage(name=name, kls=kls, kls_kargs=kls_kargs)
 
 def is_cortex(msg): return msg
-def ping(): return chat('ping')
+def ping():         return chat('ping')
 
 # Shortcuts into the Universe
 load_service = universe.loadService
