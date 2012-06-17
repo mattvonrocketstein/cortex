@@ -34,13 +34,16 @@ class TupleBus(Bus):
         if subs == NotFound:
             return False
         return callback in subs
-
     def has_any_subscriptions(self, key):
         """ HACK: sidestepping problem with NotFound """
         if key in self.subscriptions:
-            subs = self.subscriptions[key]
-            if hasattr(subs, '__len__'):
-                return len(subs) > 0
+            try:
+                subs = self.subscriptions[key]
+            except KeyError:
+                return False
+            else:
+                if subs and hasattr(subs, '__len__'):
+                    return len(subs) > 0
         return False
 
     def publish(self, key, *args, **kwargs):
