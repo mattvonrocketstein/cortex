@@ -173,8 +173,11 @@ class DefaultKeyMapper(object):
 
     def __setitem__(self, key, value):
         """ dictionary compatibility """
-        #del self[key]
-        self.__delitem__(key)
+
+        try:
+            self.__delitem__(key)
+        except KeyError:
+            pass
         #if key in self.keys():
             # enforce the rule by pruning, then add
         #    old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
