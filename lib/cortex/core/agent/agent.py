@@ -16,36 +16,8 @@ from channel import is_declared_callback, declare_callback
 from cortex.core.data import NOOP, DEFAULT_HOST
 
 
-class Agent(MobileCodeMixin, AutonomyMixin, FaultTolerant):
-    """
-        CONVENTION: __init__ always passes unconsumed kargs to _post_init()
-
-        TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
-        TODO: Make mixin classes work with __add__
-
-    """
-    __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
-    _post_init    = NOOP
-    _instances   = []
-
-    name          = 'default-name'
-
-    def _handle_cbs1(self):
-        # TODO: dead code? revaluate
-        cbs = []
-        for x in dir(self):
-            if not isinstance(getattr(self.__class__, x, None), property) and \
-                is_declared_callback(getattr(self,x)):
-                    cbs.append(getattr(self,x))
-                    report('ok, actually using cbs1',x)
-        for cb in cbs:
-            cb.bootstrap(self)
-
-    @property
-    def _opts(self):
-        return getattr(self.__class__,'Meta', None)
-
-    def _handle_cbs2(self):
+class CommsMixin(object):
+    def _handle_Meta_subscriptions(self):
         """ TODO: check for boot_first.. consistency """
 
         subscriptions = getattr(self._opts, 'subscriptions', {})
@@ -59,13 +31,39 @@ class Agent(MobileCodeMixin, AutonomyMixin, FaultTolerant):
                 poffice = (self.universe|'postoffice')
                 if chan_name not in poffice.keys():
                     report('Channel "{0}" does not exist in postoffice, creating it'.format(chan_name))
-
                     new_chan = getattr(channel, chan_name)
                     new_chan.bind(poffice)
-
-
                 poffice.subscribe(chan_name, cb)
 
+    def _handle_embedded_callbacks(self):
+        """ """
+        cbs = []
+        for x in dir(self):
+            if not isinstance(getattr(self.__class__, x, None), property) and \
+                is_declared_callback(getattr(self, x)):
+                    cbs.append(getattr(self, x))
+                    report('ok, actually using cbs1', x, getattr(self,x))
+        for cb in cbs:
+            cb.bootstrap(self)
+
+
+class Agent(CommsMixin, MobileCodeMixin, AutonomyMixin, FaultTolerant):
+    """
+        CONVENTION: __init__ always passes unconsumed kargs to _post_init()
+
+        TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
+        TODO: Make mixin classes work with __add__
+
+    """
+    __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
+    _post_init    = NOOP
+    _instances   = []
+
+    name          = 'default-name'
+
+    @property
+    def _opts(self):
+        return getattr(self.__class__,'Meta', None)
 
     def __init__(self, host=None, universe=None, name=None, **kargs):
         """
@@ -75,12 +73,13 @@ class Agent(MobileCodeMixin, AutonomyMixin, FaultTolerant):
         self.host     = host or DEFAULT_HOST
         self.name     = name
         self.parents  = []
-        self._handle_cbs1()
+        self._handle_embedded_callbacks()
         Agent._instances.append(self)
         self._post_init(**kargs)
 
     @property
     def doctrine(self):
+        """ """
         if not hasattr(self,'_doctrine'):
             self._doctrine=Doctrine()
         return self._doctrine
@@ -96,11 +95,12 @@ class Agent(MobileCodeMixin, AutonomyMixin, FaultTolerant):
 
     @classmethod
     def using(self, template=None, flavor=None):
-        target=Agent
+        """ """
+        target = Agent
         if template:
             target = target.template_from(template)
         if flavor:
-            target=target.use_concurrency_scheme(flavor)
+            target = target.use_concurrency_scheme(flavor)
         return target
 
     @classmethod
@@ -154,7 +154,7 @@ class Agent(MobileCodeMixin, AutonomyMixin, FaultTolerant):
     def start(self):
         """ """
         super(Agent, self).start()
-        self._handle_cbs2()
+        self._handle_Meta_subscriptions()
 
     def stop(self):
         """ autonomy override:
