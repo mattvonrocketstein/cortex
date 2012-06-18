@@ -2,6 +2,7 @@
 
     TODO: milestone.. how best to externalize this
 """
+import os
 
 from cortex.core.agent import Agent
 from cortex.core.util import report
@@ -11,6 +12,15 @@ from cortex.agents.qmon import QueueMon
 
 class Pile(Agent):
     """ pile of stuff """
+    @property
+    def storage_dir(self):
+        return os.path.join(self.universe.tmpdir, 'dojo_pile')
+
+    def start(self):
+        super(Agent,self).start()
+        if not os.path.exists(self.storage_dir):
+            os.mkdir(self.storage_dir)
+
     def iterate(self):
         report('pile here')
 
