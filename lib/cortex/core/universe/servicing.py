@@ -1,4 +1,6 @@
-"""
+""" cortex.core.universe.servicing
+
+    aspects of the universe dealing with how to find and load services
 """
 import os, sys
 import inspect
