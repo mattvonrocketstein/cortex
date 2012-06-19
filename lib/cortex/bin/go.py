@@ -107,7 +107,7 @@ def entry():
         from cortex.core import api
         services = options.services.split(',')
         for s in services:
-            api.do([['load_service', (s,), {}]])
+            api.do([['load_service', (s.strip(),), {}]])
     verify_file(nodeconf_file)
     install_nodeconf(nodeconf_file, options, args)
     return Universe.play() # Invoke the Universe
