@@ -86,7 +86,8 @@ class Process(Agent, protocol.ProcessProtocol):
     def setup(self):
         self._stdout = Queue()
         self._stderr = Queue()
-        self.count = 0
+        self.count   = 0
+        self.process = None
 
     @property
     def cmd(self):
@@ -100,3 +101,10 @@ class Process(Agent, protocol.ProcessProtocol):
         env = {}
         executable, args = self.cmd
         self.process = self.universe.reactor.spawnProcess(self, executable, args, env)
+
+    def start(self):
+        super(Process, self).start()
+        if self.process and self.process.status in [-1,# not started
+                                                    9 #recently killed
+                                                    ]:
+            self.iterate()
