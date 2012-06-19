@@ -1,11 +1,12 @@
 """
 """
+import os, sys
 import inspect
 import types
 
 from cortex.core.util import report
 
-from cortex.core.util import get_mod
+from cortex.core.util import get_mod as _get_mod
 from cortex.services import Service
 
 class ServiceAspect(object):
@@ -22,11 +23,8 @@ class ServiceAspect(object):
                 context = dict(exception=e)
                 self.fault(error, context)
 
-
-
     def loadService(self, service, **kargs):
         """ """
-
         if isinstance(service, types.StringTypes):
             self._load_service_from_string(service, **kargs)
         # Not a string? let's hope it's already a service-like thing
@@ -51,68 +49,68 @@ class ServiceAspect(object):
                                         name=obj.__name__.lower())
 
     def _load_service_from_dotpath(self, service, **kargs):
-            service = service.split('.')
-            if len(service) == 2:
-                mod_name, class_name = service
+        """ """
+        service = service.split('.')
+        if len(service) == 2:
+            mod_name, class_name = service
+            namespace = _get_mod(mod_name)
+            if class_name in namespace:
+                obj = namespace[class_name]
+                return self.start_service(obj, **kargs)
+        else:
+            raise Exception, 'will not interpret that dotpath yet'
 
-                namespace = get_mod(mod_name)
+    def get_mod(self, mod_name):
+        """ """
+        try:
+            return _get_mod(mod_name), []
+        except (AttributeError, ImportError), e:
+            return None, [e]
 
-                if class_name in namespace:
-                    obj = namespace[class_name]
-                    return self.start_service(obj, **kargs)
-            else:
-                raise Exception,'will not interpret that dotpath yet'
+    def _get_mod_from_wd(self, mod_name):
+        """ """
+        try:
+            if os.getcwd() not in sys.path:
+                sys.path.append(os.getcwd())
+            exec 'import '+mod_name
+            mod = eval(mod_name)
+            return mod, []
+        except (AttributeError, ImportError), e:
+            return None, [e]
 
     def _load_service_from_string(self, service, **kargs):
-        """
-        """
-        # handle dotpaths
-        if "." in service:
+        """ """
+        if "." in service: # handle dotpaths
             return self._load_service_from_dotpath(service, **kargs)
-
-        # just one word.. where/what could it be?
         else:
-            errors = []
-            mod_name = service
+            return self._load_service_from_word(service, **kargs)
 
-            ## Attempt to discover a module in cortex.services
-            try: mod = get_mod(mod_name)
-            except (AttributeError, ImportError), e:
-                try:
-                    #exec 'import '+mod_name in {}
-                    if os.getcwd() not in sys.path:
-                        sys.path.append(os.getcwd())
+    def _load_service_from_word(self, service, **kargs):
+        """ inside this method, 'service' is something that
+            is just one word.. where/what could it be?
+        """
+        errors   = []
+        mod_name = service
 
-                    from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
+        default               = lambda mod_name: [],{}
+        module_search_methods = [ self.get_mod, self._get_mod_from_wd, default ]
+        for search_method in module_search_methods:
+            mod, _errs = search_method(mod_name)
+            errors    += [ _errs ]
+            if mod:
+                # found a module?  reset the errors to empty
+                # and start and exit the loop immediately
+                errors = []
+                break
 
-                except ImportError:
-                    ## Log that we were not able to discover a module
-                    error = "Failed to get module '{mod}' to load service.".format(mod=mod_name)
-                    error = [error, dict(exception=e)]
-                    errors.append(error)
-                    report(errors)
+        if isinstance(mod, types.ModuleType):
+            mod = dict([ [x, getattr(mod, x)] for x in dir(mod) ])
 
-                ## Attempt discovery by asking Service's who actually subclasses him
-                subclasses = Service.subclasses(deep=True, dictionary=True, normalize=True)
-                if mod_name.lower() in subclasses:
-                    kls = subclasses[mod_name.lower()]
-                    return self.start_service(kls, **kargs)
-                else:
-                    ## Log that we were not able to discover a subclass
-                    error = "Failed to find subclass named {mod}".format(mod=mod_name)
-                    error = [error,{}]
-                    errors.append(error)
-                mod = {}
-
-            if errors:
-                [self.fault(*err) for err in errors ]
-
-            ret_vals = []
-            for name, val in mod.items():
-                if inspect.isclass(val):
-                    if not val==Service and issubclass(val, Service):
-                        #report('discovered service in ' + mod_name)
-                        if not getattr(val, 'do_not_discover', False):
-                            # THUNK
-                            ret_vals.append(self.start_service(val, ask=False, **kargs))
-            return ret_vals
+        ret_vals = []
+        for name, val in mod.items():
+            if inspect.isclass(val):
+                if all([ not val == Service, issubclass(val, Service),
+                         not getattr(val, 'do_not_discover', False) ]):
+                    result = self.start_service(val, ask=False, **kargs)
+                    ret_vals.append(result) # THUNK
+        return ret_vals
