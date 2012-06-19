@@ -82,10 +82,25 @@ class ServiceAspect(object):
 
     def _load_service_from_string(self, service, **kargs):
         """ """
-        if "." in service: # handle dotpaths
+        if os.path.sep in service:
+            return self._load_service_from_fpath(service, **kargs)
+        elif "." in service: # handle dotpaths
             return self._load_service_from_dotpath(service, **kargs)
         else:
             return self._load_service_from_word(service, **kargs)
+
+    def _load_service_from_fpath(self, service, **kargs):
+        """ """
+        curr = os.getcwd()
+        fpath = os.path.abspath(os.path.dirname(service))
+        mod_name = os.path.splitext(os.path.split(service)[-1])[0]
+        os.chdir(fpath)
+        try:
+            result = self._load_service_from_word(mod_name)
+        finally:
+            os.chdir(curr)
+        return result
+
 
     def _load_service_from_word(self, service, **kargs):
         """ inside this method, 'service' is something that
