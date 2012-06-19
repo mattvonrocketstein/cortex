@@ -79,7 +79,10 @@ class ServiceAspect(object):
             try: mod = get_mod(mod_name)
             except (AttributeError, ImportError), e:
                 try:
-                    exec 'import '+mod_name in {}
+                    #exec 'import '+mod_name in {}
+                    if os.getcwd() not in sys.path:
+                        sys.path.append(os.getcwd())
+
                     from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
 
                 except ImportError:
