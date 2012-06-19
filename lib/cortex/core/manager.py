@@ -294,7 +294,12 @@ class Manager(object):
         return self.__class__.__name__ + '(' + str(self) + ')'
 
     def children(self):
-        return [self[x].obj for x in self.as_list]
+        """ """
+        lst = [ self[x].obj for x in self.as_list ]
+        class holder(list):
+            def filter(himself, some_kls):
+                return [x for x in himself if isinstance(x, some_kls)]
+        return holder(lst)
 
     def __getitem__(self, name):
         """ retrieve service by name
