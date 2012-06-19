@@ -70,12 +70,12 @@ class Process(Agent, protocol.ProcessProtocol):
 
     @property
     def stdout(self):
-        """ exhausts the queue"""
+        """ exhausts the queue """
         return q2txt(self._stdout)
 
     @property
     def stderr(self):
-        """ exhausts the queue"""
+        """ exhausts the queue """
         return q2txt(self._stderr)
 
     def _kill(self):
@@ -117,9 +117,9 @@ class Process(Agent, protocol.ProcessProtocol):
     def start(self):
         """ """
         super(Process, self).start()
-        restart_statuses [ -1, # not started
-                            9, # recently killed
-                          ]
-        if getattr(self.process, 'status') in restart_statuses:
+        restart_statuses = [ -1, # not started
+                             9, # recently killed
+                             ]
+        if getattr(self.process, 'status', None) in restart_statuses:
             # can't do this without a check because play() uses iterate upstream
             self.iterate()
