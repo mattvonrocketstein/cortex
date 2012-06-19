@@ -91,9 +91,9 @@ class ServiceAspect(object):
 
     def _load_service_from_fpath(self, service, **kargs):
         """ """
-        curr = os.getcwd()
-        fpath = os.path.expanduser(service)
-        fpath = os.path.abspath(os.path.dirname(fpath))
+        curr     = os.getcwd()
+        fpath    = os.path.expanduser(service)
+        fpath    = os.path.abspath(os.path.dirname(fpath))
         mod_name = os.path.splitext(os.path.split(service)[-1])[0]
         os.chdir(fpath)
         try:
