@@ -15,7 +15,7 @@ class ServiceAspect(object):
     def loadServices(self, services=[]):
         """ """
         for s in services:
-            if isinstance(s,(list,tuple)):
+            if isinstance(s, (list, tuple)):
                 s, kargs = s
             else:
                 kargs = {}
@@ -110,9 +110,10 @@ class ServiceAspect(object):
         errors   = []
         mod_name = service
 
-        default               = lambda mod_name: [],{}
+        default               = lambda mod_name: ( {}, {} )
         module_search_methods = [ self.get_mod, self._get_mod_from_wd, default ]
         for search_method in module_search_methods:
+            report('trying ',search_method)
             mod, _errs = search_method(mod_name)
             errors    += [ _errs ]
             if mod:
@@ -125,6 +126,7 @@ class ServiceAspect(object):
             mod = dict([ [x, getattr(mod, x)] for x in dir(mod) ])
 
         ret_vals = []
+
         for name, val in mod.items():
             if inspect.isclass(val):
                 if all([ not val == Service, issubclass(val, Service),
