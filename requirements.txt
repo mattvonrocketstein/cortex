@@ -1,7 +1,7 @@
 Twisted
 importing
 Pygments
-ipython
+ipython==0.10
 python-Levenshtein
 simplejson
 lindypy==0.2
@@ -13,7 +13,8 @@ svn+http://codespeak.net/svn/user/niemeyer/constraint/trunk/#egg=constraint
 pep362
 git+git://github.com/mattvonrocketstein/channels#egg=channel
 jinja2==2.6
-
+#-e git+git://github.com/mattvonrocketstein/reporting.git#egg=report
+#-e git+git://github.com/mattvonrocketstein/spock.git#egg=spock
 ## for graphing with the web-service
 #pygraphviz
 #apt-get install graphviz
