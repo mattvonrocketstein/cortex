@@ -1,0 +1,69 @@
+{%extends "objects/agent.html"%}
+
+
+{%block page_title%}{{obj.name}}{%endblock%}
+{%block obj_type%}PEER{%endblock%}
+
+
+{%block obj_nav%}
+<a href="javascript:menu('services')">Services</a>
+<a href="javascript:menu('peers')">Peers</a>
+{{super()}}
+{%endblock%}
+
+
+{%block obj_namespace%}
+{{super()}}
+{%endblock%}
+
+
+{%block obj_main%}
+<table>
+  {%block extra_status%}
+  {%endblock%}
+  <tr class="menu" id=services>
+    <td align=left>
+      <table style="width:100%;margin-left:15px;">
+        <tr>
+          <td style="margin-left:15px;">
+            <h4>Raw Scan:</h4>
+            <p style="margin-left:10px;">
+              {{obj.raw_scan}}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="margin-left:15px;">
+            <h4>Host:</h4>
+            {{obj.host}}
+          </td>
+        </tr>
+        <tr>
+          <td style="margin-left:15px;">
+            <h4>Port:</h4>
+            <p style="margin-left:10px;">
+              {{obj.port}}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="margin-left:15px;">
+            <h4>Cortex?:</h4>
+            <p style="margin-left:10px;">
+              ..
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="margin-left:15px;">
+            <h4>Methods:</h4>
+            <p style="margin-left:10px;">
+              ...
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+{%endblock%}
