@@ -1,6 +1,7 @@
 """ cortex.agents.qmon
 """
 
+from cortex.core.util import report
 from cortex.core.agent import Agent
 from cortex.mixins.flavors import LoopingCall
 
