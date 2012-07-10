@@ -190,6 +190,8 @@ class __Universe__(Tracking,
         except twisted.internet.error.ReactorNotRunning:
             pass
         report("Stopped: ", [x for x in stopped] )
+        report('Trying to kill any zombies:', self.procs)
+        [ self.kill_pid(p) for p in [x.pid for x in self._procs] ]
 
     def decide_name(self):
         """ the universe should never be explicitly named, a universe
