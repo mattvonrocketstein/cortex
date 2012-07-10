@@ -56,7 +56,7 @@ class Process(Agent, protocol.ProcessProtocol):
         """ """
         report('errConnectionLost! The child closed their stderr. queue-length: ',
                self._stderr.qsize())
-
+        report(self.stderr)
     def processExited(self, reason):
         """ """
         self.finish(reason)
