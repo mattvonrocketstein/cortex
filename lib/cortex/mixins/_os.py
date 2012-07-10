@@ -33,6 +33,12 @@ class PIDMixin(object):
         """ """
         return os.getpid()
 
+    def kill_pid(self, p):
+        """ kill a process tree under PID p """
+        if p:
+            report('killing pid:', p)
+            os.system('kill -KILL {0}'.format(p))
+
 class OSMixin(PIDMixin):
     """ For things that really should be in the os module """
 
