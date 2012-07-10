@@ -27,6 +27,9 @@ class Process(Agent, protocol.ProcessProtocol):
     """
         TODO: shutdown the process less brutally when cortex terminates
     """
+    @property
+    def pid(self):
+        return self.transport.pid
 
     def connectionMade(self):
         """ """
@@ -82,6 +85,7 @@ class Process(Agent, protocol.ProcessProtocol):
         """ This will eventually result in processEnded being called. """
         self.transport.signalProcess('KILL')
 
+
     def stop(self):
         """ """
         report('Killing process: ', self._cmd)
@@ -103,16 +107,23 @@ class Process(Agent, protocol.ProcessProtocol):
         """ """
         cmd = self._cmd
         cmd = shlex.split(cmd)
-        args = cmd[1:] or [''] # doesn't like "null argv"? wtf
+        args = cmd # or [''] # doesn't like "null argv"? wtf
         executable = cmd[0]
-        return executable, args
+        return executable,tuple(args)
 
     def iterate(self):
         """ """
         env = {}
         executable, args = self.cmd
+
         sp_args = (self, executable, args, env)
-        self.process = self.universe.reactor.spawnProcess(*sp_args)
+        report('starting process',sp_args)
+        self.process = self.universe.reactor.spawnProcess(self, executable, args=args, env=env)
+        if self.process not in self.universe._procs:
+            self.universe._procs += [ self.process ]
+        #if self.pid not in self.universe.pids:
+        #    self.universe.pids[self.pid] += [ self.pid ]
+
 
     def start(self):
         """ """
