@@ -64,7 +64,7 @@ class Process(Agent, protocol.ProcessProtocol):
     def finish(self, reason):
         """ """
         err = reason.value.exitCode
-        report( "processExited, status", err)
+        report( "{0}, status".format(self.__class__.__name__), err)
         if err:
             txt = q2txt(self._stderr)
             report(txt)
@@ -84,7 +84,9 @@ class Process(Agent, protocol.ProcessProtocol):
     def _kill(self):
         """ This will eventually result in processEnded being called. """
         self.transport.signalProcess('KILL')
-
+        import time
+        time.sleep(1)
+        self.universe.kill_pid(self.pid)
 
     def stop(self):
         """ """
