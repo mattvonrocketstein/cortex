@@ -1,4 +1,4 @@
-""" cortex.mixins.__init__
+""" cortex.mixins
 
       Collect all the mixins together
 """
