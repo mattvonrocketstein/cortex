@@ -89,8 +89,7 @@ class SelfHostingTupleBus(TupleBus):
     """ This class fools cyrusbus into using instances directly in the
         place of a simple dictionary -- convenient if your class already
         speaks the dictionary protocol.
-
-            TODO: figure out how to *fully* reset..
     """
+    # TODO: figure out how to *fully* reset..
     def reset(self):
         self.subscriptions = self
