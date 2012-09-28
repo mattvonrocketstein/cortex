@@ -30,7 +30,9 @@ class Root(CBR):
         """ """
         children = self.children.copy()
         return ('root',
-                dict(children=children,
+                dict(boot_order=self.parent.universe.services._boot_order,
+                     universe_config = self.parent.universe.config._getLeaves(),
+                     children=children,
                      contents=dir(self)))
 
 class NavResource(CBR):
@@ -39,7 +41,7 @@ class NavResource(CBR):
 
     @property
     def _children(self):
-        return 'universe _code web'.split()
+        return 'universe web conf _code '.split()
 
     def get_template_ctx(self, request):
         return ('nav', dict(children=self._children,))

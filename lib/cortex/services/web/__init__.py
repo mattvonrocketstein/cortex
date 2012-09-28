@@ -18,7 +18,7 @@ from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 from cortex.mixins.flavors import ThreadedIterator
 
-from cortex.services.web.resource import ObjResource, EFrame
+from cortex.services.web.resource import ObjResource, EFrame, ConfResource
 from cortex.services.web.resource.root import Root
 from cortex.services.web.util import draw_ugraph, ugraph
 
@@ -26,6 +26,8 @@ from .eventhub import EventHub
 
 class WebRoot(Agent):
     """ TODO: act smarter if you can't import networkx et al '"""
+
+    port = 1338
 
     def iterate(self):
         """ WebRoot is a trivial Agent with no  true concurrency
@@ -68,17 +70,19 @@ class WebRoot(Agent):
         static_dir = os.path.join(d, 'static')
         favicon    = os.path.join(static_dir, 'favicon.ico')
         self.root  = Root(favicon=favicon, static=static_dir)
+        self.root.parent = self
+        self.root.putChild('conf',        ConfResource(self.universe))
         self.root.putChild('web',         ObjResource(self))
         self.root.putChild('eframe',      EFrame())
         self.root.putChild('universe',    ObjResource(self.universe))
         self.root.putChild("_code",       static.File(os.path.dirname(cortex.__file__)))
         site       = server.Site(self.root)
-        self.listener = self.universe.listenTCP(1338, site)
+        self.listener = self.universe.listenTCP(self.port, site)
 
 class Web(FecundService):
     """ Web Service:
-        start: start main webserver, and secondary event-hub
-        stop:  brief description of shutdown here
+          start: start main webserver, and secondary event-hub
+          stop:  brief description of shutdown here
     """
     class Meta:
         children = [EventHub, WebRoot]
