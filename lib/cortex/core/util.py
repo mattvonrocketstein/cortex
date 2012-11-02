@@ -182,7 +182,7 @@ def uuid():
     import uuid
     return str(uuid.uuid1())
 
-def pedigree(agent, names='iterate stop start'):
+def pedigree(agent, names='iterate pause play setup start stop'):
     """ given an agent and some method names,
         returns which class the method names
         were defined in.
@@ -197,5 +197,6 @@ def pedigree(agent, names='iterate stop start'):
         candidates = [ kls for kls in candidates if \
                        getattr(kls, name) == getattr(agent.__class__, name) ]
         # take the last element, because it's the furthest away in the MRO
-        results[name] = candidates[-1]
+        if candidates: results[name] = candidates[-1]
+        else: results[name] = None
     return results
