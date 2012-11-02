@@ -71,7 +71,16 @@
               </ul>
           </td>
         </tr>
-
+        <tr class="menu" id=peers>
+          <td>
+            <h4>Ports:</h4>
+              <ul style="margin-left:10px;">
+                {% for x in obj.ports %}<li>
+                  {{x}} -- {{obj.ports.__getitem__(x).__str__().replace('<','(').replace('>',')')}}
+                  {%endfor%}
+              </ul>
+          </td>
+        </tr>
       </table>
     </td>
   </tr>
