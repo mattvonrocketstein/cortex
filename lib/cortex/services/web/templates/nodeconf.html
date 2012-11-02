@@ -1,0 +1,31 @@
+{%extends "index.html"%}
+
+{%block page_title%}nodeconf{%endblock%}
+
+
+{%block page_subtitle%}
+&nbsp;&nbsp;&nbsp;
+node configuration
+
+&nbsp;&nbsp;&nbsp;
+<font color=red>
+  <font style="font-size:10px;">({%block obj_type%}{{filename}}{%endblock%})</font>
+</font>
+{%endblock%}
+
+
+
+
+{%block main%}
+
+<div class=nav2>
+  {%block obj_nav%}
+  <a href="javascript:menu('source_code');">nothing</a>
+  <a href="javascript:menu('obj_type');">to put</a>
+  <a href="javascript:menu('namespace');">here yet</a>
+  {%endblock%}
+</div><hr/>
+
+<pre>{{text}}</pre>
+
+{%endblock%}
