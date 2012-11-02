@@ -1,3 +1,5 @@
+""" cortex.services.web.resource.util
+"""
 def alligator2paren(obj):
     return str(obj).replace('<','(').replace('>',')')
 
