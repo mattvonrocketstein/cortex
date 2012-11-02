@@ -87,11 +87,11 @@ class Agent(CommsMixin, AgentLite):
         self._post_init(**kargs)
 
     @property
-    def doctrine(self):
+    def beliefs(self):
         """ """
-        if not hasattr(self,'_doctrine'):
-            self._doctrine=Doctrine()
-        return self._doctrine
+        if not hasattr(self,'_beliefs'):
+            self._beliefs = Doctrine()
+        return self._beliefs
 
     @property
     def parent(self):
