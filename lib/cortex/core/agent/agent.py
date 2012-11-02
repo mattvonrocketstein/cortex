@@ -17,6 +17,11 @@ from cortex.core.data import NOOP, DEFAULT_HOST
 
 
 class CommsMixin(object):
+    """ this mixin necessarily implies agents know about channels by default
+
+        TODO: distinction between agent+ and agent-lite..
+
+    """
     def _handle_Meta_subscriptions(self):
         """ TODO: check for boot_first.. consistency """
 
@@ -47,7 +52,11 @@ class CommsMixin(object):
             cb.bootstrap(self)
 
 
-class Agent(CommsMixin, MobileCodeMixin, AutonomyMixin, FaultTolerant):
+#
+class AgentLite(MobileCodeMixin, AutonomyMixin, FaultTolerant):
+    pass
+
+class Agent(CommsMixin, AgentLite):
     """
         CONVENTION: __init__ always passes unconsumed kargs to _post_init()
 
