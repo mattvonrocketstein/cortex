@@ -24,7 +24,8 @@ class ReactorAspect(object):
         # try getting the instance,
         # failing that use the class
         owner = caller.get('self', None)
-        owner = owner or caller.get('kls', 'unknown')
+        if owner is None:
+            owner = caller.get('kls', 'unknown')
         self.ports[port] += [owner]
         return reactor.listenTCP(port, factory, backlog=backlog, interface=interface)
 
