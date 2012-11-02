@@ -2,6 +2,8 @@
 """
 import inspect
 import time, uuid
+from pprint import pprint
+from StringIO import StringIO
 
 # TODO: move some of this back into the real report lib
 from report import report, console
@@ -15,9 +17,6 @@ def rpprint(obj,pad=' '*4):
     report.console.draw_line('',display=False)
     print console.color('\n'.join(['\n']+map(lambda x: pad + x, s.read().split('\n'))))
 report.pprint = rpprint
-
-from StringIO import StringIO
-from pprint import pprint
 
 from cortex.core.data import SERVICES_DOTPATH
 
@@ -162,7 +161,7 @@ def isclassmethod( m ):
 ################################################################################
 
 def alias(name):
-    """ builds an named alias for another attribute """
+    """ builds an alias for another attribute """
     @property
     def fxn(self):
         return getattr(self, name)
@@ -182,3 +181,21 @@ def service_is_stopped(name):
 def uuid():
     import uuid
     return str(uuid.uuid1())
+
+def pedigree(agent, names='iterate stop start'):
+    """ given an agent and some method names,
+        returns which class the method names
+        were defined in.
+    """
+    mro = agent.__class__.mro()
+    names = names.split()
+    results = {}
+    for name in names:
+        # knock out classes that dont even define the name
+        candidates = [ kls for kls in mro if hasattr(kls, name)]
+        # knock out classes where the name is defined but different/overridden
+        candidates = [ kls for kls in candidates if \
+                       getattr(kls, name) == getattr(agent.__class__, name) ]
+        # take the last element, because it's the furthest away in the MRO
+        results[name] = candidates[-1]
+    return results
