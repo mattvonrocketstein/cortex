@@ -25,11 +25,17 @@
 <strong>Inheritance-tree:</strong>
 {{super()}}
 <br/><br/>
-
-<table><tr><th colspan=2><strong>Who contributed the core methods?</strong><br/>
-      </th></tr>
-  {% for x in pedigree%}<tr><td>{{x.0}}</td><td> {{x.1}}</td></tr>
-{%endfor%}</table>
+<table>
+  <tr>
+    <th colspan=2><strong>Who contributed the core methods?</strong><br/>
+    </th>
+  </tr>
+  {%for x in pedigree%}
+  <tr>
+    <td>{{x.0}}</td><td> {{x.1}}</td>
+  </tr>
+  {%endfor%}
+</table>
 {%endblock%}
 
 {%block obj_main%}
