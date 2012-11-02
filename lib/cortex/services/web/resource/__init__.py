@@ -20,7 +20,7 @@ from cortex.core.universe import Universe
 from cortex.mixins.autonomy import Autonomy
 from cortex.services.postoffice import PostOffice
 from cortex.agents.proc import Process
-from cortex.core.util import report
+from cortex.core.util import report, pedigree
 
 
 from .util import get_source, classtree, alligator2paren
@@ -110,9 +110,11 @@ class ObjectResource(Resource):
             elif isinstance(target, Agent):
                 T = template('objects/agent')
                 #ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
-                ctx.update(parent=alligator2paren(target.parent),
-                           autonomy=NSPart(target).intersection(NSPart(Autonomy)))
+                _pedigree = [ [x[0],x[1].__name__] for x in pedigree(target).items()]
 
+                ctx.update(parent=alligator2paren(target.parent),
+                           pedigree=_pedigree,
+                           autonomy=NSPart(target).intersection(NSPart(Autonomy)))
                 if isinstance(target, Process):
                     T = template('objects/agent_process')
                     #children = target.agents if hasattr(target, 'agents') else []
@@ -177,7 +179,7 @@ class ObjectResource(Resource):
         breadcrumbs = self.breadcrumbs(request)
         ctx = dict(obj=self.target, path=request.postpath,
                    breadcrumbs=breadcrumbs,
-                   ancestry=classtree(getattr(self.target,'__class__',object),
+                   ancestry=classtree(getattr(self.target, '__class__', object),
                                       base_url=request.path),
                    request=request,)
 
