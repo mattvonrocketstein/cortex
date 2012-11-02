@@ -39,4 +39,4 @@ class EventHub(AbstractEventHandler):
     def setup(self):
         tmp = rootpage.RootPage2()
         event_hub = appserver.NevowSite(tmp)
-        self.universe.reactor.listenTCP(self.port, event_hub)
+        self.universe.listenTCP(self.port, event_hub)
