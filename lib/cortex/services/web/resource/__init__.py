@@ -110,7 +110,9 @@ class ObjectResource(Resource):
             elif isinstance(target, Agent):
                 T = template('objects/agent')
                 #ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
-                _pedigree = [ [x[0],x[1].__name__] for x in pedigree(target).items()]
+                _pedigree = [ [x[0], x[1].__name__] \
+                              for x in pedigree(target).items() \
+                              if x[1] is not None ]
 
                 ctx.update(parent=alligator2paren(target.parent),
                            pedigree=_pedigree,
