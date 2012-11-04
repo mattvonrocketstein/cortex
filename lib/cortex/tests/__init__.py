@@ -29,12 +29,13 @@ def get_bases():
     ## Test-classes to use
     from cortex.tests.core_metaclasses import MetaclassesTest
     from cortex.tests.core_universe import UniverseCheck
-    from cortex.tests.core_channels import ChannelCheck
+    #from cortex.tests.core_channels import ChannelCheck
     from cortex.tests.core_agent import AgentCheck
     from cortex.tests.agents_watchdog import WatchdogTest
     bases = (MetaclassesTest, AgentCheck,
              WatchdogTest,    UniverseCheck,
-             ChannelCheck, )
+             #ChannelCheck,
+             )
     test_args   = dict(bases=bases)
 
     return test_args
