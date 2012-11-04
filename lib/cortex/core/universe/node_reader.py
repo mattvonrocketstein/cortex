@@ -1,5 +1,7 @@
 from cortex.core.parsing import Nodeconf
 
+class ConfigurationError(RuntimeError): pass
+
 class NodeConfAspect(object):
     """ """
     def read_nodeconf(self):
@@ -7,8 +9,9 @@ class NodeConfAspect(object):
             entries from self.nodeconf_file
         """
         nodeconf_err = 'Universe.nodeconf_file tests false or is not set.'
-        assert all([hasattr(self, 'nodeconf_file'),
-                    self.nodeconf_file]), nodeconf_err
+        if not all([hasattr(self, 'nodeconf_file'),
+                    self.nodeconf_file]):
+            raise ConfigurationError(nodeconf_err)
         jsons = Nodeconf(self.nodeconf_file).parse()
         return jsons
 
