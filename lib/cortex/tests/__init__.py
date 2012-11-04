@@ -1,4 +1,4 @@
-""" tests for cortex
+""" cortex.lib.cortex.tests
 """
 import time
 from cortex.core.util import uniq
