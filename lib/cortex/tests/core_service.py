@@ -2,7 +2,7 @@
 """
 
 from unittest import TestCase
-from cortex.core.service import Service, ServiceManager
+from cortex.services import Service, ServiceManager
 
 class ServiceManagerCheck(TestCase):
     """ tests for the service manager """

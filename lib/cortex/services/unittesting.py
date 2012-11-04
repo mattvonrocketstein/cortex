@@ -2,8 +2,8 @@
 """
 import unittest
 from unittest import TestCase, TestResult #, TextTestRunner
-from cortex.core.service import Service
 
+from cortex.services import Service
 from cortex.core.util import report, console
 from cortex.core.metaclasses import subclass_tracker
 
