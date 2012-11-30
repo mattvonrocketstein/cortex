@@ -11,17 +11,6 @@ from cortex.core.util import namedAny
 from cortex.core.util import report
 from cortex.services import Service
 
-def _get_mod_from_wd(mod_name):
-    """ """
-    try:
-        if os.getcwd() not in sys.path:
-            sys.path.append(os.getcwd())
-        exec 'import '+mod_name
-        mod = eval(mod_name)
-        return mod, []
-    except (AttributeError, ImportError), e:
-        return None, [e]
-
 class ServiceAspect(object):
     def loadServices(self, services=[]):
         """ """
