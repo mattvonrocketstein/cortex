@@ -3,17 +3,19 @@
 import time
 
 from pep362 import Signature
+
 from cortex.core.util import report
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
-from cortex.extensions.logic import Doctrine
 from cortex.mixins import MobileCodeMixin, FaultTolerant
 from cortex.mixins import  AutonomyMixin
+from cortex.core.data import NOOP, DEFAULT_HOST
+
+from spock import Doctrine
 
 from channel import channel
 from channel import is_declared_callback, declare_callback
 
-from cortex.core.data import NOOP, DEFAULT_HOST
 
 
 class CommsMixin(object):
