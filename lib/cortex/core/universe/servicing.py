@@ -1,14 +1,14 @@
 """ cortex.core.universe.servicing
 
-    aspects of the universe dealing with how to find and load services
+    This file contains the aspects of the universe
+    which deal with finding and loading services.
 """
 import os, sys
 import inspect
 import types
 
-from cortex.core.util import report
-
 from cortex.core.util import namedAny
+from cortex.core.util import report
 from cortex.services import Service
 
 def _get_mod_from_wd(mod_name):
@@ -61,17 +61,16 @@ class ServiceAspect(object):
                                         kls_kargs = kargs,
                                         name=obj.__name__.lower())
 
-    def _load_service_from_dotpath(self, service, **kargs):
+    def _load_service_from_dotpath(self, service_path, **kargs):
         """ """
-        service = service.split('.')
-        if len(service) == 2:
-            mod_name, class_name = service
-            namespace = _get_mod(mod_name)
-            if class_name in namespace:
-                obj = namespace[class_name]
-                return self.start_service(obj, **kargs)
-        else:
-            raise Exception, 'will not interpret that dotpath yet'
+        kls = namedAny(service_path)
+        if not issubclass(kls, Service):
+            msg = ("There is an error in your configuration file. "
+                   'The dotpath given by "{0}" resolves to a {1}, '
+                   "but it should be a Service.")
+            msg = msg.format(service_path, type(kls).__name__)
+            raise ValueError, msg
+        return self.start_service(obj, **kargs)
 
     def _load_service_from_string(self, service, **kargs):
         """ """
