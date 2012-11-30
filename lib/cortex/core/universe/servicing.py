@@ -8,8 +8,19 @@ import types
 
 from cortex.core.util import report
 
-from cortex.core.util import get_mod as _get_mod
+from cortex.core.util import namedAny
 from cortex.services import Service
+
+def _get_mod_from_wd(mod_name):
+    """ """
+    try:
+        if os.getcwd() not in sys.path:
+            sys.path.append(os.getcwd())
+        exec 'import '+mod_name
+        mod = eval(mod_name)
+        return mod, []
+    except (AttributeError, ImportError), e:
+        return None, [e]
 
 class ServiceAspect(object):
     def loadServices(self, services=[]):
@@ -62,24 +73,6 @@ class ServiceAspect(object):
         else:
             raise Exception, 'will not interpret that dotpath yet'
 
-    def get_mod(self, mod_name):
-        """ """
-        try:
-            return _get_mod(mod_name), []
-        except (AttributeError, ImportError), e:
-            return None, [e]
-
-    def _get_mod_from_wd(self, mod_name):
-        """ """
-        try:
-            if os.getcwd() not in sys.path:
-                sys.path.append(os.getcwd())
-            exec 'import '+mod_name
-            mod = eval(mod_name)
-            return mod, []
-        except (AttributeError, ImportError), e:
-            return None, [e]
-
     def _load_service_from_string(self, service, **kargs):
         """ """
         if os.path.sep in service:
@@ -110,17 +103,12 @@ class ServiceAspect(object):
         errors   = []
         mod_name = service
 
-        default               = lambda mod_name: ( {}, {} )
-        module_search_methods = [ self.get_mod, self._get_mod_from_wd, default ]
-        for search_method in module_search_methods:
-            report('trying ',search_method)
-            mod, _errs = search_method(mod_name)
-            errors    += [ _errs ]
-            if mod:
-                # found a module?  reset the errors to empty
-                # and start and exit the loop immediately
-                errors = []
-                break
+        def default_search(mod_name):
+            return ( {}, {} )
+        mod = namedAny('cortex.services.{0}'.format(service))
+        if not mod:
+            msg = "Service not found.. there may be an error in your configuration"
+            raise ValueError,msg
 
         if isinstance(mod, types.ModuleType):
             mod = dict([ [x, getattr(mod, x)] for x in dir(mod) ])
