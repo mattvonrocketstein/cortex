@@ -4,6 +4,7 @@ import inspect
 import time, uuid
 from pprint import pprint
 from StringIO import StringIO
+from twisted.python.reflect import namedAny
 
 # TODO: move some of this back into the real report lib
 from report import report, console
@@ -27,21 +28,6 @@ def rpprint(obj,pad=' '*4):
     report.console.draw_line('',display=False)
     print console.color('\n'.join(['\n']+map(lambda x: pad + x, s.read().split('\n'))))
 report.pprint = rpprint
-
-def get_mod(mod_name, root_dotpath=SERVICES_DOTPATH):
-    """ stupid helper for universe to snag modules
-        from inside the services root """
-    from twisted.python.reflect import namedAny
-    mod = namedAny('.'.join([root_dotpath,mod_name]))
-    out = {}
-    ns  = {}
-    #exec('from ' + root_dotpath + ' import ' + mod_name + ' as mod', ns)
-    #mod = ns['mod']
-
-    for name in dir(mod):
-        val = getattr(mod, name)
-        out[name] = val
-    return out
 
 def uniq():
     return str(uuid.uuid1()).split('-')[0]+str(time.time())[:-3]
