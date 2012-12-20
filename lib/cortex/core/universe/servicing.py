@@ -33,7 +33,6 @@ class ServiceAspect(object):
         else:
             return self.start_service(service, **kargs)
 
-
     def start_service(self, obj, ask=False, **kargs):
         """ TODO: bad name?  this is a load() style command,
             i don't think it really starts look back at

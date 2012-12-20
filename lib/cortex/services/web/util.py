@@ -26,9 +26,13 @@ def ugraph(universe):
 
         TODO: a real traversal for arbitrary depth
     """
-    stuff = universe.children() + [universe]
-    stuff = [ [x, x.children()] for x in stuff if hasattr(x, 'children') ]
-    stuff = dict(stuff)
+    nodes = universe.children() + [universe]
+    nodes2 = []
+    for x in nodes:
+         children = x.children()
+         if children:
+             nodes2.append([x, children])
+    stuff = dict(nodes2)
     name = lambda q: q.name if q!=universe else 'universe'
     out = []
     for node, children in stuff.items():

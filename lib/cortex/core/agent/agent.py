@@ -54,8 +54,11 @@ class CommsMixin(object):
             cb.bootstrap(self)
 
 
-#
-class AgentLite(MobileCodeMixin, AutonomyMixin, FaultTolerant):
+class TopologyMixin(object):
+    def children(self):
+        return []
+
+class AgentLite(TopologyMixin, MobileCodeMixin, AutonomyMixin, FaultTolerant):
     pass
 
 class Agent(CommsMixin, AgentLite):

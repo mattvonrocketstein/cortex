@@ -1,37 +1,49 @@
 
-Cortex is a playground for experiments in distributed computing, AI, and language design.
+Cortex is a playground for experiments in distributed computing, AI, and language design,
+inspired by the concept of "agent oriented programming".
 
 Before you get started:
 -----------------------
-  A few utilities that (might) be used by cortex.  You can also just wait until you need them,
-  but the "bzr" requirements in partciular may prevent you from pip-installing the other
-  requirements.
-
+    # Required by pip to recognize bzr VCS
     $ sudo apt-get install bzr
+
+    # Required by python-nmap, which is used by the network-mapper agent
     $ sudo apt-get install nmap
 
+    # Required to make images representing lines of communication for agents,
+    $ sudo apt-get install pygraphviz pygraphviz-dev
+
+    # Required potentially by many things
+    $ sudo apt-get install python-dev
+
 Installing:
-    Build venv:
+------------
 
-        $ virtualenv foo --no-site-packages
-        $ source foo/bin/activate
+    # Build a virtual environment and activate it:
+    $ virtualenv foo --no-site-packages
+    $ cd foo; source bin/activate
 
-    Install requirements (if pip doesn't work use easy_install for every line in file?)
-        $ pip -E foo install -r cortex/requirements.txt
-        $ sudo apt-get install nmap
-        $ sudo apt-get install python-dev
+    # Clone cortex
+    $ git clone git://github.com/mattvonrocketstein/cortex.git
 
-    see if it's installed:
-        $ python -c"import cortex"
+    # Install requirements:
+    $ ./bin/pip install -r cortex/requirements.txt
+
+    # Install cortex
+    ./bin/python setup.py develop
+
+    # If everything ok, this should succeed:
+    $ ./bin/python -c"import cortex"
 
 Running tests:
 --------------
-    $ source foo/bin/activate             # activate the venv you made in the other step
+    # activate the venv you made in the other step
+    $ cd foo; source bin/activate
 
-    Now you can choose one of:
-     $ python lib/cortex/tests             # from directory with cortex src clone
-     $ python -m "cortex.tests.__main__"   # from pre-installed source
-     $ cortex --test --gtk --services=gui  # runs tests in terminal, launches gtk shell
+    # Now you can choose one of:
+    $ python cortex/lib/cortex/tests      # from directory with cortex src clone
+    $ python -m "cortex.tests.__main__"   # from pre-installed source
+    $ cortex --test --gtk --services=gui  # runs tests in terminal, launches gtk shell
 
 Looking around:
 ---------------
@@ -80,3 +92,28 @@ Looking around:
   "peers" and interacting with the peer manager:
 
      PeerManager(['localhost:1337', 'localhost:1338'])
+
+References and other fun reads:
+-------------------------------
+modularity and programming in-the-large: http://portal.acm.org/citation.cfm?id=808431
+traits as an alternative to multiple inheritance: http://scg.unibe.ch/research/traits/
+ai/logic/probability in python http://www.ainewsletter.com/newsletters/aix_0508.htm#python_ai
+
+Code being evaluated for toolbox:
+---------------------------------
+ + logilab -- switch to this for CSP instead the AIMA code?
+ + pyke    -- python meets prolog, great for dealing with the "knapsack problem"
+ + python-snakes -- petri nets using arbitrary python objects as tokens
+ + baker 1.1 -- easier command line scripts (perfect for cli version ofsudo  cortex.core.api)
+ + xanalogica.tumblers -- transfinite addressing scheme (evaluating for usage as cortex URI backend)
+   see also: http://pypi.python.org/pypi/DescribedRoutes/0.2.2
+ + cogen -- coroutine flavored concurrency to complement threads/multiprocessing/reactor models
+ + py.test and pylib --  rapid testing and development utils.
+ + enthought contexts --  can fire events from inside normal functions on assignment, deletion, etc
+ + strait -- traits for python (perfect abstraction for componentizing behaviours)
+ + python-graph or networkx for working with graphs/trees?
+ + good examples of ast hacks for sugar:
+     http://pypi.python.org/pypi/pseudosugar/2010.01.01.READMEn
+     see also: pseudomethods
+ + combinatorics/munkres "assignment problem" http://pypi.python.org/pypi/munkres/1.0.5.4
+ + pypi intellect
