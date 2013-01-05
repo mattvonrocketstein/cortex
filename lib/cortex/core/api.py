@@ -11,14 +11,6 @@ from cortex.core.universe import Universe as universe
 from cortex.core.util import report
 from cortex.core.hds import HDS
 
-def update_code():
-    report('updating source code')
-    os.system('git fetch')
-    report('cloning')
-    clone()
-    report('halting')
-    universe.halt()
-
 def msg(name,content):
     poffice = (universe|'postoffice')
     chan = getattr(poffice, name)
