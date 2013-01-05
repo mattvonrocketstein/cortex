@@ -23,13 +23,15 @@ class Mapper(Service):
           start: brief description of service start-up here
           stop:  brief description service shutdown here
     """
+    class Meta:
+        """ NOTE: mentioning a channel in subscriptions always
+                  means it will be created if it does not exist.
+        """
+        subscriptions = {PEER_T: 'discovery'}
 
-    #@declare_callback(PEER_T)
     def discovery(self, peer_data, **kwargs):
         """ will be called by the postoffice, with type PEER_T
         """
-        #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-        #data = kargs#simplejson.loads(pickled_data)
         data = peer_data
         name = data['host'] + ':' + str(data['port'])
         self.universe.peers.register(name, **data)
@@ -37,7 +39,6 @@ class Mapper(Service):
     def iterate(self, host):
         """ """
         local_api_port = (self.universe|'api').port
-        (self.universe|'postoffice').subscribe(PEER_T, self.discovery)
         self.port_range = port_range
         scan_data = nmap.PortScanner().scan(host, port_range, '--system-dns')['scan']
         self.last_scan = scan_data

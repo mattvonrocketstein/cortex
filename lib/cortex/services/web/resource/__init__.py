@@ -116,6 +116,8 @@ class ObjectResource(Resource):
 
                 ctx.update(parent=alligator2paren(target.parent),
                            pedigree=_pedigree,
+                           subscriptions=getattr(getattr(target,'Meta',None),
+                                                 'subscriptions',[]),
                            autonomy=Namespace(target).intersection(Namespace(Autonomy)))
                 if isinstance(target, Process):
                     T = template('objects/agent_process')
