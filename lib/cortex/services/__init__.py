@@ -1,8 +1,8 @@
 """ cortex.core.service
 """
+from collections import defaultdict
 
 from cortex.core.util import report, console
-
 from cortex.core.data import NOOP
 from cortex.contrib.aima import csp
 from cortex.core.agent import Agent, AgentManager
@@ -45,7 +45,6 @@ class ServiceManager(AgentManager):
     def build_constraint_table(self):
         """ TODO: allow multiple boot-first constraints?
         """
-        from collections import defaultdict
         self.table = defaultdict(lambda:[])
         for item in self._pending:
             name, kls, kargs = item
@@ -68,37 +67,9 @@ class ServiceManager(AgentManager):
         """
 
         # Build table of start._boot_first constraints
+        from spock import BootOrderProblem
         self.build_constraint_table()
-
-        names = [x[0] for x in self._pending]
-
-        # neighbors: every service participates in the
-        # constraints of the other selfs except itself
-        neighbors = dict([ [service, [service2 for service2 in names if \
-                                      service2!=service]] for service in names ])
-
-        # vars: variables to solve over
-        vars = [ name for name in names ]
-
-        # domains: every service could potentially be booted in any order
-        domains = dict([ [service, range(len(names))] for service in names])
-
-        # the totality of the problem.  nothing to do with this now, but here it is.
-        csp_definition = dict( vars = vars, domains = domains, neighbors = neighbors,
-                               constraint = self._boot_order_constraint )
-
-        # compute solution
-        csp_problem    = csp.CSP(vars, domains, neighbors, self._boot_order_constraint)
-        #csp_algorithm  = csp.min_conflicts #backtracking_search #AC3 #
-        csp_algorithm  = csp.backtracking_search #AC3 #
-        answer         = csp_algorithm(csp_problem, **kargs)
-        nassigns       = csp_problem.nassigns
-
-        # clean up the answer: it will be a dictionary of {service_name:boot_order},
-        #  but boot_order's may be duplicated, and it may not be in order.
-        answer = answer.items()
-        answer.sort(lambda x,y: cmp(x[1], y[1]))
-        return [ x[0] for x in answer ]
+        return BootOrderProblem(self.table)()
 
 
 class Service(Agent):
