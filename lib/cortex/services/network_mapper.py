@@ -9,7 +9,6 @@ import nmap, simplejson
 
 from cortex.core.util import report
 from cortex.services import Service
-#from cortex.core.peer import Peer
 from cortex.core.data import PEER_T
 from cortex.core.data import CORTEX_PORT_RANGE
 from cortex.util.decorators import constraint
@@ -90,9 +89,6 @@ class Mapper(Service):
                  PortScannerError:
                    'mass_dns: warning Unable to determine any DNS servers.
         """
-
-        #assert (self.universe|'api').started, 'postoffice isnt started'
-        Service.start(self)
-        #self._boot_first = ['terminal'] # testing service bootorder csp
+        Service.start(self) # can't call super?
         host = getattr(self,'scan_host','127.0.0.1')
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
