@@ -17,14 +17,15 @@ svn+http://codespeak.net/svn/user/niemeyer/constraint/trunk/#egg=constraint
 pep362
 git+git://github.com/mattvonrocketstein/channels#egg=channel
 jinja2==2.6
+
+#-e git+git://github.com/mattvonrocketstein/goulash.git#egg=goulash
 #-e git+git://github.com/mattvonrocketstein/reporting.git#egg=report
 #-e git+git://github.com/mattvonrocketstein/spock.git#egg=spock
-## for graphing with the web-service
 
+## for graphing with the web-service
 #apt-get install graphviz
 #apt-get install graphviz-dev
-
-#matplotlib
+#matplotlib?
 
 # search-service
 git+git://github.com/mattvonrocketstein/xgoogle.git#egg=xgoogle

@@ -57,7 +57,7 @@ def publish(**kargs):
     """
 
     from cortex.core import api
-    from cortex.util.namespaces import NamespacePartition
+    from goulash import Namespace as NamespacePartition
 
     # inspect this module
     base_api = NamespacePartition(api.__dict__, dictionaries=False)
@@ -67,7 +67,7 @@ def publish(**kargs):
     if publish_services:
         services  = dict( universe.services.items() )
         extra    += services
-    out = base_api.cleaned + extra
+    out = base_api.nonprivate + extra
     return out
 
 def api_names(): return sorted(publish().keys())
