@@ -7,7 +7,7 @@ import inspect
 from jinja2.loaders import TemplateNotFound
 from twisted.web.resource import Resource
 
-from cortex.util.namespaces import NSPart
+from goulash import Namespace as NSPart
 from cortex.services.web.template import template
 from cortex.core.agent import Agent
 
