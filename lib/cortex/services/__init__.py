@@ -22,29 +22,7 @@ class ServiceManager(AgentManager):
         """ undo agentmanager's hook for pre_manager.. """
         return name, kls, kls_kargs
 
-    def _boot_order_constraint(self, s1, boot_order1, s2, boot_order2):
-        """ returns True iff if s1, s2 satisfy the
-                constraint when they have boot-order
-
-                   s1 := boot_order1,
-                   s2 := boot_order2
-        """
-
-        # all boot orders should be unique.
-        if boot_order1==boot_order2:
-            return False
-
-        # figure out which service is first
-        first, second = (s1, s2) if (boot_order1 < boot_order2) else (s2, s1)
-
-        # ensure the second isn't in the first's
-        #  table of dependancies
-        if second in self.table[first]: return False
-        else:                           return True
-
     def build_constraint_table(self):
-        """ TODO: allow multiple boot-first constraints?
-        """
         self.table = defaultdict(lambda:[])
         for item in self._pending:
             name, kls, kargs = item
@@ -57,15 +35,7 @@ class ServiceManager(AgentManager):
         return self.table
 
 
-    def resolve_boot_order(self, **kargs):
-        """ TODO: try a different underlying CSP algorithm? it looks like
-                  with some (inconsistent) initial conditions, and using
-                  min-conflicts this can run for a num_steps:=very_large_number
-                  before *proving* the system is inconsistent and giving up?
-
-            NOTE: kargs will be passed on to the CSP-solving-algorithm that is chosen.
-        """
-
+    def resolve_boot_order(self):
         # Build table of start._boot_first constraints
         from spock import BootOrderProblem
         self.build_constraint_table()
