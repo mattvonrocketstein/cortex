@@ -57,11 +57,11 @@ def publish(**kargs):
     """
 
     from cortex.core import api
-    from goulash import Namespace as NamespacePartition
+    from goulash import Namespace
 
     # inspect this module
-    base_api = NamespacePartition(api.__dict__, dictionaries=False)
-    extra    = NamespacePartition(dict(publish_kargs=kargs), dictionaries=False)
+    base_api = Namespace(api.__dict__, dictionaries=False)
+    extra    = Namespace(dict(publish_kargs=kargs), dictionaries=False)
 
     publish_services = kargs.get('publish_services', True)
     if publish_services:
@@ -130,7 +130,7 @@ def load_file(fname, adl=False, pdl=False, python=True):
             agent description language
             node configuration file format
     """
-    from cortex.util.namespaces import NamespacePartition
+    from goulash import Namespace
     fileerror = "No such file"
     assert os.path.exists(fname), fileerror
 
@@ -143,7 +143,7 @@ def load_file(fname, adl=False, pdl=False, python=True):
     if python:
         universe = {}
         execfile(fname, universe)
-        return NamespacePartition(universe).cleaned
+        return Namespace(universe).nonprivate
 
 def resolve(name):
     """ resolve dns names via reactor """

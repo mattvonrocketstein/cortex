@@ -4,10 +4,10 @@ import re
 import types
 import inspect
 
+from goulash import Namespace
 from jinja2.loaders import TemplateNotFound
 from twisted.web.resource import Resource
 
-from goulash import Namespace as NSPart
 from cortex.services.web.template import template
 from cortex.core.agent import Agent
 
@@ -116,7 +116,7 @@ class ObjectResource(Resource):
 
                 ctx.update(parent=alligator2paren(target.parent),
                            pedigree=_pedigree,
-                           autonomy=NSPart(target).intersection(NSPart(Autonomy)))
+                           autonomy=Namespace(target).intersection(Namespace(Autonomy)))
                 if isinstance(target, Process):
                     T = template('objects/agent_process')
                     #children = target.agents if hasattr(target, 'agents') else []
@@ -193,7 +193,7 @@ class ObjectResource(Resource):
             return x
 
         if self.is_complex:
-            ns = NSPart(self.target)
+            ns = Namespace(self.target)
             ctx.update(all_namespace=rsorted(ns,'namespace'),
                        methods=rsorted(ns,'methods'),
                        private=rsorted(ns,'private'),
