@@ -6,6 +6,9 @@
 
 import os, sys
 import subprocess
+
+from goulash import Namespace
+
 from cortex.core.parsing import Nodeconf
 from cortex.core.universe import Universe as universe
 from cortex.core.util import report
@@ -49,8 +52,6 @@ def publish(**kargs):
     """
 
     from cortex.core import api
-    from goulash import Namespace
-
     # inspect this module
     base_api = Namespace(api.__dict__, dictionaries=False)
     extra    = Namespace(dict(publish_kargs=kargs), dictionaries=False)
@@ -122,7 +123,6 @@ def load_file(fname, adl=False, pdl=False, python=True):
             agent description language
             node configuration file format
     """
-    from goulash import Namespace
     fileerror = "No such file"
     assert os.path.exists(fname), fileerror
 
