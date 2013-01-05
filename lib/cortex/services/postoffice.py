@@ -59,10 +59,6 @@ class PostOffice(Service, Keyspace, SelfHostingTupleBus, ChannelManager):
         # calling super() here seems correct but is not.. 'name' will be set incorrectly
         Service.__init__(self, *args, **kargs)
 
-    def publish_json(self, label, data):
-        """ publish as json """
-        self.publish(label, simplejson.dumps(data))
-
     def msg(self, *args, **kargs):
         """ pushes a caller-labeled message on to the stack.
             determines caller function and dispatches to publish """

@@ -1,8 +1,11 @@
 """ cortex.core.bus
 """
 
+import simplejson
 from cyrusbus.bus import Bus
+
 from channel import Message
+
 from cortex.core.util import report
 from cortex.core.ground import NotFound
 
@@ -45,6 +48,10 @@ class TupleBus(Bus):
                 if subs and hasattr(subs, '__len__'):
                     return len(subs) > 0
         return False
+
+    def publish_json(self, label, data):
+        """ publish as json """
+        self.publish(label, simplejson.dumps(data))
 
     def publish(self, key, *args, **kwargs):
         """ override from cyrusbus enforcing simple callbacks as

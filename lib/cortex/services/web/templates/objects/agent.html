@@ -45,29 +45,25 @@
       <h4>Status:</h4><hr/>
       <table style="width:80%;margin-left:15px;" border=1>
         <tr>
-          <td>
-            <strong>name</strong>
-          </td>
+          <td><strong>subscriptions</strong></td>
+          <td>{{subscriptions}}</td>
+        </tr>
+        <tr>
+          <td><strong>name</strong></td>
           <td>{{obj.name}}</td>
         </tr>
         <tr>
-          <td>
-            <strong>host</strong>
-          </td>
+          <td><strong>host</strong></td>
           <td>{{obj.host}}</td>
         </tr>
         {%if parent%}
         <tr>
-          <td>
-            <strong>parent</strong><br/>
-          </td>
+          <td><strong>parent</strong><br/></td>
           <td><a href="{{base_url}}/parent/">{{parent}}</a></td>
         </tr>
         {%endif%}
         <tr>
-          <td>
-            <strong>started</strong>
-          </td>
+          <td><strong>started</strong></td>
           <td>{{obj.started}}</td>
         </tr>
         {%block extra_status%}
