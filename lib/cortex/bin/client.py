@@ -6,7 +6,7 @@ import sys
 from cortex.core.util import report
 from cortex.core.universe import Universe
 from cortex.core.data import CORTEX_PORT_RANGE
-from cortex.core.peer import CortexPeer
+from cortex.core.peer import CortexPeer, PEERS
 from cortex.core import api
 
 def use_client(options, args):
@@ -50,7 +50,10 @@ def _use_client(host, port, options):
 
     report('connecting to ctx://{0}:{1} .. '.format(host, port))
     peer = CortexPeer(addr = host, port = port)
+    peer._manager = PEERS
     api.contribute(peer=peer)
+    Universe.reactor.callWhenRunning(
+        lambda: peer.mutate_if_cortex(failure=lambda *args: Universe.halt(quiet=True)))
 
     cmd = 'peer.' + options.command if options.command else None
     api.load_services('postoffice _linda'.split())
