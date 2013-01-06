@@ -40,7 +40,7 @@ class Peer(object):
         from cortex.core.universe import Universe
         self.universe = Universe
 
-    def mutate_if_cortex(self):
+    def mutate_if_cortex(self, failure=None):
         handshake = 'helo'
         potentially = self._cortex
         def success(result):
@@ -54,9 +54,9 @@ class Peer(object):
 
                 if self.universe.started:
                     report("got an answer back, but it's not the handshake.."+str(result))
-        #def failure(whatever):
-        #    report('failed ' + str(whatever))
-        potentially.is_cortex(handshake).addCallback(success)#,failure)
+        def _failure(whatever):
+            report('failed ' + str(whatever))
+        potentially.is_cortex(handshake).addCallbacks(success,failure or _failure)
 
     def __repr__(self):
         port = str(getattr(self, 'port', '00'))
@@ -81,11 +81,17 @@ class Peer(object):
             created as a result of network-mapper discovery OR stand-alone.
             without a check, the screen clogs with errors during shutdown.
         """
+        from twisted.internet.error import ConnectionRefusedError
         if hasattr(self,'_manager'):
             if self.universe.started:
-                report('failure in peer',dict(self=self, type=failure.type,
-                                              value=failure.value, tb=failure.tb))
-                return failure
+                if failure.type==ConnectionRefusedError:
+                    report("Connection Refused: "+str(self))
+                    return failure
+                else:
+                    report('failure in peer',dict(self=self, type=failure.type,
+                                                  value=failure.value, tb=failure.tb))
+                    return failure
+
         else:
             return failure
         #failure.printTraceback()
