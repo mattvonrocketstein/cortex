@@ -208,17 +208,9 @@ class Keyspace(Memory, DefaultKeyMapper):
 
     def __getitem__(self, key):
         """ TODO: is this tailored too much for the PostOffice, or is it sufficiently generic?
-            TODO: transparent encryption, serialization, perspective warping, etc
+            FUN!: transparent encryption, serialization, perspective warping, etc
         """
-        pattern = (key, object)
-        res = self.many( pattern, sys.maxint)
-        if len(res) not in [0, 1]:
-            raise TypeError("Not really a keyspace then is it?")
-        if len(res)==0:
-            return NotFound
-        else:
-            colid, match = res[0]
-            return self.tuple2value(match)
+        return self._tspace_as_dict()[key]
 
     def __contains__(self,other):
         """ dictionary compatibility """
@@ -246,7 +238,7 @@ class Keyspace(Memory, DefaultKeyMapper):
 
             1) compute the de-duped keys from the tuple space
             2) aggregate for every value-set that uses a given key
-            TODO: 3) de-dupe the aggregation?
+            3) de-dupe the aggregation?
             TODO: 4) flatten(ks[key]) if len(ks[key])==1 ?
         """
         keys    = self.public_keys()
@@ -263,7 +255,7 @@ class Keyspace(Memory, DefaultKeyMapper):
                         raise
                     else:
                         aggregate=(this_val,)
-            results[k] = aggregate
+            results[k] = list(set(aggregate))
         return results
 
 
