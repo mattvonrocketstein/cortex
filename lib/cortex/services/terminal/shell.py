@@ -1,7 +1,6 @@
 """ cortex.services.terminal.shell
 """
 
-from cortex.core.data import EVENT_T
 from cortex.core.util import report, console
 
 class ShellAspect:
@@ -13,20 +12,6 @@ class ShellAspect:
         self.set_shell()
         self.set_prompt()
 
-    def pre_prompt_hook(self, ip):
-        """ IPython-hook to display system notices """
-        if self.syndicate_events:
-            # extra setup for the postoffice integration..
-            #  this stuff is in here because the requires_service() functionality
-            #   isn't build yet, so it can't go in start() due to dependancy issues
-            if not hasattr(self, 'subscribed'):
-                (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
-                self.subscribed = True
-
-            event = self.pop_q()
-            if event:
-                print console.blue('Events:'), console.color(str(event))
-
     def set_shell(self):
         from cortex.services.terminal.terminal import IPShellTwisted, IPY_ARGS
         self.shell = IPShellTwisted(argv=IPY_ARGS,
@@ -34,8 +19,6 @@ class ShellAspect:
                                     controller=self)
         self.shell.IP.set_hook('pre_prompt_hook', self.pre_prompt_hook)
         self.shell.IP.BANNER = console.draw_line(display=False)
-        # Set IPython "autocall" to "Full"
-        #self.shell.IP.magic_autocall(2)
 
     def really_start(self):
         """ TODO: defer to universe.command_line_options for whether to magic_pdb """
@@ -75,9 +58,7 @@ class ShellAspect:
             self.replace_input_processor(new_method)
         report("attached..")
 
-    def get_input_processor(self):
-        """ """
-        return self.shell.IP.runsource
+    def get_input_processor(self): return self.shell.IP.runsource
 
     def replace_input_processor(self, new_proc):
         """ replaces the core ipython input processor
@@ -90,18 +71,6 @@ class ShellAspect:
     def pre_prompt_hook(self, ip):
         """ IPython-hook to display system notices """
         if self.syndicate_events:
-            # extra setup for the postoffice integration..
-            #  this stuff is in here because the requires_service() functionality
-            #   isn't build yet, so it can't go in start() due to dependancy issues
-            if not hasattr(self, 'subscribed'):
-                #try:
-                (self.universe|'postoffice').subscribe(EVENT_T, self.push_q)
-                #except self.universe.services.NotFound:
-                #    pass # this service may be ready before the post office
-                #         #  is, so this might not work the first time around
-                #else:
-                self.subscribed = True
-
             event = self.pop_q()
             if event:
                 print console.blue('Events:'), console.color(str(event))
