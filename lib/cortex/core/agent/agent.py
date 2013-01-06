@@ -59,10 +59,7 @@ class CommsMixin(object):
             cb.bootstrap(self)
 
 
-class TopologyMixin(object):
-    def children(self):
-        return []
-
+from cortex.mixins.topology import TopologyMixin
 class AgentLite(TopologyMixin, MobileCodeMixin, AutonomyMixin, FaultTolerant):
     pass
 
