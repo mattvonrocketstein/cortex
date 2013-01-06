@@ -9,7 +9,7 @@ import nmap, simplejson
 
 from cortex.core.util import report
 from cortex.services import Service
-from cortex.core.data import PEER_T
+from cortex.core.data import PEER_T, LOOPBACK_HOST
 from cortex.core.data import CORTEX_PORT_RANGE
 from cortex.util.decorators import constraint
 
@@ -77,8 +77,7 @@ class Mapper(Service):
             self.universe.reactor.callLater(10, lambda: self.iterate(host))
     scan = iterate
 
-    @constraint(boot_first='postoffice')
-    @constraint(boot_first='api')
+    @constraint(boot_first='postoffice api'.split())
     def start(self):
         """ TODO:
               it'd be nice to use the asynchronous portscanner but this:
@@ -90,5 +89,5 @@ class Mapper(Service):
                    'mass_dns: warning Unable to determine any DNS servers.
         """
         Service.start(self) # can't call super?
-        host = getattr(self,'scan_host','127.0.0.1')
+        host = getattr(self, 'scan_host', LOOPBACK_HOST)
         self.universe.reactor.callLater(1, lambda: self.iterate(host))
