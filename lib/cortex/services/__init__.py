@@ -99,8 +99,14 @@ class Service(Agent):
 
 # A cheap singleton
 SERVICES = ServiceManager()
+from cortex.mixins.topology import TopologyMixin as _TopologyMixin
+class TopologyMixin(_TopologyMixin):
+    def children(self):
+        children_names = [ name for name in self ]
+        children = [self[name].obj for name in children_names]
+        return super(TopologyMixin, self).children() + children
 
-class FecundService(Service, AgentManager):
+class FecundService(TopologyMixin, Service, AgentManager):
     """ FecundService describes a service with children.
 
         You get mostly the semantics you'd expect.  When the
@@ -124,7 +130,7 @@ class FecundService(Service, AgentManager):
     def start(self):
         """ """
         ctx = dict(universe=self.universe)
-        child_classes = self.__class__.Meta.children
+        child_classes = self._opts.children
         for kls in child_classes:
             name = kls.__name__
             kargs = dict(kls=kls, kls_kargs=ctx, name=name)
