@@ -7,11 +7,12 @@
 """
 import os, sys
 import platform, pprint, StringIO
+from collections import defaultdict
 
 from cortex.core.hds import HDS
 from cortex.core.reloading import AutoReloader
 from cortex.services import SERVICES
-from cortex.core.util import report
+from cortex.core.util import report, report_if_verbose
 from cortex.mixins import AutonomyMixin, Controllable
 from cortex.mixins import PersistenceMixin
 from cortex.core.peer import PEERS
@@ -24,8 +25,6 @@ from .reactor import ReactorAspect
 from cortex.core.universe.node_reader import NodeConfAspect
 from cortex.core.universe.servicing import ServiceAspect
 
-
-from collections import defaultdict
 
 class Tracking(object):
     """ topologies for connective tissue """
@@ -140,7 +139,7 @@ class __Universe__(Tracking,
             os.system('kill -KILL ' + str(pid))
         # self.persist()
 
-    def halt(self):
+    def halt(self, quiet=0):
         """ override from Controllable
 
             sometimes the universe needs to have it's shutdown triggered by another
@@ -189,8 +188,8 @@ class __Universe__(Tracking,
             self.reactor.stop()
         except twisted.internet.error.ReactorNotRunning:
             pass
-        report("Stopped: ", [x for x in stopped] )
-        report('Trying to kill any zombies:', self.procs)
+        report_if_verbose("Stopped: ", [x for x in stopped] )
+        report_if_verbose('Trying to kill any zombies:', self.procs)
         [ self.kill_pid(p) for p in [x.pid for x in self._procs] ]
 
     def decide_name(self):

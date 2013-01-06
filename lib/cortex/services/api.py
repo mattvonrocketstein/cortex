@@ -70,7 +70,8 @@ class API(Service):
                   means it will be created if it does not exist.
         """
         subscriptions = {CORTEX_API_UPDATE_T: 'contribute_to_api'}
-
+    def getdoc(self, *args, **kargs):
+        return ['dude']
     def contribute_to_api(self, **namespace):
         """ dynamically increase the (json) published api
             using <namespace>
