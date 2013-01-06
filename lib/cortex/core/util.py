@@ -8,6 +8,10 @@ from twisted.python.reflect import namedAny
 
 # TODO: move some of this back into the real report lib
 from report import report, console
+def report_if_verbose(*args, **kargs):
+    from cortex import VERBOSE
+    if VERBOSE:
+        report(*args, **kargs)
 report.console = console
 from StringIO import StringIO
 from pprint import pprint

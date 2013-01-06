@@ -4,12 +4,12 @@
      this is useless until it's bound to the concrete
      ipython console or gui aspect.
 """
-
+import inspect
 from cortex.core import api
 from cortex.services import Service
 from cortex.mixins import LocalQueue
 from cortex.core.data import EVENT_T
-from cortex.core.util import report, console
+from cortex.core.util import report, report_if_verbose, console
 from cortex.util.decorators import constraint
 from cortex.services.api import CORTEX_API_UPDATE_T
 
@@ -65,7 +65,7 @@ class ATerminal(Service, LocalQueue):
             self.shell.IP.ipmagic('exit')
         except:
             report('failure with ipmagic exit.  (is this the gui?)')
-        report('the Terminal Service Dies.')
+        report_if_verbose('the Terminal Service Dies.')
 
     def contribute_to_api(self, **namespace):
         came_from = namespace.pop('__channel', None)
@@ -74,7 +74,6 @@ class ATerminal(Service, LocalQueue):
     @staticmethod
     def compute_terminal_namespace():
         """ populates the namespace that is available within the shell """
-        import inspect
         namespace = {'__name__' : '__cortex_shell__',}
         namespace.update(api.publish())
         namespace.update(dict(getfile=inspect.getfile))
