@@ -8,7 +8,7 @@ import inspect
 from contextlib import contextmanager
 
 from types import StringTypes
-from cortex.core.util import report
+from cortex.core.util import report, report_if_verbose
 from cortex.core.hds import HierarchicalData
 
 class Manager(object):
@@ -71,7 +71,7 @@ class Manager(object):
         """
         boot_order = self.resolve_boot_order()
         if self._pending:
-            report('determined boot order:', boot_order)
+            report_if_verbose('determined boot order:', boot_order)
         self.load_items(boot_order)
         self._boot_order = boot_order
 

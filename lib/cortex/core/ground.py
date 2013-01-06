@@ -8,7 +8,7 @@ import datetime
 
 from lindypy.TupleSpace import TSpace
 
-from cortex.core.util import report
+from cortex.core.util import report, report_if_verbose
 from cortex.core.hds import HierarchicalData
 from cortex.mixins import PersistenceMixin
 
@@ -95,7 +95,7 @@ class Memory(TSpace, PersistenceMixin):
             TODO: proxy to TSpace shutdown?
         """
         #self.save()
-        report("Shutting down Memory.")
+        report_if_verbose("Shutting down Memory.")
 
     def save(self):
         """ """
