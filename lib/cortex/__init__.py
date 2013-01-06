@@ -8,3 +8,4 @@
       Agent Oriented Programming [ Shoham ]
         http://www.cs.unb.ca/~ulieru/Teaching/CS6705/Shoham.pdf
 """
+VERBOSE=False

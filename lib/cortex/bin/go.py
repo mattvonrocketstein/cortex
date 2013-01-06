@@ -24,6 +24,7 @@ def build_parser():
     p.add_option("--gtk",dest="gtk_reactor", default=False,action="store_true",help=gtkHelp)
     p.add_option("--test",dest="run_tests", default=False,action="store_true", help=testHelp)
     p.add_option("-u","--universe",dest="universe",help=universeHelp, metavar="UNIVERSE")
+    p.add_option("-v","--verbose",dest="verbose",default=False, help=universeHelp, action='store_true')
     p.add_option('--directives',dest="directives", default="", help=directiveHelp)
     p.add_option('--services',dest="services", default="", help=directiveHelp)
     p.add_option('--conf',dest="conf",default=REL_NODE_CONF, help=confHelp)
@@ -74,6 +75,9 @@ def entry():
     olist = [ x for x in dir(options) if not x.startswith('_') \
               and x not in 'read_file read_module ensure_value'.split() ]
     [setattr(Universe.config,x,getattr(options,x)) for x in olist]
+    if options.verbose:
+        import cortex
+        cortex.VERBOSE = True
 
     # use the cortex api client?
     if options.client:
