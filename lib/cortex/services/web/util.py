@@ -19,23 +19,3 @@ def draw_ugraph(k, fname, report):
     A.edge_attr['color']='red'
     A.layout()
     A.draw(fname)
-
-def ugraph(universe):
-    """ builds an adjacency matrix for the universe topology:
-        a list of tuples where every tuple is parent -> child
-
-        TODO: a real traversal for arbitrary depth
-    """
-    nodes = universe.children() + [universe]
-    nodes2 = []
-    for x in nodes:
-         children = x.children()
-         if children:
-             nodes2.append([x, children])
-    stuff = dict(nodes2)
-    name = lambda q: q.name if q!=universe else 'universe'
-    out = []
-    for node, children in stuff.items():
-        for z in children:
-            out.append( (name(node), name(z)) )
-    return out
