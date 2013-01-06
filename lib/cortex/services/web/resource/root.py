@@ -31,7 +31,7 @@ class Root(CBR):
         children = self.children.copy()
         return ('root',
                 dict(boot_order=self.parent.universe.services._boot_order,
-                     universe_config = self.parent.universe.config._getLeaves(),
+                     command_line_options = self.parent.universe.command_line_options._getLeaves(),
                      children=children,
                      contents=dir(self)))
 

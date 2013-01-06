@@ -65,6 +65,24 @@ class __Universe__(Tracking,
     command_line_options = HDS()
     parent        = None # agent.__init__ never called?
 
+    @property
+    def tree(self):
+        """ """
+        def dfs(tree):
+           nodes = []
+           if(tree != None):
+               nodes.append([tree, tree.children()])
+               for x in tree.children():
+                   nodes.extend(dfs(x))
+           return nodes
+        edges = []
+        name = lambda q: q.name if q!=self else 'universe'
+        for root, children in dfs(self):
+            if not children: continue
+            for child in children:
+                edges.append([name(root), name(child), {}])
+        return edges
+
     def load(self):
         """ call load for all embedded managers """
         self.services.load()

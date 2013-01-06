@@ -20,7 +20,7 @@ from cortex.mixins.flavors import ThreadedIterator
 
 from cortex.services.web.resource import ObjResource, EFrame, ConfResource
 from cortex.services.web.resource.root import Root
-from cortex.services.web.util import draw_ugraph, ugraph
+from cortex.services.web.util import draw_ugraph
 
 from .eventhub import EventHub
 
@@ -31,9 +31,14 @@ class WebRoot(Agent):
 
     def iterate(self):
         """ WebRoot is a trivial Agent with no  true concurrency
-            flavor.  this iterate method will run once, and runs
-            only after the system is otherwise bootstrapped.  we
-            call the draw_ugraph using multiprocessing, because
+            flavor.  this iterate method will run once.  we go through
+            some contortions here because a) graph-generation has to be
+            done in the main thread and b) without some delay this agent
+            (webroot) is not present in self.parent.children().  in
+            other words, without the delay this agent would never itself
+            be graphed due to a race condition
+
+            we call the draw_ugraph using multiprocessing, because
             something about the implementation of matplotlib/nx
             or whatever else wants the main thread.  doing this
             instead with callInThread, callFromThread, etc, have
@@ -43,10 +48,13 @@ class WebRoot(Agent):
         """
         self.graph_f = self.universe.tmpfname(suffix='png')
         self.root.putChild('ugraph.png', File(self.graph_f))
-        self.universe.callInProcess(draw_ugraph,
-                                    name='drawing to file@' + self.graph_f,
-                                    args = ( ugraph(self.universe),
-                                             self.graph_f, report ) )
+        call_in_proc = self.universe.callInProcess
+        proc_name = 'drawing to file@'+self.graph_f
+        tmp = lambda: call_in_proc(draw_ugraph,
+                                   name=proc_name,
+                                   args = ( self.universe.tree,
+                                            self.graph_f, report ) )
+        self.universe.callLater(1, tmp)
 
     def stop(self):
         """ TODO: stop doesn't stop anything except the
@@ -56,7 +64,7 @@ class WebRoot(Agent):
         """
         self.listener.stopListening()
         super(WebRoot, self).stop()
-        if hasattr(self,'graph_f'):
+        if hasattr(self, 'graph_f'):
             report('wiping graph file')
             try: os.remove(self.graph_f)
             except OSError,e:
@@ -88,4 +96,5 @@ class Web(FecundService):
         children = [EventHub, WebRoot]
 
     @constraint(boot_first='postoffice')
-    def start(self): super(Web, self).start()
+    def start(self):
+        super(Web, self).start()
