@@ -16,7 +16,7 @@ class Peer(object):
 
     @property
     def agent(self):
-        if hasattr(self,'_agent'):
+        if hasattr(self, '_agent'):
             return self._agent
         else:
             autodiscover = [ x for x in self.universe.children() \
@@ -28,6 +28,7 @@ class Peer(object):
 
     def local(self):
         """ boolean for whether this peer is local """
+
     # hack for ipython tab completion
     def _getAttributeNames(self):
         return []
@@ -112,10 +113,6 @@ class MethodHandle(object):
         return self.callable(*args, **kargs)
 
 
-#def ifCortex(peer,):
-#    p = Proxy(str(peer.addr), int(peer.port))
-#    p.callRemote('echo',3).addCallbacks(report,report)
-
 class CortexPeer(Peer):
     """ abstraction representing a peer that speaks cortex """
 
@@ -134,7 +131,7 @@ class CortexPeer(Peer):
         return xx()
 
     def _lazy_api(self):
-        """ just in time! """
+        """ API: just in time! """
         class DynamicApiProxy(object):
             """ DynamicApiProxy: lazy access to the api """
             def __getattr__(dap,var):

@@ -3,13 +3,15 @@
       Manager pattern stuff
 """
 
-import datetime
+import uuid
 import inspect
-from contextlib import contextmanager
-
+import datetime
 from types import StringTypes
-from cortex.core.util import report, report_if_verbose
+
+from contextlib import contextmanager
 from cortex.core.hds import HierarchicalData
+from cortex.core.util import report, report_if_verbose
+
 
 class Manager(object):
     """ Managers are inspired by django's managers.  Think of
@@ -350,7 +352,6 @@ class Manager(object):
 
     @classmethod
     def choose_dynamic_name(kls):
-        import uuid
         name = "Dynamic{k}Name{U}".format(U=str(uuid.uuid1()).split('-')[0],
                                          k=kls.__name__)
     @contextmanager

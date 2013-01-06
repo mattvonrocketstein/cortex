@@ -43,7 +43,8 @@ class CommsMixin(object):
                         'Channel "{0}" does not exist in postoffice, creating it'.format(chan_name))
                     new_chan = getattr(channel, chan_name)
                     new_chan.bind(poffice)
-                poffice.subscribe(chan_name, cb)
+                if not poffice.has_subscription(chan_name,cb):
+                    poffice.subscribe(chan_name, cb)
 
     def _handle_embedded_callbacks(self):
         """ """

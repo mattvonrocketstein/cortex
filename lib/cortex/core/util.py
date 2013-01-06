@@ -9,6 +9,7 @@ from twisted.python.reflect import namedAny
 # TODO: move some of this back into the real report lib
 from report import report, console
 def report_if_verbose(*args, **kargs):
+    kargs['frames_back'] = 4
     from cortex import VERBOSE
     if VERBOSE:
         report(*args, **kargs)
