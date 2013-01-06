@@ -23,7 +23,7 @@ class ShellAspect:
     def really_start(self):
         """ TODO: defer to universe.command_line_options for whether to magic_pdb """
         # This case is nasty..  nothing seems to be able to make the process exit cleanly
-        if self.universe.config.gtk_reactor==True:
+        if self.universe.command_line_options.gtk_reactor==True:
             err = ("This universe is configured for the GTK reactor, "
                    "but you're trying to use the console-based ipython terminal.")
             ctx = 'test'

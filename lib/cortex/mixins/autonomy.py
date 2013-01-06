@@ -76,11 +76,9 @@ class AbstractAutonomy(Mixin):
               fundamentally been *invoked* already and is waiting
               for the universal main loop to begin.
 
-        """
-        """ Convention:
-              Responsibilities:
+            Responsibilities:
+                + invoke <setup> first, if present
                 + invoke <start>, but maybe not right away.
-                + invoke <setup>, at some point if present
                 + never block, and
                 + always return "self"
         """
@@ -150,7 +148,7 @@ class Autonomy(AbstractAutonomy):
         """
         result = self.iterate()
         if isinstance(result, GeneratorType):
-            report("Entering generator",header='')
+            report("Entering generator", header='')
             try:
                 while result: result.next()
             except StopIteration:

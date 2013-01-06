@@ -74,7 +74,7 @@ def entry():
     # reflect command-line options in universe's config
     olist = [ x for x in dir(options) if not x.startswith('_') \
               and x not in 'read_file read_module ensure_value'.split() ]
-    [setattr(Universe.config,x,getattr(options,x)) for x in olist]
+    [setattr(Universe.command_line_options, x, getattr(options,x)) for x in olist]
     if options.verbose:
         import cortex
         cortex.VERBOSE = True
