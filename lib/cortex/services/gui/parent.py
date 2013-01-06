@@ -25,7 +25,7 @@ class GUI(CommonInterface):
         return S
 
     def sanity(self):
-        if not self.universe.config.gtk_reactor==True:
+        if not self.universe.command_line_options.gtk_reactor==True:
             err  = "This universe isn't configured for GTK reactor, "
             err += "but you're trying to use the gtk terminal!"
             ctx  = str(self)

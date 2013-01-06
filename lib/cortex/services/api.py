@@ -7,12 +7,13 @@
 from txjsonrpc.netstring import jsonrpc
 from twisted.internet.error import CannotListenError
 
-from cortex.core.util import report
 from cortex.core import api as _api
 from cortex.services import Service
 from cortex.util.decorators import constraint
 from cortex.core.data import CORTEX_PORT_RANGE
 from cortex.core.data import CORTEX_API_UPDATE_T
+from cortex.core.util import report, report_if_verbose
+
 PORT_START,PORT_FINISH = CORTEX_PORT_RANGE
 
 def wrap(func):
@@ -95,7 +96,7 @@ class API(Service):
     def stop(self):
         """ """
         super(API,self).stop()
-        report('the API Service Dies.')
+        report_if_verbose('the API Service Dies.')
 
     @constraint(boot_first='gui terminal'.split())
     def start(self):

@@ -62,7 +62,7 @@ class __Universe__(Tracking,
 
 
     nodeconf_file = u''
-    config        = HDS()
+    command_line_options = HDS()
     parent        = None # agent.__init__ never called?
 
     def load(self):
