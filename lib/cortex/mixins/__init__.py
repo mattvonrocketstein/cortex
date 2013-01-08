@@ -12,7 +12,6 @@ from cortex.core.util import report, console
 from cortex.mixins._os import OSMixin
 from cortex.mixins._os import PIDMixin
 from cortex.mixins.local_queue import LocalQueue
-from cortex.mixins.mobility import MobileCodeMixin
 from cortex.mixins.autonomy import *
 from cortex.mixins.persistence import *
 from cortex.mixins.mixin import Mixin
@@ -47,3 +46,14 @@ class Controllable(Mixin):
     def halt(self):
         """ like "stop" only safe to call from anywhere """
         ABSTRACT
+
+from spock import Doctrine
+from cortex.mixins.mixin import Mixin
+class LogicMixin(Mixin, Doctrine): pass
+
+from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
+class MobileCodeMixin(object):
+    @property
+    def is_local(self):
+        """ """
+        return self.host in [LOOPBACK_HOST, GENERIC_LOCALHOST]

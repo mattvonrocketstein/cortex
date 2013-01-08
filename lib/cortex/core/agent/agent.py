@@ -7,8 +7,7 @@ from pep362 import Signature
 from cortex.core.util import report, report_if_verbose
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
-from cortex.mixins import MobileCodeMixin, FaultTolerant
-from cortex.mixins import  AutonomyMixin
+from cortex.mixins import (AutonomyMixin, FaultTolerant, MobileCodeMixin)
 from cortex.core.data import NOOP, DEFAULT_HOST
 
 from spock import Doctrine
