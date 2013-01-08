@@ -3,14 +3,16 @@
     Support for algebra amongst class objects, subclass enumeration.
 
 """
+import new
 import copy
 import uuid
+from collections import defaultdict
 
 from cortex.core.util import report
 from cortex.tests import uniq
 
 def metaclass_hook(func):
-    func.metaclass_hook=True
+    func.metaclass_hook = True
     return staticmethod(func)
 
 def dynamic_name(): return 'DynMix({U})'.format(U=uniq())
@@ -53,12 +55,10 @@ class META(type):
 
     def subclass(kls, name=None, dct={}, **kargs):
         """ dynamically generate a subclass of this class """
-        import new
-        import copy
-        dct=copy.copy(dct)#.copy()
+        dct = copy.copy(dct)#.copy()
         dct.update(kargs)
         if hasattr(kls, '_subclass_hooks'):
-            name,dct = kls._subclass_hooks(name=name, **dct)
+            name, dct = kls._subclass_hooks(name=name, **dct)
         name = name or "DynamicSubclassOf{K}_{U}".format(K=kls.__name__,
                                          U=str(uuid.uuid1()).split('-')[-2])
         # WOAH, this behaves differently than type()
@@ -86,20 +86,14 @@ class META(type):
 
 class META1(META):
     """ a metaclass that tracks it's subclasses. """
-    subclass_registry = {}
+    subclass_registry = defaultdict(lambda:[])
 
     @metaclass_hook
     def hook(mcls, name, bases, dct, class_obj):
         """ called when initializing (configuring) class,
             this method records data about hierarchy structure
         """
-        #report("subclass_registry")
-        subclass_registry = getattr(mcls, 'subclass_registry', None)
-        if subclass_registry is not None:
-            subclass_registry = mcls.subclass_registry
-            if bases not in subclass_registry: subclass_registry[bases] = [ class_obj ]
-            else:                subclass_registry[bases].append(class_obj)
-            mcls.subclass_registry = subclass_registry
+        mcls.subclass_registry[bases].append(class_obj)
 
 """
 class ClassTracking(type):
@@ -161,8 +155,8 @@ def subclass_tracker(*bases, **kargs):
 
     """
     if kargs:
-        assert kargs.keys()==['namespace'],'only the namespace kw arg is defined'
-        namespace=kargs.pop('namespace')
+        assert kargs.keys() == ['namespace'],'only the namespace kw arg is defined'
+        namespace = kargs.pop('namespace')
     else:
         namespace = {}
     name = 'DynamicallyGeneratedClassTracker'
