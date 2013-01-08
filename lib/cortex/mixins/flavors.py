@@ -8,11 +8,12 @@ import time
 import threading
 
 from goulash import Namespace as NSPart
+from goulash.calltools import callchain
+
 from twisted.internet.task import LoopingCall
 
 from cortex.core.util import report
 from cortex.mixins.autonomy import Autonomy
-from cortex.util.calltools import callchain
 
 class Eventful(Autonomy): pass
 
