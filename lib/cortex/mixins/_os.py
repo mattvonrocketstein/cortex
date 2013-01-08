@@ -1,8 +1,14 @@
 """ cortex.mixins._os
 """
 
+import socket
+import os, sys
 import tempfile
-import os, sys, platform
+import platform
+
+from goulash.net import ipaddr_hosts
+from goulash.net import ipaddr_basic
+
 from cortex.core.util import report
 
 
@@ -34,7 +40,10 @@ class PIDMixin(object):
         return os.getpid()
 
     def kill_pid(self, p):
-        """ kill a process tree under PID p """
+        """ kill a process tree under PID p
+
+            TODO: use psutil.
+        """
         if p:
             report('killing pid:', p)
             os.system('kill -KILL {0}'.format(p))
@@ -83,21 +92,15 @@ class OSMixin(PIDMixin):
     @property
     def ips(self):
         """ """
-        from cortex.util.net import ipaddr_basic
         return ipaddr_basic()
 
     @property
     def hosts(self):
-        from cortex.util.net import ipaddr_hosts
-        x=ipaddr_hosts()
+        x = ipaddr_hosts()
         return x[1]+[x[0]]
 
     @property
     def hostname(self):
-        """
-             TODO: memoize """
-        import platform
-        import socket
         return socket.gethostname()#, platform.node
     host = hostname
 

@@ -9,6 +9,8 @@ import os, sys
 import platform, pprint, StringIO
 from collections import defaultdict
 
+import twisted
+
 from cortex.core.hds import HDS
 from cortex.core.reloading import AutoReloader
 from cortex.services import SERVICES
@@ -59,11 +61,9 @@ class __Universe__(Tracking,
     """
     # TODO: clones,processes = CloneManager(), ProcessManager()
 
-
-
-    nodeconf_file = u''
+    nodeconf_file        = u''
     command_line_options = HDS()
-    parent        = None # agent.__init__ never called?
+    parent               = None # agent.__init__ never called?
 
     @property
     def tree(self):
@@ -90,7 +90,7 @@ class __Universe__(Tracking,
 
     def play(self):
         """ entry point.  this guy does not return """
-        # report("Universe.play!")
+        report_if_verbose("Universe.play!")
         self.decide_name()
         self.started = True
         from cortex.core import api as API
@@ -121,7 +121,7 @@ class __Universe__(Tracking,
         for node in self.Nodes:
            original = node
            instruction, args = node[0], node[1:]
-           #report("parsing node", node)
+           report_if_verbose("parsing node", node)
            if len(args) == 1:
                kargs = {}
            else:
@@ -166,7 +166,7 @@ class __Universe__(Tracking,
             *always* use halt instead of 'stop'.
         """
         #from cortex.core.util import getcaller
-        #report('shutting down at the request of:'); print getcaller()
+        report_if_verbose('shutting down at the request of:'); print getcaller()
         return self.reactor.callFromThread(self.stop)
 
     def stop(self):
@@ -195,13 +195,12 @@ class __Universe__(Tracking,
 
         # we have to check first,
         # maybe bootstrap didn't even get this far
-        if hasattr(self,'threadpool'):
+        if hasattr(self, 'threadpool'):
             self.threadpool.stop()
 
         for thr in self.threads:
             thr._Thread__stop()
 
-        import twisted
         try:
             self.reactor.stop()
         except twisted.internet.error.ReactorNotRunning:
