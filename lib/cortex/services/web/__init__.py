@@ -19,7 +19,7 @@ from cortex.util.decorators import constraint
 from cortex.mixins.flavors import ThreadedIterator
 
 from cortex.services.web.resource import ObjResource, EFrame, ConfResource
-from cortex.services.web.resource.root import Root
+from cortex.services.web.resource.root import Root, TreeResource
 from cortex.services.web.util import draw_ugraph
 
 from .eventhub import EventHub
@@ -58,7 +58,7 @@ class WebRoot(Agent):
 
     def stop(self):
         """ TODO: stop doesn't stop anything except the
-                   eventhub it to turn off the webs also
+            eventhub it to turn off the webs also
 
             http://mumak.net/stuff/twisted-disconnect.html
         """
@@ -78,6 +78,7 @@ class WebRoot(Agent):
         static_dir = os.path.join(d, 'static')
         favicon    = os.path.join(static_dir, 'favicon.ico')
         self.root  = Root(favicon=favicon, static=static_dir)
+        self.root.putChild('tree.json',   TreeResource(self.universe))
         self.root.parent = self
         self.root.putChild('conf',        ConfResource(self.universe))
         self.root.putChild('web',         ObjResource(self))

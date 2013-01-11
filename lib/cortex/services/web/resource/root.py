@@ -18,12 +18,35 @@ class CBR(Resource):
         if name == '': return self
         return Resource.getChild(self, name, request)
 
+class JSONResource(Resource):
+   def render_GET(self, request):
+       request.setHeader("content-type", "text/json")
+       import simplejson
+       return simplejson.dumps(self.render_JSON(request))
+
+class TreeResource(JSONResource):
+    """ TODO move this """
+    def __init__(self, universe):
+        self.universe = universe
+
+    def render_JSON(self, request):
+        """ by default universe.tree is a nx-style
+            edge-list.  convert it here into
+            something that d3.js can use
+        """
+        edge_list = self.universe.tree
+        out = []
+        for (p, c, d) in edge_list:
+            out.append(dict(source=p,target=c,type="notset"))
+        return out
+
+
 class Root(CBR):
     def __init__(self, favicon=None, static=None):
         Resource.__init__(self)
         self.putChild('static',      _static.File(static))
         self.putChild('favicon.ico', _static.File(favicon))
-        self.putChild('main_nav',     NavResource())
+        self.putChild('main_nav',    NavResource())
 
 
     def get_template_ctx(self, request):
