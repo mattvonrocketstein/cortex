@@ -46,15 +46,15 @@ class WebRoot(Agent):
             work initially it seems to also leak memory or
             something
         """
-        self.graph_f = self.universe.tmpfname(suffix='png')
-        self.root.putChild('ugraph.png', File(self.graph_f))
-        call_in_proc = self.universe.callInProcess
-        proc_name = 'drawing to file@'+self.graph_f
-        tmp = lambda: call_in_proc(draw_ugraph,
-                                   name=proc_name,
-                                   args = ( self.universe.tree,
-                                            self.graph_f, report ) )
-        self.universe.callLater(1, tmp)
+        #self.graph_f = self.universe.tmpfname(suffix='png')
+        #self.root.putChild('ugraph.png', File(self.graph_f))
+        #call_in_proc = self.universe.callInProcess
+        #proc_name = 'drawing to file@'+self.graph_f
+        #tmp = lambda: call_in_proc(draw_ugraph,
+        #                           name=proc_name,
+        #                           args = ( self.universe.tree,
+        #                                    self.graph_f, report ) )
+        #self.universe.callLater(1, tmp)
 
     def stop(self):
         """ TODO: stop doesn't stop anything except the
@@ -64,11 +64,11 @@ class WebRoot(Agent):
         """
         self.listener.stopListening()
         super(WebRoot, self).stop()
-        if hasattr(self, 'graph_f'):
-            report('wiping graph file')
-            try: os.remove(self.graph_f)
-            except OSError,e:
-                report("Ignoring error: "+str(e))
+        #if hasattr(self, 'graph_f'):
+        #    report('wiping graph file')
+        #    try: os.remove(self.graph_f)
+        #    except OSError,e:
+        #        report("Ignoring error: "+str(e))
 
     def setup(self):
         """ setup for several things that can be
