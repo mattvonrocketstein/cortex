@@ -175,16 +175,33 @@ class ObjectResource(Resource):
         """ """
         self.request = request
         obj_path = filter(None, self.request.postpath)
-        self.target = self.resolve_object(obj_path)
 
+        if 'inheritance.json' in obj_path:
+            inheritance = True
+            obj_path.remove('inheritance.json')
+            self.target = self.resolve_object(obj_path)
+            self.request.setHeader("content-type", "text/json")
+            import simplejson
+            edges = []
+            def classtree(cls):
+                for supercls in cls.__bases__:        # recur to all superclasses
+                    if supercls==object: continue
+                    edges.append(dict(source=supercls.__name__,
+                                      target=cls.__name__, type='notset'))
+                    classtree(supercls)     # may visit super > once
+            classtree(self.target.__class__)
+            print edges
+            return simplejson.dumps(edges)
+
+        self.target = self.resolve_object(obj_path)
         dispatch_to = self._dispatcher(request)
         if dispatch_to is not None:
             return dispatch_to(request)
         breadcrumbs = self.breadcrumbs(request)
         ctx = dict(obj=self.target, path=request.postpath,
                    breadcrumbs=breadcrumbs,
-                   ancestry=classtree(getattr(self.target, '__class__', object),
-                                      base_url=request.path),
+                   #ancestry=classtree(getattr(self.target, '__class__', object),
+                   #                   base_url=request.path),
                    request=request,)
 
         def rsorted(a,b):
