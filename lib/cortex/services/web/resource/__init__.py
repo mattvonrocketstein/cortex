@@ -27,19 +27,13 @@ from cortex.core.util import report, pedigree
 from .util import get_source, alligator2paren
 
 ATOMS = ( list, tuple,  float, int, str )
-
-class ConfResource(Resource):
-    """ dumb resource to display the configuration file """
-    def __init__(self, universe):
-        self.universe = universe
-
-    def current_contents(self):
-        return open(self.universe.nodeconf_file).read()
-
-    def render_GET(self, request):
-        ctx = dict(filename=self.universe.nodeconf_file,
-                   text=self.current_contents())
-        return str(template('nodeconf').render(**ctx))
+def rsorted(a, b):
+    try: x = getattr(a, b).keys()
+    except:
+        return ['error in rsorted']
+    x = reversed(sorted(x))
+    return x
+from .conf_resource import ConfResource
 
 class EFrame(Resource):
     def render_GET(self, request):
@@ -72,7 +66,6 @@ class ObjectResource(Resource):
         target = self.target
 
         if 'force_template' in self.request.args:
-            #T = self.request.args['force_template'][0]
             T = self._from_req('force_template')
             T = 'objects/'+T
             T = template(T)
@@ -110,11 +103,9 @@ class ObjectResource(Resource):
                            )
             elif isinstance(target, Agent):
                 T = template('objects/agent')
-                #ctx.update(parent=str(target.parent).replace('<','(').replace('>',')'),
                 _pedigree = [ [x[0], x[1].__name__] \
                               for x in pedigree(target).items() \
                               if x[1] is not None ]
-
                 ctx.update(parent=alligator2paren(target.parent),
                            pedigree=_pedigree,
                            subscriptions=getattr(getattr(target,'Meta',None),
@@ -122,8 +113,6 @@ class ObjectResource(Resource):
                            autonomy=Namespace(target).intersection(Namespace(Autonomy)))
                 if isinstance(target, Process):
                     T = template('objects/agent_process')
-                    #children = target.agents if hasattr(target, 'agents') else []
-                    #ctx.update(children=children)
 
                 if isinstance(target, Service):
                     T = template('objects/services/service')
@@ -171,8 +160,8 @@ class ObjectResource(Resource):
     def _dispatch_getattr(self, request):
         name = request.args['getattr'][0]
         return alligator2paren(getattr(self.target, name, 'N/A'))
-    def render_pedigree_json(self):
-            inheritance = True
+
+    def render_pedigree_json(self, obj_path):
             obj_path.remove('inheritance.json')
             self.target = self.resolve_object(obj_path)
             self.request.setHeader("content-type", "text/json")
@@ -193,7 +182,7 @@ class ObjectResource(Resource):
         obj_path = filter(None, self.request.postpath)
 
         if 'inheritance.json' in obj_path:
-            return self.render_pedigree_json()
+            return self.render_pedigree_json(obj_path)
 
         self.target = self.resolve_object(obj_path)
         dispatch_to = self._dispatcher(request)
@@ -203,13 +192,6 @@ class ObjectResource(Resource):
         ctx = dict(obj=self.target, path=request.postpath,
                    breadcrumbs=breadcrumbs,
                    request=request,)
-
-        def rsorted(a,b):
-            try: x = getattr(a,b).keys()
-            except:
-                return ['error in rsorted']
-            x = reversed(sorted(x))
-            return x
 
         if self.is_complex:
             ns = Namespace(self.target)
