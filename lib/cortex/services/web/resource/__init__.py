@@ -3,6 +3,7 @@
 import re
 import types
 import inspect
+import simplejson
 
 from goulash import Namespace
 from jinja2.loaders import TemplateNotFound
@@ -23,7 +24,7 @@ from cortex.agents.proc import Process
 from cortex.core.util import report, pedigree
 
 
-from .util import get_source, classtree, alligator2paren
+from .util import get_source, alligator2paren
 
 ATOMS = ( list, tuple,  float, int, str )
 
@@ -170,18 +171,11 @@ class ObjectResource(Resource):
     def _dispatch_getattr(self, request):
         name = request.args['getattr'][0]
         return alligator2paren(getattr(self.target, name, 'N/A'))
-
-    def render_GET(self, request):
-        """ """
-        self.request = request
-        obj_path = filter(None, self.request.postpath)
-
-        if 'inheritance.json' in obj_path:
+    def render_pedigree_json(self):
             inheritance = True
             obj_path.remove('inheritance.json')
             self.target = self.resolve_object(obj_path)
             self.request.setHeader("content-type", "text/json")
-            import simplejson
             edges = []
             def classtree(cls):
                 for supercls in cls.__bases__:        # recur to all superclasses
@@ -193,6 +187,14 @@ class ObjectResource(Resource):
             print edges
             return simplejson.dumps(edges)
 
+    def render_GET(self, request):
+        """ """
+        self.request = request
+        obj_path = filter(None, self.request.postpath)
+
+        if 'inheritance.json' in obj_path:
+            return self.render_pedigree_json()
+
         self.target = self.resolve_object(obj_path)
         dispatch_to = self._dispatcher(request)
         if dispatch_to is not None:
@@ -200,8 +202,6 @@ class ObjectResource(Resource):
         breadcrumbs = self.breadcrumbs(request)
         ctx = dict(obj=self.target, path=request.postpath,
                    breadcrumbs=breadcrumbs,
-                   #ancestry=classtree(getattr(self.target, '__class__', object),
-                   #                   base_url=request.path),
                    request=request,)
 
         def rsorted(a,b):
