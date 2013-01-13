@@ -23,26 +23,26 @@ from cortex.services.postoffice import PostOffice
 from cortex.agents.proc import Process
 from cortex.core.util import report, pedigree
 
-
+from .conf_resource import ConfResource
 from .util import get_source, alligator2paren
 
 ATOMS = ( list, tuple,  float, int, str )
+
+post_processors = type('sdasdasd',(object,),
+                       dict(reverse_console = staticmethod(report.console.html)))
+
 def rsorted(a, b):
     try: x = getattr(a, b).keys()
     except:
         return ['error in rsorted']
     x = reversed(sorted(x))
     return x
-from .conf_resource import ConfResource
 
 class EFrame(Resource):
     def render_GET(self, request):
         ctx = dict(chan=request.args['chan'][0])
         t = template('eframe')
         return str(t.render(**ctx))
-
-post_processors = type('sdasdasd',(object,),
-                       dict(reverse_console = staticmethod(report.console.html)))
 
 class ObjectResource(Resource):
     isLeaf = True
