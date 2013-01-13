@@ -52,9 +52,11 @@ class Root(CBR):
     def get_template_ctx(self, request):
         """ """
         children = self.children.copy()
+        universe = self.parent.universe
+        clo = universe.command_line_options._getLeaves()
         return ('root',
-                dict(boot_order=self.parent.universe.services._boot_order,
-                     command_line_options = self.parent.universe.command_line_options._getLeaves(),
+                dict(boot_order=universe.services._boot_order,
+                     command_line_options = clo,
                      children=children,
                      contents=dir(self)))
 
