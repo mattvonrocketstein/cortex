@@ -162,19 +162,19 @@ class ObjectResource(Resource):
         return alligator2paren(getattr(self.target, name, 'N/A'))
 
     def render_pedigree_json(self, obj_path):
-            obj_path.remove('inheritance.json')
-            self.target = self.resolve_object(obj_path)
-            self.request.setHeader("content-type", "text/json")
-            edges = []
-            def classtree(cls):
-                for supercls in cls.__bases__:        # recur to all superclasses
-                    if supercls==object: continue
-                    edges.append(dict(source=supercls.__name__,
-                                      target=cls.__name__, type='notset'))
-                    classtree(supercls)     # may visit super > once
-            classtree(self.target.__class__)
-            print edges
-            return simplejson.dumps(edges)
+        obj_path.remove('inheritance.json')
+        self.target = self.resolve_object(obj_path)
+        self.request.setHeader("content-type", "text/json")
+        edges = []
+        def classtree(cls):
+            for supercls in cls.__bases__:
+                if supercls==object: continue
+                edges.append(dict(source=supercls.__name__,
+                                  target=cls.__name__,
+                                  type='notset'))
+                classtree(supercls)
+        classtree(self.target.__class__)
+        return simplejson.dumps(edges)
 
     def render_GET(self, request):
         """ """
