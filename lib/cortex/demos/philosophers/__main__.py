@@ -27,7 +27,7 @@
 """
 from cortex.demos.philosophers import Philosopher
 from cortex.core.api import universe, declare_agent, load_instructions
-from cortex.instructions import LOAD_LINDA, LOAD_POST_OFFICE, LOAD_TERMINAL
+from cortex.core.data import LOAD_LINDA, LOAD_POST_OFFICE, LOAD_TERMINAL
 from cortex.core.util import Lock
 
 ## Build a list of instructions recognizable to the cortex api.  Order does not matter
