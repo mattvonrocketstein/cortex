@@ -7,11 +7,14 @@
 
 """
 
-from cortex.mixins.flavors import ThreadedAgent, ReactorRecursion
-from cortex.demos.philosophers.rosetta import Philosopher as PhilosopherTemplate
+from twisted.internet.defer import Deferred
+
 from cortex.core.agent import Agent
 from cortex.mixins import Mixin
 from cortex.core.util import alias
+from cortex.mixins.flavors import ThreadedAgent, ReactorRecursion
+
+from cortex.demos.philosophers.rosetta import Philosopher as PhilosopherTemplate
 
 class PhilosopherOverrides(Mixin):
     """ This class is a thin wrapper around the rosetta example
@@ -31,7 +34,6 @@ class PhilosopherOverrides(Mixin):
             the loop there is essentially already
             abstracted upwards into ThreadedAgent.run()
         """
-        from twisted.internet.defer import Deferred
         d = Deferred()
         def yam():
             self.wait() # without arguments, blocks for one second
