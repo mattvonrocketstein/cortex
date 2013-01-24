@@ -1,3 +1,5 @@
+""" cortex.core.universe.node_reader
+"""
 from cortex.core.parsing import Nodeconf
 
 class ConfigurationError(RuntimeError): pass
