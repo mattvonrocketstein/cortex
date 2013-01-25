@@ -4,21 +4,20 @@ import time
 
 from pep362 import Signature
 
-from cortex.core.util import report, report_if_verbose
 from cortex.core.metaclasses import META1
 from cortex.core.common import AgentError
-from cortex.mixins import (AutonomyMixin, FaultTolerant, MobileCodeMixin)
 from cortex.core.data import NOOP, DEFAULT_HOST
+from cortex.mixins.topology import TopologyMixin
+from cortex.core.agent.comms_mixin import CommsMixin
+from cortex.core.util import report, report_if_verbose
+from cortex.mixins import (AutonomyMixin, FaultTolerant, MobileCodeMixin)
 
 from spock import Doctrine
 
-from channel import channel
-from channel import is_declared_callback
-from cortex.mixins.topology import TopologyMixin
-
-from .comms_mixin import CommsMixin
-
-class AgentLite(TopologyMixin, MobileCodeMixin, AutonomyMixin, FaultTolerant):
+class AgentLite(TopologyMixin, MobileCodeMixin,
+                AutonomyMixin, FaultTolerant):
+    """
+    """
     pass
 
 class Agent(CommsMixin, AgentLite):
@@ -68,12 +67,15 @@ class Agent(CommsMixin, AgentLite):
 
     @classmethod
     def using(self, template=None, flavor=None):
-        """ """
+        """
+           usage:
+              Agent.using(template=SomeMixin,flavor=SomeAutonomyFlavor)
+        """
         target = Agent
-        if template:
-            target = target.template_from(template)
         if flavor:
             target = target.use_concurrency_scheme(flavor)
+        if template:
+            target = target.template_from(template)
         return target
 
     @classmethod
@@ -82,7 +84,9 @@ class Agent(CommsMixin, AgentLite):
             mutate this agent-subclass in place to prefer Autonomy
             methods described in the autonomy subclass ``other``
         """
-        return type('asdasdasd', tuple([other]) + kls.__bases__, {})
+        kls_name = '{0}+{1}'.format(other.__class__.__name__,
+                                    kls.__name__)
+        return type(kls_name, tuple([other, kls ]) , {})
 
 
     @classmethod
@@ -92,11 +96,11 @@ class Agent(CommsMixin, AgentLite):
 
             ``cls_template`` is a dictionary-like item that has named behaviours
         """
-        return type('outer(inner)'.format(outer=this_kls.__name__,
-                                          inner=cls_template.__name__),
-                    (this_kls,cls_template),
-                    {})
-
+        kls_name = '{outer}({inner})'.format(outer=this_kls.__name__,
+                                             inner=cls_template.__name__)
+        bases = (cls_template, this_kls)
+        dct = {}
+        return type(kls_name, bases, dct)
 
     def __repr__(self):
         return "<{name}>".format(name=self.name)
