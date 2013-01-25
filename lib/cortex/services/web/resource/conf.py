@@ -1,10 +1,16 @@
 """ cortex.services.web.resource.conf_resource
+
+    dumb resource to display the current configuration file
 """
+
 
 from twisted.web.resource import Resource
 
+from cortex.services.web.template import template
+
 class ConfResource(Resource):
     """ dumb resource to display the configuration file """
+
     def __init__(self, universe):
         self.universe = universe
 
