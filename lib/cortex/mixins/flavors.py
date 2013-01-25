@@ -19,11 +19,12 @@ class Eventful(Autonomy): pass
 
 class ReactorRecursion(Autonomy):
     """ """
+    period = 0.1
     def run(self):
         #return
         print 't',threading.enumerate()
         from twisted.internet.task import LoopingCall
-        LoopingCall(self.run_primitive).start(.01)
+        LoopingCall(self.run_primitive).start(self.period)
         #this speeds up startup time but breaks tests.
         #self.universe.reactor.callLater(self.iteration_period,
         #                                lambda: LoopingCall(self.run_primitive).start(.3))
