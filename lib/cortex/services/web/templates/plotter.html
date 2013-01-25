@@ -1,0 +1,26 @@
+
+<script src="/static/js/libs/jquery-1.7.1.js"></script>
+<script src="/static/js/d3.v2.js"></script>
+<style>
+svg {font: 10px sans-serif;}
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;}
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;}
+</style>
+<strong>{{title}}</strong><br/>
+<div id=plot_div>
+  <script>{%include "plotter.js"%}</script>
+</div>
+
+<script>
+  $(document).ready(function(){
+  data = []
+  $.ajax({dataType:"json", url:'/plot/data_stream', async:false,
+  success:function(_d){data=_d},
+  error:console.debug});
+  });
