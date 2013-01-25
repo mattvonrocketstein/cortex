@@ -93,12 +93,12 @@ Looking around:
 
      PeerManager(['localhost:1337', 'localhost:1338'])
 
-References and other fun reads:
+Inspiration, References, and other fun reads:
 -------------------------------
 modularity and programming in-the-large: http://portal.acm.org/citation.cfm?id=808431
 traits as an alternative to multiple inheritance: http://scg.unibe.ch/research/traits/
 ai/logic/probability in python http://www.ainewsletter.com/newsletters/aix_0508.htm#python_ai
-
+disorderly distributed programming: http://www.bloom-lang.net/features/
 Code being evaluated for toolbox:
 ---------------------------------
  + logilab -- switch to this for CSP instead the AIMA code?
