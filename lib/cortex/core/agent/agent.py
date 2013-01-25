@@ -33,6 +33,20 @@ class Agent(CommsMixin, AgentLite):
     _instances    = []
     name          = 'default-name'
 
+    @classmethod
+    def from_function(kls, fxn):
+        # TODO: verify function args use "self"?
+        sig = Signature(fxn)
+        if 'universe' in sig._parameters:
+            def iterate(himself):
+                return fxn(himself.universe)
+        else:
+            raise RuntimeError('Not sure how to build iterate method.')
+        dct = dict(iterate=iterate)
+        kls_name = fxn.__name__
+        bases=(kls,)
+        return type(kls_name,bases,dct)
+
     @property
     def _opts(self):
         return getattr(self.__class__,'Meta', None)

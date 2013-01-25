@@ -30,13 +30,15 @@ from cortex.services.web.util import draw_ugraph
 from .eventhub import EventHub
 
 class WebRoot(Agent):
-    """ TODO: act smarter if you can't import networkx et al '"""
+    """  abstraction for / """
 
     port = 1338
 
     def iterate(self):
         """ WebRoot is a trivial Agent with no  true concurrency
-            flavor.  this iterate method will run once.
+            flavor.  nothing to do here, but this iterate method will
+            run exactly once.  don't use it for setup.  use setup()
+            for setup.
         """
 
     def stop(self):
@@ -50,8 +52,9 @@ class WebRoot(Agent):
 
     @property
     def static_dir(self):
-        d = os.path.dirname(__file__)
-        return os.path.join(d, 'static')
+        return os.path.join(
+            os.path.dirname(__file__),
+            'static')
 
     def make_data_stream(self, endpoint, fxn):
         """ attaches a datastream at the url `endpoint`.
@@ -73,11 +76,14 @@ class WebRoot(Agent):
         favicon = os.path.join(self.static_dir, 'favicon.ico')
         self.root = Root(favicon=favicon, static=self.static_dir)
         self.putChild = self.root.putChild
+        self.parent.putChild = self.putChild
+        self.parent.make_data_stream = self.make_data_stream
         self.populate_chldren()
         site = server.Site(self.root)
         self.listener = self.universe.listenTCP(self.port, site)
 
     def populate_chldren(self):
+        """ NB: no relationship to Agent.children() """
         self.root.parent = self # what for?
 
         # url that generates plots.
