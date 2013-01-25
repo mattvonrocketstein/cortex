@@ -20,6 +20,10 @@ def msg(name,content):
     chan(content)
 
 def function_to_agent(func, return_bus=None):
+    """ TODO: revisit this
+              it doesnt have to be threaded,
+              and there are other agentizers scattered around
+    """
     from cortex.mixins.flavors import Threaded
     return Threaded.from_function(func, return_bus=None)
 

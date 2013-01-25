@@ -9,20 +9,18 @@ from goulash import Namespace
 from jinja2.loaders import TemplateNotFound
 from twisted.web.resource import Resource
 
-from cortex.services.web.template import template
-from cortex.core.agent import Agent
-
 from cortex.core import api
 from cortex.core.hds import HDS
+from cortex.core.agent import Agent
 from cortex.services.api import API
 from cortex.core.ground import Memory
 from cortex.services import Service
+from cortex.agents.proc import Process
 from cortex.core.universe import Universe
 from cortex.mixins.autonomy import Autonomy
-from cortex.services.postoffice import PostOffice
-from cortex.agents.proc import Process
 from cortex.core.util import report, pedigree
-
+from cortex.services.postoffice import PostOffice
+from cortex.services.web.template import template
 from .util import get_source, alligator2paren
 
 ATOMS = ( list, tuple,  float, int, str )
