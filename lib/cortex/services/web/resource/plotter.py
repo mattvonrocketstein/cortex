@@ -4,6 +4,8 @@
 from .cortex_base import CBR
 from .data_source import DataSource
 
+from cortex.services.web.template import template
+
 class Plotter(CBR):
 
     def __init__(self):

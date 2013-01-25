@@ -1,7 +1,7 @@
 """
 """
 from twisted.web.resource import Resource
-
+from cortex.services.web.template import template
 class CBR(Resource):
     " Cortex base-resource "
 

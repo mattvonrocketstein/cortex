@@ -4,13 +4,7 @@
 from twisted.web.resource import Resource
 from twisted.web import static as _static
 
-from cortex.services.web.template import template
-
-from .json import JSONResource
-from .data_source import DataSource
-from .tree import TreeResource
 from .cortex_base import CBR
-from .plotter import Plotter
 
 class Root(CBR):
     def __init__(self, favicon=None, static=None):
@@ -18,6 +12,7 @@ class Root(CBR):
         self.putChild('static',      _static.File(static))
         self.putChild('favicon.ico', _static.File(favicon))
         self.putChild('main_nav',    NavResource())
+
     def get_template_ctx(self, request):
         """ """
         children = self.children.copy()

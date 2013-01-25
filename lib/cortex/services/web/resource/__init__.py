@@ -23,7 +23,6 @@ from cortex.services.postoffice import PostOffice
 from cortex.agents.proc import Process
 from cortex.core.util import report, pedigree
 
-from .conf_resource import ConfResource
 from .util import get_source, alligator2paren
 
 ATOMS = ( list, tuple,  float, int, str )
