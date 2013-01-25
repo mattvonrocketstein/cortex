@@ -79,18 +79,31 @@ class WebRoot(Agent):
 
     def populate_chldren(self):
         self.root.parent = self # what for?
+
         # url that generates plots.
         # e.g. to see a plot for the datastream @ "/datastream"
         # load "/plot?endpoint=/datastream&title=some_title"
         self.putChild('plot', Plotter())
+
         # serialized version of the universe topology.
         # this is used to generate the graph @ '/'
         self.putChild('tree.json', TreeResource(self.universe))
+
+        # shows the current cortex configuration file
         self.putChild('conf', ConfResource(self.universe))
+
+        # conveniences; this makes tabs for some special objects
+        # really just an example of how to use ObjResource
         self.putChild('web', ObjResource(self))
-        self.putChild('eframe', EFrame())
         self.putChild('universe', ObjResource(self.universe))
-        self.putChild("_code", static.File(os.path.dirname(cortex.__file__)))
+
+        # the event frame
+        self.putChild('eframe', EFrame())
+
+        # self-host the source code that's running everything.
+        # really just an example of how to use static.File.
+        src_dir = os.path.dirname(cortex.__file__)
+        self.putChild("_code", static.File(src_dir))
 
 class Web(FecundService):
     """ Web Service:
