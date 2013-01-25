@@ -1,8 +1,7 @@
 """ cortex.mixins.mixin
 """
 
-class Mixin:
+class Mixin(object):
     """ TODO: inversion
         TODO: enumeration
     """
-    pass
