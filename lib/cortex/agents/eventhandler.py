@@ -9,7 +9,7 @@ class AbstractEventHandler(LocalQueue, Agent):
     """ AbstractEventHandler """
 
     class Meta:
-        subscriptions = {EVENT_T: 'push_q',PEER_T: 'push_q'}
+        subscriptions = {EVENT_T: 'push_q', PEER_T: 'push_q'}
 
     def start(self):
         self.init_q() # safe to call in start or __init__
