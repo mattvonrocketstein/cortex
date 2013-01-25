@@ -161,7 +161,7 @@ class Autonomy(AbstractAutonomy):
         """ Just for example purposes, and to remind
             subclassers to override this method
         """
-        msg = "override this: default iteration for threadpooler:"
+        msg = "override this: default for Autonomy.iterate:"
         report(msg, self)
         yield "arbitrary value"
         # Next line should not block anything..
