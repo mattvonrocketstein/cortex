@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """ cortex.core.hds: hierarchical data structure
 
-      adapted from:  Recipe 286150: Hierarchical data objects (Python) by Uwe Schmitt
-                     ActiveState Code (http://code.activestate.com/recipes/286150/)
-
+    source:  Recipe 286150: Hierarchical data objects by Uwe Schmitt
+             ActiveState Code (http://code.activestate.com/recipes/286150/)
+    TODO: move this to goulash
 """
 
 
@@ -75,7 +75,7 @@ HDS = HierarchicalData
 hds = HierarchicalData
 
 def _demo():
-    """ """
+    # TODO: convert this to tests
     model=HierarchicalData()
 
     # model.person is contstruted on the fly:
@@ -83,17 +83,17 @@ def _demo():
     model.person.name = "schmitt"
     model.number = 1
 
-    print; print "access via attributes:"; print
-    print "model.person.surname=", model.person.surname
-    print "model.person.name=", model.person.name
-    print "model.number=", model.number; print
+    #print; print "access via attributes:"; print
+    #print "model.person.surname=", model.person.surname
+    #print "model.person.name=", model.person.name
+    #print "model.number=", model.number; print
 
-    print "print complete model:"; print
-    print model; print
+    #print "print complete model:"; print
+    #print model; print
     o = pickle.loads(pickle.dumps(model))
-    print "unpickle after pickle:"; print; print o; print
-    print "paths from root to leaves and values at leaves:"
-    print; print getLeaves(o)
+    #print "unpickle after pickle:"; print; print o; print
+    #print "paths from root to leaves and values at leaves:"
+    #print; print getLeaves(o)
 
 if __name__=="__main__":
     _demo()
