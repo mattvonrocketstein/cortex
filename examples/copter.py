@@ -11,6 +11,7 @@ graphing options:
     http://people.iola.dk/olau/flot/examples/
 
 """
+import urllib
 import random
 import webbrowser
 from optparse import OptionParser
@@ -24,7 +25,7 @@ from cortex.mixins.flavors import ReactorRecursion
 
 universe = Universe
 cortex.VERBOSE = True
-import urllib
+
 @ Agent.from_function
 def SigGen(self):
     self.value = random.random()
