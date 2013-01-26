@@ -30,11 +30,15 @@ from cortex.core.universe.servicing import ServiceAspect
 
 class Tracking(object):
     """ topologies for connective tissue """
+    peers         = PEERS
     agents        = AGENTS
     services      = SERVICES
+    ports         = defaultdict(lambda:[])     # maps ports -> agent
 
-    peers         = PEERS
-    ports         = defaultdict(lambda: [])     # map ports -> agent
+    def port_for(self, other):
+        """ """
+        return [ x for x in self.ports if \
+                 other in self.ports[x] ][0]
 
     def declare_peer(self, peer, agent):
         """ """

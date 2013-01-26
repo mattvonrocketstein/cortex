@@ -16,6 +16,9 @@ class UniverseNotation:
         """
 
 
+    def __pow__(self, other):
+        return self.agents[other].obj
+
     def __or__(self, other):
         """ syntactic sugar for grabbing a service by name,
             given an actual service, getting it's name. example
@@ -49,7 +52,6 @@ class UniverseNotation:
                 return None
             else:
                 return result
-
         elif isinstance(other, Service):
             return other.__class__.__name__.lower()
         else:
