@@ -10,7 +10,7 @@ from cortex.core.data import NOOP, DEFAULT_HOST
 from cortex.mixins.topology import TopologyMixin
 from cortex.core.agent.comms_mixin import CommsMixin
 from cortex.core.util import report, report_if_verbose
-from cortex.mixins import (AutonomyMixin, FaultTolerant, MobileCodeMixin)
+from cortex.mixins import (Mixin, AutonomyMixin, FaultTolerant, MobileCodeMixin)
 
 from spock import Doctrine
 
@@ -34,18 +34,22 @@ class Agent(CommsMixin, AgentLite):
     name          = 'default-name'
 
     @classmethod
-    def from_function(kls, fxn):
+    def from_function(kls, fxn, flavor=None):
         # TODO: verify function args use "self"?
         sig = Signature(fxn)
-        if 'universe' in sig._parameters:
+        sig_args = set(sig._parameters.keys())
+        if set(['universe'])==sig_args:
             def iterate(himself):
                 return fxn(himself.universe)
+        elif set(['self']) == sig_args:
+            iterate = fxn
         else:
-            raise RuntimeError('Not sure how to build iterate method.')
+            err = 'Not sure how to build iterate method for args: '
+            raise RuntimeError(err+str(sig_args))
         dct = dict(iterate=iterate)
         kls_name = fxn.__name__
         bases=(kls,)
-        return type(kls_name,bases,dct)
+        return type(kls_name, bases, dct)
 
     @property
     def _opts(self):
@@ -86,6 +90,8 @@ class Agent(CommsMixin, AgentLite):
               Agent.using(template=SomeMixin,flavor=SomeAutonomyFlavor)
         """
         target = Agent
+        if isinstance(template, dict):
+            template = type('DynamicMixin',(Mixin,), template)
         if flavor:
             target = target.use_concurrency_scheme(flavor)
         if template:
