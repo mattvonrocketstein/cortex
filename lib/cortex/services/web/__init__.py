@@ -22,7 +22,8 @@ from cortex.services.web.resource import ObjResource, EFrame
 from cortex.services.web.resource.conf import ConfResource
 from cortex.services.web.resource.root import Root
 from cortex.services.web.resource.tree import TreeResource
-from cortex.services.web.resource.plotter import Plotter
+from cortex.services.web.resource.plotter import Plotter, Multiplotter
+from cortex.services.web.resource.redirect import Redirect
 from cortex.services.web.resource.data_source import DataSource
 
 from cortex.services.web.util import draw_ugraph
@@ -69,6 +70,11 @@ class WebRoot(Agent):
         self.putChild(endpoint, stream)
         return stream
 
+    def make_redirect(self, a, b):
+        r = Redirect()
+        r.url = b
+        return self.putChild(a, r)
+
     def setup(self):
         """ setup for several things that can be
             easily handled outside of the main loop.
@@ -78,6 +84,7 @@ class WebRoot(Agent):
         self.putChild = self.root.putChild
         self.parent.putChild = self.putChild
         self.parent.make_data_stream = self.make_data_stream
+        self.parent.make_redirect = self.make_redirect
         self.populate_chldren()
         site = server.Site(self.root)
         self.listener = self.universe.listenTCP(self.port, site)
@@ -90,6 +97,7 @@ class WebRoot(Agent):
         # e.g. to see a plot for the datastream @ "/datastream"
         # load "/plot?endpoint=/datastream&title=some_title"
         self.putChild('plot', Plotter())
+        self.putChild('multiplot', Multiplotter())
 
         # serialized version of the universe topology.
         # this is used to generate the graph @ '/'

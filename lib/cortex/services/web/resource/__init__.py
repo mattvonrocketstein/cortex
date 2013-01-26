@@ -144,7 +144,8 @@ class ObjectResource(Resource):
             upto = out.index(x)+1
             tmp  = [x, out[:upto]]
             z.append(tmp)
-        result = ['<a href={0}> {1} </a>'.format('/' + '/'.join(x[1]),x[0]) for x in z]
+        result = ['<a href={0}> {1} </a>'.format(
+            '/' + '/'.join(x[1]),x[0]) for x in z]
         if len(result) > 6: result = result[-6:]
         return result
 

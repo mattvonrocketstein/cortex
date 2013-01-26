@@ -7,7 +7,7 @@ from .data_source import DataSource
 from cortex.services.web.template import template
 
 class Plotter(CBR):
-
+    """ """
     def __init__(self):
         CBR.__init__(self)
         import random;
@@ -20,3 +20,12 @@ class Plotter(CBR):
         if endpoint:
             ctx.update(endpoint=endpoint[0])
         return 'plotter',ctx
+
+class Multiplotter(Plotter):
+    """ """
+    def get_template_ctx(self, request):
+        endpoints = request.args.get('endpoint',[])
+        titles   = request.args.get('title',[])
+        data = dict(zip(titles, endpoints))
+        ctx = dict(data=data)
+        return 'multiplotter',ctx

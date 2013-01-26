@@ -13,14 +13,19 @@ svg {font: 10px sans-serif;}
   shape-rendering: crispEdges;}
 </style>
 <strong>{{title}}</strong><br/>
-<div id=plot_div>
-  <script>{%include "plotter.js"%}</script>
+
+<div id=plot_div_{{title}}>
+  <script>
+    {%include "plotter.js"%};
+    make_graph('plot_div_{{title}}');
+  </script>
 </div>
 
 <script>
   $(document).ready(function(){
-  data = []
+  _data = []
   $.ajax({dataType:"json", url:'/plot/data_stream', async:false,
-  success:function(_d){data=_d},
+  success:function(_d){_data=_d},
   error:console.debug});
   });
+</script>

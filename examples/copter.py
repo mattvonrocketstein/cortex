@@ -23,24 +23,31 @@ from cortex.mixins import Mixin
 from channel.exceptions import ChannelExists
 
 universe = Universe
-#cortex.VERBOSE = True
+cortex.VERBOSE = True
 
 COLLECTOR = 'collector'
 
-class SigGen(Mixin):
-    period = 1
-    def iterate(self):   self.value = random.random()
+@ Agent.from_function #
+def SigGen(self):
+    self.value = random.random()
 
 @ Agent.from_function
 def OnReady(universe):
     web = (universe|'web')
-    x = universe.agents['Axis1'].obj
-    y = universe.agents['Axis2'].obj
-    web.make_data_stream('x', lambda: x.value)
-    web.make_data_stream('y', lambda: y.value)
+    web.make_redirect('a',
+                      ('multiplot?endpoint=/x&'
+                       'title=xxx&endpoint=/y&'
+                       'title=yyy'))
+    x_axis = universe.agents['Axis1'].obj
+    y_axis = universe.agents['Axis2'].obj
+    web.make_data_stream('x', lambda: x_axis.value)
+    web.make_data_stream('y', lambda: y_axis.value)
 
 AXIS_1 = Agent.using(template=SigGen, flavor=ReactorRecursion)
 AXIS_2 = Agent.using(template=SigGen, flavor=ReactorRecursion)
+
+AXIS_1.period = 2
+#AXIS_2.period = .5
 
 # Order matters here
 universe.agents.manage('Axis1', kls=AXIS_1, kls_kargs={})
