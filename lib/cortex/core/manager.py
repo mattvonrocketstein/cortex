@@ -1,6 +1,8 @@
 """ cortex.core.manager
 
-      Manager pattern stuff
+      Manager pattern stuff.
+
+      TODO: move to goulash
 """
 
 import uuid
