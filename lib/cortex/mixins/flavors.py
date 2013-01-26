@@ -22,16 +22,8 @@ class ReactorRecursion(Autonomy):
     period = 0.1
     def run(self):
         #return
-        print 't',threading.enumerate()
         from twisted.internet.task import LoopingCall
         LoopingCall(self.run_primitive).start(self.period)
-        #this speeds up startup time but breaks tests.
-        #self.universe.reactor.callLater(self.iteration_period,
-        #                                lambda: LoopingCall(self.run_primitive).start(.3))
-
-        #self.universe.reactor.callFromThread(self.run_primitive)
-        #self.universe.reactor.callLater(self.iteration_period, self.run)
-        #self.run_primitive()
 
     def start(self):
         """ autonomy override """
