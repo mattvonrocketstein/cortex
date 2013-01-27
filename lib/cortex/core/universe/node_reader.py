@@ -4,7 +4,7 @@ from cortex.core.parsing import Nodeconf
 
 class ConfigurationError(RuntimeError): pass
 
-class NodeConfAspect(object):
+class ConfigurationAspect(object):
     """ """
     def read_nodeconf(self):
         """ iterator that returns decoded json

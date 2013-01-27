@@ -24,7 +24,7 @@ from cortex.core.notation import UniverseNotation
 from cortex.mixins import FaultTolerant
 from .reactor import ReactorAspect
 
-from cortex.core.universe.node_reader import NodeConfAspect
+from cortex.core.universe.node_reader import ConfigurationAspect
 from cortex.core.universe.servicing import ServiceAspect
 
 
@@ -59,7 +59,7 @@ class __Universe__(Tracking,
                    UniverseNotation,
                    OSMixin, PIDMixin,
                    ReactorAspect, Controllable,
-                   FaultTolerant, NodeConfAspect,
+                   FaultTolerant, ConfigurationAspect,
                    AutonomyMixin, PersistenceMixin,):
     """
     """
