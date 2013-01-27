@@ -43,6 +43,9 @@ class ServiceAspect(object):
             return bool(getattr(opts, 'abstract', False))
         if service_is_abstract(obj):
             report('refusing to start an abstract service:', obj)
+            return
+            #fixme: call a fault here=, cant shutdown the threads cleanly.
+            #self.fault('refusing to start an abstract service:', obj)
         else:
             kargs.update(dict(universe=self))
             return self.services.manage(kls = obj,

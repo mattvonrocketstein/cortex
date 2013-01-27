@@ -1,4 +1,4 @@
-""" cortex.core.service
+""" cortex.service
 """
 from collections import defaultdict
 
@@ -8,39 +8,7 @@ from cortex.contrib.aima import csp
 from cortex.core.agent import Agent, AgentManager
 from cortex.core.manager import Manager
 
-
-class ServiceManager(AgentManager):
-    """ ServiceManager exists mainly to make universe.services obey list
-        and dictionary api simultaneously.  Additionally, it provides a
-        commonly used Exception.
-    """
-
-    # TODO: might need an abstractagentmanager..
-    pre_load_obj      = Manager.pre_load_obj
-
-    def pre_manage(self, name=None, kls=None, **kls_kargs):
-        """ undo agentmanager's hook for pre_manager.. """
-        return name, kls, kls_kargs
-
-    def build_constraint_table(self):
-        self.table = defaultdict(lambda:[])
-        for item in self._pending:
-            name, kls, kargs = item
-            tmp = getattr(kls.start, '_constraint_boot_first', [])
-            if not isinstance(tmp,(list,tuple)): tmp = [tmp]
-            self.table[name] += tmp
-        for item in self.table:
-            self.table[item] = filter(None, self.table[item])
-        self.table = dict(self.table)
-        return self.table
-
-
-    def resolve_boot_order(self):
-        # Build table of start._boot_first constraints
-        from spock import BootOrderProblem
-        self.build_constraint_table()
-        return BootOrderProblem(self.table)()
-
+from .manager import ServiceManager
 
 class Service(Agent):
     """ Abstractions representing a cortex service
@@ -49,7 +17,9 @@ class Service(Agent):
         """ Move along, nothing to see here """
 
     def _raise_error(self, msg):
-        """ helper for informative exceptions """
+        """ helper for informative exceptions
+            TODO: fixme shouldnt this just use fault()
+        """
         formatting = dict(msg=msg, service_name=self.__class__.__name__)
         msg = 'Problem with Service@"{service_name}": {msg}'.format(**formatting)
         raise Service.ServiceError(msg)
@@ -99,41 +69,5 @@ class Service(Agent):
 
 # A cheap singleton
 SERVICES = ServiceManager()
-from cortex.mixins.topology import TopologyMixin as _TopologyMixin
-class TopologyMixin(_TopologyMixin):
-    def children(self):
-        children_names = [ name for name in self ]
-        children = [self[name].obj for name in children_names]
-        return super(TopologyMixin, self).children() + children
-
-class FecundService(TopologyMixin, Service, AgentManager):
-    """ FecundService describes a service with children.
-
-        You get mostly the semantics you'd expect.  When the
-        parent is start()'ed, the children start, and similarly
-        for stop().
-
-        To use, subclassers should define a Meta like this:
-
-
-           class Meta:
-               children = [ChildClass-1, ChildClass-2, .. ]
-    """
-
-    class Meta:
-        abstract = True
-
-    def __init__(self, *args, **kargs):
-        Service.__init__(self, **kargs)
-        AgentManager.__init__(self, **kargs)
-
-    def start(self):
-        """ """
-        ctx = dict(universe=self.universe)
-        child_classes = self._opts.children
-        for kls in child_classes:
-            name = kls.__name__
-            kargs = dict(kls=kls, kls_kargs=ctx, name=name)
-            self.manage(**kargs)
-        self.load()
-        Service.start(self)
+from .topology import TopologyMixin
+from .fecund import FecundService

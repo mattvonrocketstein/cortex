@@ -3,14 +3,18 @@
 
 from urllib import urlencode as urlenc
 
-from cortex.core.util import report
+from cortex.core.util import report, uuid
 
 class Multiplot(object):
+    registry = {}
+
     def __init__(self, webroot):
         self.subplots = {}
         self.endpoint_root = '/'
         self.multiplot_url = 'multiplot'
         self.web = webroot
+        self.uuid = uuid()
+        Multiplot.registry[self.uuid] = self
 
     def install_subplot(self, name, data_generator):
         """ """

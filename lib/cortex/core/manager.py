@@ -323,19 +323,19 @@ class Manager(object):
             return self.registry[self.as_list[name]]
 
         if isinstance(name, str):
-            for nayme in self.registry:
-                if name.lower() == nayme.lower():
-                    try:
-                        return self.registry[name]
-                    except KeyError,k:
-                        if name!=name.lower():
-                            return self.__getitem__(name.lower())
-                        else:
-                            raise k
-            if name!=name.lower():
-                return self.__getitem__(name.lower())
-            else:
-                raise self.NotFound('No such asset: ' + name)
+            try:
+                return self.registry[name]
+            except KeyError:
+                try:
+                    return self.registry[name.lower()]
+                except KeyError, k:
+                    tmp = [ x for x in self.registry if x.lower()==name.lower() ]
+                    if tmp:
+                        assert len(tmp)==1,'ambiguous'
+                        return self.registry[tmp[0]]
+                    else:
+                        raise k
+            raise self.NotFound('No such asset: ' + name)
 
     @property
     def as_dict(self):

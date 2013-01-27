@@ -89,8 +89,6 @@ class WebRoot(Agent):
         self.root = Root(favicon=favicon, static=self.static_dir)
         self.putChild = self.root.putChild
         self.parent.putChild = self.putChild
-        self.parent.make_data_stream = self.make_data_stream
-        self.parent.make_redirect = self.make_redirect
         self.populate_chldren()
         site = server.Site(self.root)
         self.listener = self.universe.listenTCP(self.port, site)
@@ -98,7 +96,6 @@ class WebRoot(Agent):
     def populate_chldren(self):
         """ NB: no relationship to Agent.children() """
         self.root.parent = self # what for?
-
         # url that generates plots.
         # e.g. to see a plot for the datastream @ "/datastream"
         # load "/plot?endpoint=/datastream&title=some_title"
@@ -125,18 +122,28 @@ class WebRoot(Agent):
         src_dir = os.path.dirname(cortex.__file__)
         self.putChild("_code", static.File(src_dir))
 
+
 class Web(FecundService):
     """ Web Service:
           start: start main webserver, and secondary event-hub
           stop:  brief description of shutdown here
     """
     class Meta:
+        abstract = False
         children = [EventHub, WebRoot]
 
     def new_multiplot(self):
         """ """
         from cortex.services.web.util import Multiplot
         return Multiplot(self)
+
+    def __getattr__(self,name):
+        """ proxy everything I can't answer to WebRoot child """
+        if not self.started:
+            raise AttributeError('wont proxy getattr for "{0}" '
+                                 'until after universe is started')
+        else:
+            return getattr(self.filter_by_type(WebRoot)[0], name)
 
     @constraint(boot_first='postoffice')
     def start(self):

@@ -74,7 +74,7 @@ def OnReady(universe):
     # large querystring.  for convenience, the next line makes a redirect
     # from '/demo', and opens a webbrowser there.
     _, short_url = web.make_redirect('demo', multiplot.url)
-    webbrowser.open_new_tab(short_url)
+    #webbrowser.open_new_tab(short_url)
 
 # a list of unique agent-iteration intervals.
 # we'll end up creating one agent for each speed.
