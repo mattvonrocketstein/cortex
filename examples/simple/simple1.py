@@ -89,7 +89,6 @@ for speed in AGENT_ITERATION_SPEEDS:
     # of the autonomy.
     AgentKlass = Agent.using(template=SigGen,
                              flavor=ReactorRecursion)
-
     AgentKlass.period = speed
 
     # this is essentially a deferred instantiation of the

@@ -34,6 +34,7 @@ def build_parser():
 def cortex_interpretter_namespace(fname):
     from cortex.core.universe import Universe
     from cortex.core.agent import Agent
+    from cortex.mixins.flavors import ReactorRecursion
     namespace = dict(__universe__=Universe,
                      __file__ = os.path.abspath(fname))
     namespace.update(locals())
@@ -62,8 +63,15 @@ def entry():
             sandbox = cortex_interpretter_namespace(fname)
             execfile(fname, sandbox)
             instructions = sandbox.get('__instructions__', [])
+            agent_specs = sandbox.get('__agents__', [])
             if instructions:
                 sandbox['__universe__'].set_instructions(instructions)
+            for agent_spec in agent_specs:
+                if isinstance(agent_spec, (list,tuple)):
+                    args, kargs = agent_spec
+                else:
+                    args,kargs = [agent_spec], {}
+                sandbox['__universe__'].agents.manage(*args, **kargs)
             sandbox['__universe__'].play()
             return
 

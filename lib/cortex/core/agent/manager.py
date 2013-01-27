@@ -15,6 +15,28 @@ class AgentManager(Manager):
     """ """
     AgentPrerequisiteNotMet = AgentPrerequisiteNotMet
 
+    def manage(self, *args, **kargs):
+        from cortex.core.agent import Agent
+        if len(args)==1:
+            if isinstance(args[0], basestring):
+                kargs.update(name = args[0])
+                assert 'kls' in kargs
+                kargs.update(kls = kargs.pop('kls'))
+            elif inspect.isclass(args[0]) and \
+                     issubclass(args[0], Agent):
+                kls = args[0]
+                kargs.update(kls = kls)
+                kargs.update(name = kargs.pop('name',
+                                              getattr(kls,'name',
+                                                      kls.__name__+'Instance')))
+            else:
+                raise Exception,[args,kargs]
+        elif len(args)>1:
+            raise Excepton,'niy'
+        for x in 'name kls'.split(): assert x in kargs,'expected: '+str(x)
+        return super(AgentManager, self).manage(**kargs)
+
+
     @classmethod
     def choose_dynamic_name(kls):
         """ when __call__ happens, if name is

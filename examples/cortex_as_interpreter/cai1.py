@@ -23,7 +23,6 @@
 """
 import random
 import webbrowser
-from cortex.mixins.flavors import ReactorRecursion
 
 # uncomment the next line to see more noise from the whole system
 #import cortex; cortex.VERBOSE = True
@@ -81,30 +80,26 @@ def OnReady(universe):
 # we'll end up creating one agent for each speed.
 AGENT_ITERATION_SPEEDS = [.1, 1, 3]
 
+__agents__ = [OnReady]
 for speed in AGENT_ITERATION_SPEEDS:
-    # create a unique name for each unique speed
-    agent_name = 'Agent' + str(speed)
     # create a new type of Agent, binding both
     # the template and a specific flavor of autonomy.
     # the iteration speed will affect the specifics
     # of the autonomy.
-    AgentKlass = Agent.using(template=SigGen,
-                             flavor=ReactorRecursion)
+    __agents__.append(
+        Agent.using(template=SigGen,
+                    flavor=ReactorRecursion,
+                    extras={'period':speed,
+                            'name':'Agent'+str(speed)}))
+__agents__.reverse()
 
-    AgentKlass.period = speed
-
-    # this is essentially a deferred instantiation of the
-    # agent.  (we can't instantiate it because that's the
-    # job of the universe once it's bootstrapped).  we
-    # register the agent type with a universe, and give the
-    # name the instance will use.
-    __universe__.agents.manage(agent_name, kls=AgentKlass)
+#__universe__.agents.manage(
 
 # another request for registration/delayed instantiation.
 # as mentioned above it's definiton, the OnReady agent will
 # bootstrap our setup after the universe itself is finished
 # boostrapping.
-__universe__.agents.manage('OnReady', kls=OnReady)
+#__universe__.agents.manage('OnReady', kls=OnReady)
 
 # everything is ready.  since this demo is run directly with the 'cortex'
 # commandline, there's no need to hit the button and start the universe..

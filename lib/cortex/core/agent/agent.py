@@ -20,7 +20,16 @@ class AgentLite(TopologyMixin, MobileCodeMixin,
     """
     pass
 
-class Agent(CommsMixin, AgentLite):
+class LogicMixin(object):
+
+    @property
+    def beliefs(self):
+        """ """
+        if not hasattr(self,'_beliefs'):
+            self._beliefs = Doctrine()
+        return self._beliefs
+
+class Agent(LogicMixin, CommsMixin, AgentLite):
     """
         CONVENTION: __init__ always passes unconsumed kargs to _post_init()
 
@@ -68,13 +77,6 @@ class Agent(CommsMixin, AgentLite):
         self._post_init(**kargs)
 
     @property
-    def beliefs(self):
-        """ """
-        if not hasattr(self,'_beliefs'):
-            self._beliefs = Doctrine()
-        return self._beliefs
-
-    @property
     def parent(self):
         """ Warning this might not be an agent! """
         if len(self.parents):
@@ -84,14 +86,17 @@ class Agent(CommsMixin, AgentLite):
             return None
 
     @classmethod
-    def using(self, template=None, flavor=None):
+    def using(self, template=None, flavor=None, extras={}):
         """
            usage:
               Agent.using(template=SomeMixin,flavor=SomeAutonomyFlavor)
         """
         target = Agent
         if isinstance(template, dict):
+            template.update(extras)
             template = type('DynamicMixin',(Mixin,), template)
+        elif extras:
+            template = type('DynamicMixin', (template,), extras)
         if flavor:
             target = target.use_concurrency_scheme(flavor)
         if template:
