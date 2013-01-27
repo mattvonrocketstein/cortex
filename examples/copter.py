@@ -48,10 +48,11 @@ def OnReady(universe):
                                         name2args('Y_axis')])
     demo_url = 'demo'
     web.make_redirect(demo_url, full_url)
-    get_x = lambda: (universe**'X_axis').value
-    get_y = lambda: (universe**'Y_axis').value
-    web.make_data_stream((universe**'X_axis').name, get_x)
-    web.make_data_stream((universe**'Y_axis').name, get_y)
+
+    web.make_data_stream((universe**'X_axis').name,
+                         lambda: (universe**'X_axis').value)
+    web.make_data_stream((universe**'Y_axis').name,
+                         lambda: (universe**'Y_axis').value)
     demo_url = 'http://{0}:{1}/{2}'.\
                format(universe.host,
                       universe.port_for(root),
