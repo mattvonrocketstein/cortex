@@ -12,12 +12,6 @@ class Root(CBR):
         self.putChild('static',      _static.File(static))
         self.putChild('favicon.ico', _static.File(favicon))
         self.putChild('main_nav',    NavResource())
-        self.redirect_map = {}
-
-    def render_GET(self, request):
-        from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-#if request.path in self.redirect_map:
-        return CBR.render_GET(self, request)
 
     def get_template_ctx(self, request):
         """ """

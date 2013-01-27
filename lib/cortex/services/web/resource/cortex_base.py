@@ -10,6 +10,7 @@ class CBR(Resource):
     def render_GET(self, request):
         """ """
         T, ctx = self.get_template_ctx(request)
+        if request not in ctx: ctx.update(request=request)
         return str(template(T).render(**ctx))
 
     def getChild(self, name, request):

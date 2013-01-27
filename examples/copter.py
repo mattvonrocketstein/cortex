@@ -41,9 +41,9 @@ def OnReady(universe):
   """
     web = (universe|'web')
     root = web.children()[0]
-    x_axis_args = urlenc(dict(endpoint='/x', title='agent_1'))
-    y_axis_args = urlenc(dict(endpoint='/y', title='agent2'))
-    full_url = 'multiplot?' + x_axis_args + '&' + y_axis_args
+    x_axis_args = urlenc(dict(endpoint='/x', title='X_axis'))
+    y_axis_args = urlenc(dict(endpoint='/y', title='Y_axis'))
+    full_url = 'multiplot?' + '&'.join([x_axis_args,y_axis_args])
     demo_url = 'demo'
     web.make_redirect(demo_url, full_url)
     get_x = lambda: (universe**'Axis1').value
@@ -56,13 +56,13 @@ def OnReady(universe):
                       demo_url)
     webbrowser.open_new_tab(demo_url)
 
-AXIS_1 = Agent.using(template=SigGen, flavor=ReactorRecursion)
-AXIS_2 = Agent.using(template=SigGen, flavor=ReactorRecursion)
-AXIS_1.period = 2
+X_axis = Agent.using(template=SigGen, flavor=ReactorRecursion)
+Y_axis = Agent.using(template=SigGen, flavor=ReactorRecursion)
+X_axis.period = 2
 
 # Order matters here
-universe.agents.manage('Axis1',   kls=AXIS_1,  kls_kargs={})
-universe.agents.manage('Axis2',   kls=AXIS_2,  kls_kargs={})
+universe.agents.manage('Axis1',   kls=X_axis,  kls_kargs={})
+universe.agents.manage('Axis2',   kls=Y_axis,  kls_kargs={})
 universe.agents.manage('OnReady', kls=OnReady, kls_kargs={})
 
 default_nodes = [ ["load_service", "web"],

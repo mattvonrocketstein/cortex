@@ -12,7 +12,9 @@ svg {font: 10px sans-serif;}
   stroke: #000;
   shape-rendering: crispEdges;}
 </style>
-<strong>{{title}}</strong><br/>
+<strong>{{title}}
+
+</strong><small><a href="{{endpoint}}">data src</a></small><br/>
 
 <div id=plot_div_{{title}}>
   <script>
@@ -20,12 +22,3 @@ svg {font: 10px sans-serif;}
     make_graph('plot_div_{{title}}');
   </script>
 </div>
-
-<script>
-  $(document).ready(function(){
-  _data = []
-  $.ajax({dataType:"json", url:'/plot/data_stream', async:false,
-  success:function(_d){_data=_d},
-  error:console.debug});
-  });
-</script>
