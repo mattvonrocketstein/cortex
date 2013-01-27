@@ -57,7 +57,7 @@ def _use_client(host, port, options):
 
     cmd = 'peer.' + options.command if options.command else None
     api.load_services('postoffice _linda'.split())
-    Universe.set_nodes([])
+    Universe.set_instructions([])
     if cmd is None:
         api.load_service('terminal')
     else:

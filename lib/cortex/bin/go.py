@@ -61,6 +61,9 @@ def entry():
             print "cortex: assuming this is a file.."
             sandbox = cortex_interpretter_namespace(fname)
             execfile(fname, sandbox)
+            instructions = sandbox.get('__instructions__', [])
+            if instructions:
+                sandbox['__universe__'].set_instructions(instructions)
             sandbox['__universe__'].play()
             return
 

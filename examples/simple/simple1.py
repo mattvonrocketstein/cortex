@@ -28,9 +28,9 @@ from cortex.mixins.flavors import ReactorRecursion
 #import cortex; cortex.VERBOSE = True
 
 # set up enough services to support this demo and allow user to inspect it
-Universe.set_nodes([ ["load_service", "web"],
-                     ["load_service", "terminal"],
-                     ["load_service", "postoffice"], ])
+Universe.set_instructions([ ["load_service", "web"],
+                            ["load_service", "terminal"],
+                            ["load_service", "postoffice"], ])
 
 # create a simple Agent template with no concurrency.  agent's of this
 # type will generate a random signal of values in [0,1].  we will defer

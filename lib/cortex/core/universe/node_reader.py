@@ -18,19 +18,19 @@ class ConfigurationAspect(object):
         return jsons
 
     @property
-    def Nodes(self):
+    def Instructions(self):
         """ nodes: static definition """
         blammo = getattr(self, '_use_nodeconf', self.read_nodeconf)
         return blammo() if callable(blammo) else blammo
 
     @classmethod
-    def set_nodes(self, val):
+    def set_instructions(self, val):
         """ method to overwrite the property above.  might seem weird, but
             the universe is a singleton so it's not really that strange.
             why would you use this?  maybe you're generating it dynamically
             instead of from a file.  or, if you're initializing the universe
             completely via the API, maybe it would be useful afterwards to
-            call something like Universe.set_nodes([]) to use a nil config
+            call something like Universe.set_instructions([]) to use a nil config
             w/o saving such a trivial thing to a file.
         """
-        self.Nodes = val
+        self.Instructions = val

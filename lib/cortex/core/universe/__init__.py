@@ -122,7 +122,7 @@ class __Universe__(Tracking,
             return _api.get(instruction)
 
         # Interprets all the instructions in the nodeconf
-        for node in self.Nodes:
+        for node in self.Instructions:
            original = node
            instruction, args = node[0], node[1:]
            report_if_verbose("parsing node", node)
