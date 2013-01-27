@@ -30,29 +30,24 @@ def OnReady(universe):
     datagen = lambda name: lambda: (universe**name).value
     for signal_generating_agent in universe.agents.values():
         name = signal_generating_agent.name
+        if name.lower().startswith('onready'): continue
         multiplot.install_subplot(name, datagen(name))
     multiplot.install_streams()
     _, short_url = web.make_redirect('demo', multiplot.url)#full_url)
     webbrowser.open_new_tab(short_url)
 
-for agent_num in '12':
+for agent_num in '123':
     AgentN = Agent.using(template=SigGen, flavor=ReactorRecursion)
     universe.agents.manage('Agent'+agent_num,  kls=AgentN,  kls_kargs={})
     AgentN.period = int(agent_num)
-#Agent1 = Agent.using(template=SigGen, flavor=ReactorRecursion)
-#Agent2 = Agent.using(template=SigGen, flavor=ReactorRecursion)
-#Agent1.period = 3
-#Agent2.period = 1
 
 # Order matters here
-#universe.agents.manage('Agent1',  kls=Agent1,  kls_kargs={})
-#universe.agents.manage('Agent2',  kls=Agent2,  kls_kargs={})
 universe.agents.manage('OnReady', kls=OnReady, kls_kargs={})
 
 default_nodes = [ ["load_service", "web"],
                   ["load_service", "api"],
                   ["load_service", "terminal"],
-                  ["load_service", "postoffice"],
-                  ["load_service", "network_mapper"], ]
+                  ["load_service", "postoffice"], ]
+
 universe.set_nodes(default_nodes)
 universe.play()
