@@ -33,17 +33,22 @@ def SigGen(self):
 name_to_plot_args = lambda name: \
             urlenc(dict(endpoint='/'+(universe**name).name,
                         title=(universe**name).name))
-def make_data_stream(web, name):
-    web.make_data_stream((universe**name).name,
-                         lambda: (universe**name).value)
+#def make_data_stream(web, name):
+#    web.make_data_stream((universe**name).name,
+#                         lambda: (universe**name).value)
 class Multiplot(object):
-    def __init__(self):
+    def __init__(self, webroot):
         self.subplots = {}
         self.endpoint_root = '/'
         self.multiplot_url = 'multiplot'
+        self.web = webroot
 
     def install_subplot(self, name, data_generator):
         self.subplots[name] = data_generator
+
+    def install_streams(self):
+        for name,data_generator in self.subplots.items():
+            web.make_data_stream(name, data_generator)
 
     @property
     def url(self):
@@ -67,11 +72,10 @@ def OnReady(universe):
     root = web.children()[0]
     names = 'X_axis','Y_axis'
     multiplot = Multiplot()
-    #full_url = 'multiplot?'
     for name in names:
-        #full_url += '&' + name_to_plot_args(name)
         multiplot.install_subplot(name, lambda: (universe**name).value)
-        make_data_stream(web, name)
+    multiplot.install_streams()
+    #make_data_stream(web, name)
     _, short_url = web.make_redirect('demo', multiplot.url)#full_url)
     webbrowser.open_new_tab(short_url)
 
