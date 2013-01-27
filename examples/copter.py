@@ -26,7 +26,6 @@ def OnReady(universe):
         compute the absolute url and open it in a webbrowser
   """
     web = (universe|'web')
-    root = web.children()[0]
     multiplot = Multiplot(web)
     datagen = lambda name: lambda: (universe**name).value
     for signal_generating_agent in universe.agents.values():
