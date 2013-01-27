@@ -30,6 +30,30 @@ cortex.VERBOSE = True
 def SigGen(self):
     self.value = random.random()
 
+name_to_plot_args = lambda name: \
+            urlenc(dict(endpoint='/'+(universe**name).name,
+                        title=(universe**name).name))
+def make_data_stream(web, name):
+    web.make_data_stream((universe**name).name,
+                         lambda: (universe**name).value)
+class Multiplot(object):
+    def __init__(self):
+        self.subplots = {}
+        self.endpoint_root = '/'
+        self.multiplot_url = 'multiplot'
+
+    def install_subplot(self, name, data_generator):
+        self.subplots[name] = data_generator
+
+    @property
+    def url(self):
+        full_url = self.multiplot_url + '?'
+        for name in self.subplots:
+            full_url += '&' + \
+                        urlenc(dict(endpoint=self.endpoint_root + name,
+                                    title=name))
+        return full_url
+
 @ Agent.from_function
 def OnReady(universe):
     """
@@ -41,23 +65,15 @@ def OnReady(universe):
   """
     web = (universe|'web')
     root = web.children()[0]
-    name2args = lambda name: \
-                urlenc(dict(endpoint='/'+(universe**name).name,
-                            title=(universe**name).name))
-    full_url = 'multiplot?' + '&'.join([name2args('X_axis'),
-                                        name2args('Y_axis')])
-    demo_url = 'demo'
-    web.make_redirect(demo_url, full_url)
-
-    web.make_data_stream((universe**'X_axis').name,
-                         lambda: (universe**'X_axis').value)
-    web.make_data_stream((universe**'Y_axis').name,
-                         lambda: (universe**'Y_axis').value)
-    demo_url = 'http://{0}:{1}/{2}'.\
-               format(universe.host,
-                      universe.port_for(root),
-                      demo_url)
-    webbrowser.open_new_tab(demo_url)
+    names = 'X_axis','Y_axis'
+    multiplot = Multiplot()
+    #full_url = 'multiplot?'
+    for name in names:
+        #full_url += '&' + name_to_plot_args(name)
+        multiplot.install_subplot(name, lambda: (universe**name).value)
+        make_data_stream(web, name)
+    _, short_url = web.make_redirect('demo', multiplot.url)#full_url)
+    webbrowser.open_new_tab(short_url)
 
 X_axis = Agent.using(template=SigGen, flavor=ReactorRecursion)
 Y_axis = Agent.using(template=SigGen, flavor=ReactorRecursion)

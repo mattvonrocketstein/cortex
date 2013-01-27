@@ -70,10 +70,16 @@ class WebRoot(Agent):
         self.putChild(endpoint, stream)
         return stream
 
-    def make_redirect(self, a, b):
-        r = Redirect()
-        r.url = b
-        return self.putChild(a, r)
+    def make_redirect(self, _from, b):
+        """ """
+        rsrc = Redirect()
+        rsrc.url = b
+        self.putChild(_from, rsrc)
+        url = 'http://{0}:{1}/{2}'.\
+              format(self.universe.host,
+                     self.universe.port_for(self),
+                     _from)
+        return rsrc, url
 
     def setup(self):
         """ setup for several things that can be
