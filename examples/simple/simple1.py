@@ -1,7 +1,12 @@
 """ this is the Simple Demo, version 1. run this file with python directly.
 
-    all versions of the Simple Demo are equivalent,
-    but show various ways of architecting the solution.
+    all versions of the Simple Demo are equivalent, but show various ways of
+    architecting the solution.
+
+    This demo shows how to create simple agents that generate and store
+    random numbers at different speeds.  After creating and starting all
+    the agents, a new browser tab will be opened that shows a dynamic graph
+    that represents the internal state of those agents.
 """
 import random
 import webbrowser
