@@ -11,12 +11,12 @@
 import random
 import webbrowser
 
-import cortex
 from cortex.core.agent import Agent
 from cortex.core.universe import Universe
 from cortex.mixins.flavors import ReactorRecursion
 
-cortex.VERBOSE = True
+# uncomment the next line to see more noise from the whole system
+#import cortex; cortex.VERBOSE = True
 
 # set up enough services to support this demo and allow user to inspect it
 Universe.set_nodes([ ["load_service", "web"],

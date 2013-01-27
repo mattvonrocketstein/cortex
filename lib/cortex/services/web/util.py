@@ -19,7 +19,6 @@ class Multiplot(object):
 
     def install_streams(self):
         for name,data_generator in self.subplots.items():
-            report(str([self,name,data_generator]))
             self.web.make_data_stream(name, data_generator)
 
     @property
