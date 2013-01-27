@@ -1,12 +1,21 @@
-""" this is the Simple Demo, version 1. run this file with python directly.
+""" simple1.py
 
+    This is the Simple-Demo, version 2. Run this file with python directly.
+
+    ABOUT
+    ----------------------------------------------------------------------------
     all versions of the Simple Demo are equivalent, but show various ways of
     architecting the solution.
 
-    This demo shows how to create simple agents that generate and store
+    Every Simple-Demo shows how to create simple agents that generate and store
     random numbers at different speeds.  After creating and starting all
     the agents, a new browser tab will be opened that shows a dynamic graph
     that represents the internal state of those agents.
+
+    THIS VERSION
+    ----------------------------------------------------------------------------
+    This version of the demo creates agents using decorated functions and
+    cortex-style class generation.
 """
 import random
 import webbrowser
