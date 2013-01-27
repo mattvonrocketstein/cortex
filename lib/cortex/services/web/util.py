@@ -11,7 +11,8 @@ class Multiplot(object):
     def __init__(self, webroot):
         self.subplots = {}
         self.endpoint_root = '/'
-        self.multiplot_url = 'multiplot'
+        self._multiplot_url = '/_multiplot'
+        self.short_url_root = '/multiplot'
         self.web = webroot
         self.uuid = uuid()
         Multiplot.registry[self.uuid] = self
@@ -26,8 +27,19 @@ class Multiplot(object):
             self.web.make_data_stream(name, data_generator)
 
     @property
+    def shorturl(self):
+        return self.short_url_root + '/'+self.uuid
+
+    @property
+    def wrapped_url(self):
+        return self._url(self.short_url_root + '?')
+
+    @property
     def url(self):
-        full_url = self.multiplot_url + '?'
+        """ full ajax url """
+        return self._url(short_url_root + '?')
+
+    def _url(self, full_url):
         for name in self.subplots:
             full_url += '&' + \
                         urlenc(dict(endpoint=self.endpoint_root + name,

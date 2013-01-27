@@ -72,8 +72,7 @@ class WebRoot(Agent):
 
     def make_redirect(self, _from, b):
         """ """
-        rsrc = Redirect()
-        rsrc.url = b
+        rsrc = Redirect(b)
         self.putChild(_from, rsrc)
         url = 'http://{0}:{1}/{2}'.\
               format(self.universe.host,
@@ -100,7 +99,8 @@ class WebRoot(Agent):
         # e.g. to see a plot for the datastream @ "/datastream"
         # load "/plot?endpoint=/datastream&title=some_title"
         self.putChild('plot', Plotter())
-        self.putChild('multiplot', Multiplotter())
+        self.putChild('_multiplot', Multiplotter(wrapped=False))
+        self.putChild('multiplot', Multiplotter(wrapped=True))
 
         # serialized version of the universe topology.
         # this is used to generate the graph @ '/'

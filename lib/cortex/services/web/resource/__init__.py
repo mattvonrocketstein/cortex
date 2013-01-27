@@ -28,13 +28,6 @@ ATOMS = ( list, tuple,  float, int, str )
 post_processors = type('sdasdasd',(object,),
                        dict(reverse_console = staticmethod(report.console.html)))
 
-def rsorted(a, b):
-    try: x = getattr(a, b).keys()
-    except:
-        return ['error in rsorted']
-    x = reversed(sorted(x))
-    return x
-
 class EFrame(Resource):
     def render_GET(self, request):
         ctx = dict(chan=request.args['chan'][0])
@@ -192,11 +185,11 @@ class ObjectResource(Resource):
                    request=request,)
 
         if self.is_complex:
-            ns = Namespace(self.target)
-            ctx.update(all_namespace=rsorted(ns,'namespace'),
-                       methods=rsorted(ns,'methods'),
-                       private=rsorted(ns,'private'),
-                       data=rsorted(ns, 'data'),
+            ns = Namespace(self.target, dictionaries=False)
+            ctx.update(all_namespace=ns.keys(),
+                       methods=ns.methods.nonprivate,
+                       private=ns.private,
+                       data=ns.data,
                        )
         ctx.update(base_url=request.path, obj_name=self.obj_name)
         t,extra_ctx=self.template

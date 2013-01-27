@@ -5,7 +5,6 @@
 {%block obj_type%}AGENT(base)){%endblock%}
 
 {%block obj_nav%}
-<a href="javascript:menu('autonomy')">Autonomy Aspect</a>
 {{super()}}
 {%endblock%}
 
@@ -45,8 +44,16 @@
 <table style="width:100%;margin-left:15px;">
   <tr>
     <td style="margin-left:15px;">
+
       <h4>Status:</h4><hr/>
       <table style="width:80%;margin-left:15px;" border=1>
+        <tr>
+          <td><strong>Autonomy</strong></td>
+          <td>
+            <button name="stop"><small>stop</small></button>
+            <button name="start">start</button>
+          </td>
+        </tr>
         <tr>
           <td><strong>subscriptions</strong></td>
           <td>{{subscriptions}}</td>
@@ -74,12 +81,6 @@
       </table>
       <hr/>
   </td></tr>
-  <tr class="menu hidden" id=autonomy>
-    <td>
-      <strong>Autonomy:</strong>
-      {% with namespace=autonomy%}{%include "objects/_namespace.html"%}{%endwith%}
-    </td>
-  </tr>
 </table>
 {{super()}}
 {%endblock%}

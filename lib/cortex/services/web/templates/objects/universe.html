@@ -6,9 +6,9 @@
 
 
 {%block obj_nav%}
+{{super()}}
 <a href="javascript:menu('services')">Services</a>
 <a href="javascript:menu('peers')">Peers</a>
-{{super()}}
 {%endblock%}
 
 
@@ -21,6 +21,19 @@
 <table>
   {%block extra_status%}
   {%endblock%}
+  <tr class="menu" id=peers>
+    <td>
+    <table style="width:100%;margin-left:15px;">
+      <tr><td>
+      <h4>Peers:</h4>
+      <ul style="margin-left:10px;">
+        peers here
+        {% for x in obj.peers %}
+        <li><a href="{{request.path}}/peers/registry[{{x}}]/">{{x}}</a></li>
+        {%endfor%}
+      </ul>
+    </td>
+  </tr></table></tr>
   <tr class="menu" id=services>
     <td align=left>
       <table style="width:100%;margin-left:15px;">
@@ -61,17 +74,7 @@
             </p>
           </td>
         </tr>
-        <tr class="menu" id=peers>
-          <td>
-            <h4>Peers:</h4>
-              <ul style="margin-left:10px;">
-                {% for x in obj.peers %}
-                <li><a href="{{request.path}}/peers/registry[{{x}}]/">{{x}}</a></li>
-                {%endfor%}
-              </ul>
-          </td>
-        </tr>
-        <tr class="menu" id=peers>
+        <tr class="menu" id=ports>
           <td>
             <h4>Ports:</h4>
               <ul style="margin-left:10px;">
