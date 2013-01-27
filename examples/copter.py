@@ -1,27 +1,13 @@
 """
-graphing options:
-
-  d3:
-    http://bost.ocks.org/mike/path/
-
-  cubism: ?
-
-  float:
-    http://people.iola.dk/olau/flot/examples/realtime.html
-    http://people.iola.dk/olau/flot/examples/
-
 """
-import urllib
 import random
 import webbrowser
-from optparse import OptionParser
-from urllib import urlencode as urlenc
 
 import cortex
-from cortex.core.util import report
 from cortex.core.agent import Agent
 from cortex.core.universe import Universe
 from cortex.mixins.flavors import ReactorRecursion
+from cortex.services.web.util import Multiplot
 
 universe = Universe
 cortex.VERBOSE = True
@@ -29,35 +15,6 @@ cortex.VERBOSE = True
 @ Agent.from_function
 def SigGen(self):
     self.value = random.random()
-
-name_to_plot_args = lambda name: \
-            urlenc(dict(endpoint='/'+(universe**name).name,
-                        title=(universe**name).name))
-#def make_data_stream(web, name):
-#    web.make_data_stream((universe**name).name,
-#                         lambda: (universe**name).value)
-class Multiplot(object):
-    def __init__(self, webroot):
-        self.subplots = {}
-        self.endpoint_root = '/'
-        self.multiplot_url = 'multiplot'
-        self.web = webroot
-
-    def install_subplot(self, name, data_generator):
-        self.subplots[name] = data_generator
-
-    def install_streams(self):
-        for name,data_generator in self.subplots.items():
-            web.make_data_stream(name, data_generator)
-
-    @property
-    def url(self):
-        full_url = self.multiplot_url + '?'
-        for name in self.subplots:
-            full_url += '&' + \
-                        urlenc(dict(endpoint=self.endpoint_root + name,
-                                    title=name))
-        return full_url
 
 @ Agent.from_function
 def OnReady(universe):
@@ -70,22 +27,27 @@ def OnReady(universe):
   """
     web = (universe|'web')
     root = web.children()[0]
-    names = 'X_axis','Y_axis'
-    multiplot = Multiplot()
-    for name in names:
-        multiplot.install_subplot(name, lambda: (universe**name).value)
+    multiplot = Multiplot(web)
+    datagen = lambda name: lambda: (universe**name).value
+    for signal_generating_agent in universe.agents.values():
+        name = signal_generating_agent.name
+        multiplot.install_subplot(name, datagen(name))
     multiplot.install_streams()
-    #make_data_stream(web, name)
     _, short_url = web.make_redirect('demo', multiplot.url)#full_url)
     webbrowser.open_new_tab(short_url)
 
-X_axis = Agent.using(template=SigGen, flavor=ReactorRecursion)
-Y_axis = Agent.using(template=SigGen, flavor=ReactorRecursion)
-X_axis.period = 2
+for agent_num in '12':
+    AgentN = Agent.using(template=SigGen, flavor=ReactorRecursion)
+    universe.agents.manage('Agent'+agent_num,  kls=AgentN,  kls_kargs={})
+    AgentN.period = int(agent_num)
+#Agent1 = Agent.using(template=SigGen, flavor=ReactorRecursion)
+#Agent2 = Agent.using(template=SigGen, flavor=ReactorRecursion)
+#Agent1.period = 3
+#Agent2.period = 1
 
 # Order matters here
-universe.agents.manage('X_axis',  kls=X_axis,  kls_kargs={})
-universe.agents.manage('Y_axis',  kls=Y_axis,  kls_kargs={})
+#universe.agents.manage('Agent1',  kls=Agent1,  kls_kargs={})
+#universe.agents.manage('Agent2',  kls=Agent2,  kls_kargs={})
 universe.agents.manage('OnReady', kls=OnReady, kls_kargs={})
 
 default_nodes = [ ["load_service", "web"],
