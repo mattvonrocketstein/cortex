@@ -98,13 +98,13 @@ for speed in AGENT_ITERATION_SPEEDS:
     # job of the universe once it's bootstrapped).  we
     # register the agent type with a universe, and give the
     # name the instance will use.
-    Universe.agents.manage(agent_name, kls=AgentKlass)
+    __universe__.agents.manage(agent_name, kls=AgentKlass)
 
 # another request for registration/delayed instantiation.
 # as mentioned above it's definiton, the OnReady agent will
 # bootstrap our setup after the universe itself is finished
 # boostrapping.
-Universe.agents.manage('OnReady', kls=OnReady)
+__universe__.agents.manage('OnReady', kls=OnReady)
 
 # everything is ready.  since this demo is run directly with the 'cortex'
 # commandline, there's no need to hit the button and start the universe..
