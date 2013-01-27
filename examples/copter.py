@@ -45,7 +45,7 @@ for agent_num in '123':
 universe.agents.manage('OnReady', kls=OnReady, kls_kargs={})
 
 default_nodes = [ ["load_service", "web"],
-                  ["load_service", "api"],
+                  #["load_service", "api"],
                   ["load_service", "terminal"],
                   ["load_service", "postoffice"], ]
 
