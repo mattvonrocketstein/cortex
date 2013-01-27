@@ -32,10 +32,13 @@ def build_parser():
     return p
 
 def cortex_interpretter_namespace(fname):
-    from cortex.core.universe import Universe as __universe__
+    from cortex.core.universe import Universe
     from cortex.core.agent import Agent
-    __file__ = os.path.abspath(fname)
-    return locals()
+    namespace = dict(__universe__=Universe,
+                     __file__ = os.path.abspath(fname))
+    namespace.update(locals())
+    return namespace
+
 
 def entry():
     """
@@ -56,7 +59,9 @@ def entry():
         fname = args[0]
         if os.path.exists(fname):
             print "cortex: assuming this is a file.."
-            execfile(fname, cortex_interpretter_namespace(fname))
+            sandbox = cortex_interpretter_namespace(fname)
+            execfile(fname, sandbox)
+            sandbox['__universe__'].play()
             return
 
     # use the gtk-reactor?
