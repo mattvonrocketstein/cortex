@@ -133,6 +133,11 @@ class Web(FecundService):
     class Meta:
         children = [EventHub, WebRoot]
 
+    def new_multiplot(self):
+        """ """
+        from cortex.services.web.util import Multiplot
+        return Multiplot(self)
+
     @constraint(boot_first='postoffice')
     def start(self):
         super(Web, self).start()

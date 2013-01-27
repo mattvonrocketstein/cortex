@@ -43,6 +43,9 @@ class Manager(object):
 
     class NotFound(Exception): pass
 
+    def filter_by_type(self, _type):
+        return [v for v in self.values() if issubclass(v.__class__, _type)]
+
     def __init__(self, *args, **kargs):
         """
              NOTE: subclasses are discouraged from using args..

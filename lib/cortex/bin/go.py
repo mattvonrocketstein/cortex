@@ -31,6 +31,12 @@ def build_parser():
     p.add_option('--client',dest="client",action='store_true',default=False,help=clientHelp)
     return p
 
+def cortex_interpretter_namespace(fname):
+    from cortex.core.universe import Universe as __universe__
+    from cortex.core.agent import Agent
+    __file__ = os.path.abspath(fname)
+    return locals()
+
 def entry():
     """
     """
@@ -50,8 +56,7 @@ def entry():
         fname = args[0]
         if os.path.exists(fname):
             print "cortex: assuming this is a file.."
-            __file__ = os.path.abspath(fname)
-            execfile(fname)
+            execfile(fname, cortex_interpretter_namespace(fname))
             return
 
     # use the gtk-reactor?

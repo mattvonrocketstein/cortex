@@ -13,6 +13,8 @@ class Multiplot(object):
         self.web = webroot
 
     def install_subplot(self, name, data_generator):
+        """ """
+        name = name.replace('.', '_').replace(' ','_')
         self.subplots[name] = data_generator
 
     def install_streams(self):
