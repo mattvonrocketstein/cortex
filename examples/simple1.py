@@ -1,4 +1,7 @@
-"""
+""" this is the Simple Demo, version 1. run this file with python directly.
+
+    all versions of the Simple Demo are equivalent,
+    but show various ways of architecting the solution.
 """
 import random
 import webbrowser
@@ -24,9 +27,11 @@ universe.set_nodes([ ["load_service", "web"],
 def SigGen(self):
     self.value = random.random()
 
+# create a different kind of agent template.  this agent will run be
+# registered last so it will bootstrap last, and here we'll only need
+# one instance of the final product.
 @ Agent.from_function
 def OnReady(universe):
-    """ """
     # ask the universe to give us a handle for the web service
     web = (universe|'web')
 
@@ -74,14 +79,18 @@ for speed in AGENT_ITERATION_SPEEDS:
 
     AgentKlass.period = speed
 
-    #
+    # this is essentially a deferred instantiation of the
+    # agent.  (we can't instantiate it because that's the
+    # job of the universe once it's bootstrapped).  we
+    # register the agent type with a universe, and give the
+    # name the instance will use.
     universe.agents.manage(agent_name, kls=AgentKlass)
 
-
-
-
-
-# Order matters here
+# another request for registration/delayed instantiation.
+# as mentioned above it's definiton, the OnReady agent will
+# bootstrap our setup after the universe itself is finished
+# boostrapping.
 universe.agents.manage('OnReady', kls=OnReady)
 
+# everything is ready.  hit the button and start the universe
 universe.play()
