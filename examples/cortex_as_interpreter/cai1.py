@@ -80,7 +80,10 @@ def OnReady(universe):
 # we'll end up creating one agent for each speed.
 AGENT_ITERATION_SPEEDS = [.1, 1, 3]
 
-__agents__ = [OnReady]
+# create a special list (__agents__).
+#  __universe__.agents.manage() will be called
+# for every item in this list.
+__agents__ = []
 for speed in AGENT_ITERATION_SPEEDS:
     # create a new type of Agent, binding both
     # the template and a specific flavor of autonomy.
@@ -91,15 +94,7 @@ for speed in AGENT_ITERATION_SPEEDS:
                     flavor=ReactorRecursion,
                     extras={'period':speed,
                             'name':'Agent'+str(speed)}))
-__agents__.reverse()
-
-#__universe__.agents.manage(
-
-# another request for registration/delayed instantiation.
-# as mentioned above it's definiton, the OnReady agent will
-# bootstrap our setup after the universe itself is finished
-# boostrapping.
-#__universe__.agents.manage('OnReady', kls=OnReady)
+__agents__ += [OnReady]
 
 # everything is ready.  since this demo is run directly with the 'cortex'
 # commandline, there's no need to hit the button and start the universe..
