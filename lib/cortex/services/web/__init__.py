@@ -17,7 +17,6 @@ from cortex.core.agent import Agent
 from cortex.mixins import LocalQueue
 from cortex.util.decorators import constraint
 from cortex.mixins.flavors import ThreadedIterator
-
 from cortex.services.web.resource import ObjResource, EFrame
 from cortex.services.web.resource.conf import ConfResource
 from cortex.services.web.resource.root import Root
@@ -29,11 +28,11 @@ from cortex.services.web.resource.data_source import DataSource
 from cortex.services.web.util import draw_ugraph
 
 from .eventhub import EventHub
+from .pchoose import PortChooser
 
-class WebRoot(Agent):
+class WebRoot(Agent, PortChooser):
     """  abstraction for / """
 
-    port = 1338
 
     def iterate(self):
         """ WebRoot is a trivial Agent with no  true concurrency
@@ -115,8 +114,10 @@ class WebRoot(Agent):
         self.putChild('universe', ObjResource(self.universe))
 
         # the event frame
-        self.putChild('eframe', EFrame())
-
+        eframe = EFrame()
+        self.putChild('eframe', eframe)
+        eframe.universe=self.universe#.host,self.ehub.port,chan),)
+        eframe.ehub = self.parent.filter_by_type(EventHub)[0]
         # self-host the source code that's running everything.
         # really just an example of how to use static.File.
         src_dir = os.path.dirname(cortex.__file__)

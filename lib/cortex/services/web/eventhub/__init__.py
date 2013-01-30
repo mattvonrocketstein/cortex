@@ -11,18 +11,15 @@ from cortex.services.web.eventhub import rootpage
 from cortex.mixins.flavors import ThreadedIterator
 from cortex.agents.eventhandler import AbstractEventHandler
 
+from cortex.services.web.pchoose import PortChooser
+
 URL_T  = 'http://{host}:{port}/event/{chan}'
 
 @ThreadedIterator.from_class
-class EventHub(AbstractEventHandler):
+class EventHub(AbstractEventHandler,PortChooser):
 
     POST_HDR = { 'Content-Type':
                  "application/x-www-form-urlencoded;charset=utf-8" }
-
-    @property
-    def port(self):
-        """ TODO: count upwards """
-        return 1339
 
     def handle_event(self, e):
         """ """

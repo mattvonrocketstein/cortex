@@ -33,7 +33,17 @@
           <td>
             <strong>owner</strong>
           </td>
-          <td>{{obj.owner}}</td>
+          <td>
+            <a href="owner/">
+              {{obj.owner.__class__.__name__.replace('<','(').replace('>',')')}}
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <strong>length:</strong>
+          </td>
+          <td>{{obj.tspace.__len__()}}</td>
         </tr>
         {%block extra_status%}
         {%endblock%}

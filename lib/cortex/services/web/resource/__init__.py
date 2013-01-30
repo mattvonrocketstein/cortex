@@ -30,7 +30,12 @@ post_processors = type('sdasdasd',(object,),
 
 class EFrame(Resource):
     def render_GET(self, request):
-        ctx = dict(chan=request.args['chan'][0])
+        chan = request.args['chan'][0]
+        ctx = dict(eframe_url=
+                   'http://{0}:{1}/alerts?{2}'.format(self.universe.host,
+                                                       self.ehub.port,chan),)
+                   #,#http://localhost:1339/alerts?{{chan}}
+                   #chan=chan)
         t = template('eframe')
         return str(t.render(**ctx))
 
