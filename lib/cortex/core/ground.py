@@ -63,7 +63,8 @@ class Memory(TSpace, PersistenceMixin):
         current = memory.lenidx.values()
         current = reduce(lambda x,y: x.union(y), current)
         old = everything-current
-        print 'cleaning!', old, [memory.tspace[x] for x in old]
+        if old:
+            report_if_verbose('cleaning: '+str(old))
         for x in old:
             del memory.tspace[x]
 
