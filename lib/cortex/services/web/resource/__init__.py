@@ -187,9 +187,10 @@ class ObjectResource(Resource):
         if self.is_complex:
             ns = Namespace(self.target, dictionaries=False)
             ctx.update(all_namespace=ns.keys(),
-                       methods=ns.methods.nonprivate,
-                       private=ns.private,
-                       data=ns.data,
+                       ns_methods=ns.methods.nonprivate,
+                       ns_locals=ns.methods.locals,
+                       ns_private=ns.private,
+                       ns_data=ns.data,
                        )
         ctx.update(base_url=request.path, obj_name=self.obj_name)
         t,extra_ctx=self.template

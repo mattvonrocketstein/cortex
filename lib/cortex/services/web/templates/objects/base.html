@@ -94,8 +94,21 @@
     </td>
     <td>
       <strong>Private:</strong>
-      {%with namespace=private%}{%include "objects/_namespace.html"%}{%endwith%}
+      {%with namespace=ns_private%}{%include "objects/_namespace.html"%}{%endwith%}
     </td>
+    <td>
+      <strong>methods:</strong>
+      {%with namespace=ns_methods%}{%include "objects/_namespace.html"%}{%endwith%}
+    </td>
+    <td>
+      <strong>local stuff:</strong>
+      {%with namespace=ns_locals%}{%include "objects/_namespace.html"%}{%endwith%}
+    </td>
+    <td>
+      <strong>data:</strong>
+      {%with namespace=ns_data%}{%include "objects/_namespace.html"%}{%endwith%}
+    </td>
+
     {%endblock%}
   </tr>
 </table>
