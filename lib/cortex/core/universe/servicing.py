@@ -61,7 +61,7 @@ class ServiceAspect(object):
                    "but it should be a Service.")
             msg = msg.format(service_path, type(kls).__name__)
             raise ValueError, msg
-        return self.start_service(obj, **kargs)
+        return self.start_service(kls, **kargs)
 
     def _load_service_from_string(self, service, **kargs):
         """ """
