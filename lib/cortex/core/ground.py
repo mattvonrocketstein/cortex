@@ -57,6 +57,16 @@ class Memory(TSpace, PersistenceMixin):
     """
     universe = None
 
+    def clean(self):
+        memory = self
+        everything = set(memory.tspace.keys())
+        current = memory.lenidx.values()
+        current = reduce(lambda x,y: x.union(y), current)
+        old = everything-current
+        print 'cleaning!', old, [memory.tspace[x] for x in old]
+        for x in old:
+            del memory.tspace[x]
+
     def __init__(self, owner, name=None, filename=None):
         """ """
         self.owner = owner
@@ -95,7 +105,7 @@ class Memory(TSpace, PersistenceMixin):
             TODO: proxy to TSpace shutdown?
         """
         #self.save()
-        report_if_verbose("Shutting down Memory.")
+        report("Shutting down {0}'s memory".format(self.owner))
 
     def save(self):
         """ """
@@ -110,7 +120,10 @@ class Memory(TSpace, PersistenceMixin):
         return tmp
 
     def get_many(self, pattern):
-        """ revisit this.. probably undermining the underlying optimization """
+        """ revisit this.. this has to pop information out,
+            and is probably undermining the underlying optimization
+            too
+        """
         out = []
         while True:
             try:
@@ -150,10 +163,14 @@ class Memory(TSpace, PersistenceMixin):
                     out.remove(tpl)
         return out
 
-    def get(self, *args, **kargs):
-        """ """
-        #print 'get', args, kargs
-        return TSpace.get(self, *args, **kargs)
+    def get(self, pattern, remove=False):
+        """
+            NB: TSpace never cleans itself?? the above will
+            clean up the tuplespace indexes but not actually
+            make the dicitionary any smaller.
+        """
+        result = TSpace.get(self, pattern, remove=remove)
+        return result
 
     def add(self, *args, **kargs):
         """ """
@@ -173,7 +190,7 @@ class DefaultKeyMapper(object):
 
     def __setitem__(self, key, value):
         """ dictionary compatibility """
-
+        #if key in self.keys(): raise Exception,[key,self[key]]
         try:
             self.__delitem__(key)
         except KeyError:
@@ -182,14 +199,19 @@ class DefaultKeyMapper(object):
             # enforce the rule by pruning, then add
         #    old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
         #from IPython import Shell; Shell.IPShellEmbed(argv=['-noconfirm_exit'])()
-        if isinstance(value,list):
+        if isinstance(value, list):
             value = tuple(value)
         self.add( (key, value) )
+        #print '*'*80,self.get_many((key,object),remove=False)
 
     def __delitem__(self, key):
         """ dictionary compatibility """
-        if key in self.keys():
-            old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
+        import sys
+        matches = self.many((key,object), sys.maxint)
+        for id,tpl in matches:
+            self.get(tpl, remove=True)
+        #if key in self.keys():
+        #    old_ones = self.filter(lambda t: self.tuple2key(t)==key, remove=True)
 
 class NotFound(object): pass
 
@@ -198,6 +220,10 @@ class Keyspace(Memory, DefaultKeyMapper):
     """
     def __contains__(self,other):
         return other in self.keys()
+
+    def __iter__(self):
+        """ dictionary compatibility """
+        return iter(self.keys())
 
     def public_keys(self):
         """ like _keys(), only respects privacy for _ and __
@@ -225,10 +251,6 @@ class Keyspace(Memory, DefaultKeyMapper):
         tspace_values = Memory.values(self, safe=True)
         tspace_keys = [ self.tuple2key(x) for x in tspace_values ]
         return list(set(tspace_keys))
-
-    def __iter__(self):
-        """ dictionary compatibility """
-        return iter(self.keys())
 
     def _tspace_as_dict(self):
         """ instead of rewriting functionality for values() and items()
