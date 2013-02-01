@@ -5,41 +5,51 @@
 import os, sys
 from optparse import OptionParser
 
-ABS_NODE_CONF = '/etc/cortex/node.conf'
-ABS_NODE_CONF = os.path.exists(ABS_NODE_CONF) and ABS_NODE_CONF or None
-REL_NODE_CONF = os.path.join(os.path.realpath(os.getcwd()),
-                             'etc', 'node.conf')
-
 def build_parser():
-    nodeHelp      = "Config to use [default: %default]"
-    universeHelp  = "Use universe@FILE"
-    directiveHelp = "Directives"
-    confHelp      = "Node configuration file to use"
-    commandHelp   = "same as python -c"
-    gtkHelp       = "use the gtk-reactor?"
-    testHelp      = "run cortex unittest suite"
-    clientHelp    = "api client"
     p        = OptionParser()
-    p.add_option("-c",'--cmd', dest="command",default="",help=commandHelp,  metavar="COMMAND")
-    p.add_option("--gtk",dest="gtk_reactor", default=False,action="store_true",help=gtkHelp)
-    p.add_option("--test",dest="run_tests", default=False,action="store_true", help=testHelp)
-    p.add_option("-u","--universe",dest="universe",help=universeHelp, metavar="UNIVERSE")
-    p.add_option("-v","--verbose",dest="verbose",default=False, help=universeHelp, action='store_true')
-    p.add_option('--directives',dest="directives", default="", help=directiveHelp)
-    p.add_option('--services',dest="services", default="", help=directiveHelp)
-    p.add_option('--conf',dest="conf",default=REL_NODE_CONF, help=confHelp)
-    p.add_option('--client',dest="client",action='store_true',default=False,help=clientHelp)
+    ao = p.add_option
+    ao("-c",'--cmd', dest="command",
+       default="", metavar="COMMAND",
+       help="same as python -c")
+    ao("--gtk",dest="gtk_reactor",
+       default=False,action="store_true",
+       help="use the gtk-reactor?")
+    ao("--test",dest="run_tests",
+       default=False,action="store_true",
+       help="run cortex unittest suite")
+    ao("-u","--universe",dest="universe",
+       metavar="UNIVERSE",
+       help="Use universe@FILE")
+    ao("-v","--verbose",dest="verbose",
+       default=False, action='store_true',
+       help="extra debugging information")
+    ao('--services',dest="services",
+       default="", help="services to start")
+    ao('--conf',dest="conf",
+       default="", help="configuration file to use")
+    ao('--client',dest="client",action='store_true',
+       default=False, help="api client")
     return p
 
-def cortex_interpretter_namespace(fname):
-    from cortex.core.universe import Universe
-    from cortex.core.agent import Agent
-    from cortex.mixins.flavors import ReactorRecursion
-    namespace = dict(__universe__=Universe,
-                     __file__ = os.path.abspath(fname))
-    namespace.update(locals())
-    return namespace
 
+
+class Interpreter(object):
+    def __init__(self,fname):
+        self.fname = fname
+
+    def namespace(self):
+        from cortex.core.universe import Universe
+        from cortex.core.agent import Agent
+        from cortex.mixins.flavors import ReactorRecursion
+        namespace = dict(__universe__=Universe,
+                         __file__ = os.path.abspath(self.fname))
+        namespace.update(locals())
+        namespace.pop('self')
+        return namespace
+
+    def ex(self, sandbox):
+        execfile(self.fname, sandbox)
+        return sandbox
 
 def entry():
     """
@@ -52,7 +62,7 @@ def entry():
     ##  to keep the bootstrap sacred
     parser        = build_parser()
     options, args = parser.parse_args()
-    nodeconf_file = ABS_NODE_CONF or options.conf or REL_NODE_CONF
+    nodeconf_file = options.conf
 
     #  python interpretter compatability:
     #    shell$ cortex -c"import cortex; print cortex.__file__"
@@ -60,17 +70,28 @@ def entry():
         fname = args[0]
         if os.path.exists(fname):
             print "cortex: assuming this is a file.."
-            sandbox = cortex_interpretter_namespace(fname)
-            execfile(fname, sandbox)
+            interpreter = Interpreter(fname)
+            sandbox = interpreter.namespace()
+            interpreter.ex(sandbox)
             instructions = sandbox.get('__instructions__', [])
-            agent_specs = sandbox.get('__agents__', [])
-            if instructions:
+            if instructions and options.conf:
+                raise RuntimeError(
+                    "cant use '__instructions__' and "
+                    "still pass --conf="+options.conf)
+            elif not instructions and options.conf:
+                sandbox['__universe__'].nodeconf_file = options.conf
+            elif instructions and not options.conf:
                 sandbox['__universe__'].set_instructions(instructions)
+            else:
+                raise RuntimeError("unrecognized combination of "
+                                   "__instructions__ and --conf")
+
+            agent_specs = sandbox.get('__agents__', [])
             for agent_spec in agent_specs:
                 if isinstance(agent_spec, (list,tuple)):
                     args, kargs = agent_spec
                 else:
-                    args,kargs = [agent_spec], {}
+                    args, kargs = [agent_spec], {}
                 sandbox['__universe__'].agents.manage(*args, **kargs)
             sandbox['__universe__'].play()
             return
@@ -90,7 +111,7 @@ def entry():
     from cortex.bin.phase2 import install_nodeconf
     from cortex.bin.client import use_client
     from cortex.contrib.reloading_helpers import run as RUN
-    Universe.directives = options.directives.split(",")
+    #Universe.directives = options.directives.split(",")
 
     # reflect command-line options in universe's config
     olist = [ x for x in dir(options) if not x.startswith('_') \
@@ -133,12 +154,15 @@ def entry():
         services = options.services.split(',')
         for s in services:
             api.do([['load_service', (s.strip(),), {}]])
-    verify_file(nodeconf_file)
-    install_nodeconf(nodeconf_file, options, args)
-    return Universe.play() # Invoke the Universe
 
-def verify_file(f,err="Path does not exist."):
+    if nodeconf_file:
+        verify_file(nodeconf_file)
+        install_nodeconf(nodeconf_file, options, args)
+        return Universe.play() # Invoke the Universe
+
+def verify_file(f):
     if not os.path.exists(f):
+        err='Path "{0}" does not exist.'.format(f)
         print err
         sys.exit()
 
