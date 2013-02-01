@@ -34,3 +34,8 @@ class GoalMonitor(WatchDog, Service, ThreadedIterator,):
         report("ALL GOALS SATISIFIED")
         self.stop()
         self.universe.halt()
+
+class OnReady(GoalMonitor):
+    """ a GoalMonitor that does some stuff once the
+        universe is finished bootstrapping
+    """

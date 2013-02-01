@@ -26,10 +26,16 @@
     <table style="width:100%;margin-left:15px;">
       <tr><td>
       <h4>Peers:</h4>
+      <small>via {{obj.peers.__class__.__name__}}</small>
       <ul style="margin-left:10px;">
-        peers here
-        {% for x in obj.peers %}
-        <li><a href="{{request.path}}/peers/registry[{{x}}]/">{{x}}</a></li>
+        {% for i in range(obj.peers.__len__()) %}
+        <li>
+          <a id=peer_link_{{i}} href="{{request.path}}/peers[{{i}}]">
+            {{i}} {{request.path}}/peers[{{i}}]?call=__str__
+          </a>
+          <script>
+          $(document).ready(function(){$('#peer_link_{{i}}').load('{{request.path}}/peers[{{i}}]?call=__str__')})</script>
+        </li>
         {%endfor%}
       </ul>
     </td>

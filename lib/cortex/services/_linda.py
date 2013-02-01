@@ -21,6 +21,10 @@ class Linda(Service):
 
     def clean(self):
         self.universe.ground.clean()
+        try:
+            (self.universe|'postoffice').clean()
+        except:
+            pass
 
     def iterate(self):
         """ placeholder """

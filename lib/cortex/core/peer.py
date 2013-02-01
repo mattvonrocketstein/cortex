@@ -118,7 +118,8 @@ class CortexPeer(Peer):
 
     def __getattr__(self,x):
         #if isinstance(out, HDS):
-        return MethodHandle(lambda *args, **kargs: self._eager_api(x, *args,**kargs))
+        if not x.startswith('_'):
+            return MethodHandle(lambda *args, **kargs: self._eager_api(x, *args,**kargs))
         #return out
     def __repr__(self):
         return super(CortexPeer,self).__repr__().replace('Peer@','CortexPeer@')
@@ -194,7 +195,7 @@ class PeerManager(Manager):
         """ allows for doing peers.localhost """
         ogetattr = object.__getattribute__
         mgetattr = Manager.__getattribute__
-        for key in ogetattr(self,'keys')():
+        for key in ogetattr(self, 'keys')():
             peer = ogetattr(self, '__getitem__')(key)
             if name == peer.addr:
                 return peer

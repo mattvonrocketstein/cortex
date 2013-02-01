@@ -3,6 +3,24 @@
     This file contains the aspects of the universe
     which deal with finding and loading services.
 """
+'''
+PEAK-RULES==0.5a1.dev
+TODO: multimethods.
+>>> from peak.rules import abstract, when, around, before, after
+>>> @abstract()
+... def pprint(ob):
+...     """A pretty-printing generic function"""
+>>> @when(pprint, (list,))
+... def pprint_list(ob):
+...     print "pretty-printing a list"
+>>> @when(pprint, "isinstance(ob,list) and len(ob)>50")
+... def pprint_long_list(ob):
+...     print "pretty-printing a long list"
+>>> pprint([1,2,3])
+pretty-printing a list
+>>> pprint([42]*1000)
+pretty-printing a long list
+'''
 import os, sys
 import inspect
 import types

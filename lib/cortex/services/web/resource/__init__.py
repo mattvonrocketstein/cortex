@@ -23,7 +23,7 @@ from cortex.services.postoffice import PostOffice
 from cortex.services.web.template import template
 from .util import get_source, alligator2paren
 
-ATOMS = ( list, tuple,  float, int, str )
+ATOMS = ( list, tuple,  float, int, basestring )
 
 post_processors = type('sdasdasd',(object,),
                        dict(reverse_console = staticmethod(report.console.html)))
@@ -31,11 +31,9 @@ post_processors = type('sdasdasd',(object,),
 class EFrame(Resource):
     def render_GET(self, request):
         chan = request.args['chan'][0]
-        ctx = dict(eframe_url=
-                   'http://{0}:{1}/alerts?{2}'.format(self.universe.host,
-                                                       self.ehub.port,chan),)
-                   #,#http://localhost:1339/alerts?{{chan}}
-                   #chan=chan)
+        url = 'http://{0}:{1}/alerts?{2}'.format(self.universe.host,
+                                               self.ehub.port,chan)
+        ctx = dict(eframe_url=url,)
         t = template('eframe')
         return str(t.render(**ctx))
 
@@ -153,6 +151,10 @@ class ObjectResource(Resource):
             if hasattr(self, func_name ):
                 return getattr(self,func_name)
 
+    def _dispatch_call(self, request):
+        name = request.args['call'][0]
+        return alligator2paren(getattr(self.target, name)())
+
     def _dispatch_getattr(self, request):
         name = request.args['getattr'][0]
         return alligator2paren(getattr(self.target, name, 'N/A'))
@@ -191,9 +193,14 @@ class ObjectResource(Resource):
 
         if self.is_complex:
             ns = Namespace(self.target, dictionaries=False)
+            try:
+                ns_locals = ns.methods.locals
+            except:
+                ns_locals = ['error_retrieving_local_methods']
+
             ctx.update(all_namespace=ns.keys(),
                        ns_methods=ns.methods.nonprivate,
-                       ns_locals=ns.methods.locals,
+                       ns_locals=ns_locals,
                        ns_private=ns.private,
                        ns_data=ns.data,
                        )
@@ -214,7 +221,10 @@ class ObjectResource(Resource):
                 index    = component.__getslice__(*span)[1 : -1]
                 jst_name = component[:span[0]]
                 target   = getattr(target, jst_name)
-                if isinstance(target,(list,tuple)): index = int(index)
+                #if isinstance(target, (list,tuple)): index = int(index)
+                if hasattr(target, '__getitem__'):
+                    try: index = int(index)
+                    except ValueError: pass
                 target   = target[index]
             elif component.endswith('()'):
                 func   = component[:-2]
