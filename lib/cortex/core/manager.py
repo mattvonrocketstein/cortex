@@ -328,13 +328,16 @@ class Manager(object):
             except KeyError:
                 try:
                     return self.registry[name.lower()]
-                except KeyError, k:
-                    tmp = [ x for x in self.registry if x.lower()==name.lower() ]
-                    if tmp:
-                        assert len(tmp)==1,'ambiguous'
-                        return self.registry[tmp[0]]
-                    else:
-                        raise k
+                except KeyError:
+                    try:
+                        return self.registry[int(name)]
+                    except KeyError, k:
+                        tmp = [ x for x in self.registry if x.lower()==name.lower() ]
+                        if tmp:
+                            assert len(tmp)==1,'ambiguous'
+                            return self.registry[tmp[0]]
+                        else:
+                            raise k
             raise self.NotFound('No such asset: ' + name)
 
     @property
