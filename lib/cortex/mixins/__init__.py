@@ -40,7 +40,9 @@ class FaultTolerant(Mixin):
 
 
 class AddressMixin:
-    """ Something that's addressable """
+    """ Something that's addressable
+        TODO: use xanalogica.tumblers
+    """
 
 
 class Controllable(Mixin):

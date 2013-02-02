@@ -4,7 +4,7 @@ import time
 
 from pep362 import Signature
 
-from cortex.core.metaclasses import META1
+from goulash.metaclasses import META1
 from cortex.core.common import AgentError
 from cortex.core.data import NOOP, DEFAULT_HOST
 from cortex.mixins.topology import TopologyMixin
@@ -18,30 +18,6 @@ class AgentLite(TopologyMixin, MobileCodeMixin,
                 AutonomyMixin, FaultTolerant):
     """
     """
-    pass
-
-class LogicMixin(object):
-
-    @property
-    def beliefs(self):
-        """ """
-        if not hasattr(self,'_beliefs'):
-            self._beliefs = Doctrine()
-        return self._beliefs
-
-class Agent(LogicMixin, CommsMixin, AgentLite):
-    """
-        CONVENTION: __init__ always passes unconsumed kargs to _post_init()
-
-        TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
-        TODO: Make mixin classes work with __add__
-
-    """
-    __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
-    _post_init    = NOOP
-    _instances    = []
-    name          = 'default-name'
-
     @classmethod
     def using(self, template=None, flavor=None, extras={}):
         """
@@ -87,6 +63,29 @@ class Agent(LogicMixin, CommsMixin, AgentLite):
         kls_name = fxn.__name__
         bases=(kls,)
         return type(kls_name, bases, dct)
+
+class LogicMixin(object):
+
+    @property
+    def beliefs(self):
+        """ """
+        if not hasattr(self,'_beliefs'):
+            self._beliefs = Doctrine()
+        return self._beliefs
+
+class Agent(LogicMixin, CommsMixin, AgentLite):
+    """
+        CONVENTION: __init__ always passes unconsumed kargs to _post_init()
+
+        TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
+        TODO: Make mixin classes work with __add__
+
+    """
+    __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
+    _post_init    = NOOP
+    _instances    = []
+    name          = 'default-name'
+
 
     @property
     def _opts(self):

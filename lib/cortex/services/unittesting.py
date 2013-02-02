@@ -5,7 +5,7 @@ from unittest import TestCase, TestResult #, TextTestRunner
 
 from cortex.services import Service
 from cortex.core.util import report, console
-from cortex.core.metaclasses import subclass_tracker
+from goulash.metaclasses import subclass_tracker
 
 from cortex.mixins.flavors import ThreadedIterator
 def show_tb(tbstr):
