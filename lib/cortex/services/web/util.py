@@ -37,7 +37,7 @@ class Multiplot(object):
     @property
     def url(self):
         """ full ajax url """
-        return self._url(short_url_root + '?')
+        return self._url(self.short_url_root + '?')
 
     def _url(self, full_url):
         for name in self.subplots:
