@@ -5,6 +5,7 @@ import types
 from cortex.services import Service
 from cortex.core.util import report
 
+
 class UniverseNotation:
     """ """
 
@@ -15,10 +16,24 @@ class UniverseNotation:
                (universe ^ '~cortex/etc/master.conf')
         """
 
-
     def __pow__(self, other):
         return self.agents[other].obj
 
+    def _retrieve_string_from_services(self, name):
+        try:
+            out = self.services[name]
+            return out and out.obj
+        except self.services.NotFound:
+            return None
+
+    def _retrieve_string_from_agents(self, name):
+        try:
+            out = self.agents[name]
+            return out and out.obj
+        except self.agents.NotFound:
+            return None
+
+    # TODO: multimethods
     def __or__(self, other):
         """ syntactic sugar for grabbing a service by name,
             given an actual service, getting it's name. example
@@ -29,24 +44,11 @@ class UniverseNotation:
               >>> postoffice =  ( universe | "postoffice" )
               >>> ( universe | postoffice )
               "postoffice"
-
         """
-        def get_string_from_services(name):
-            try:
-                out = self.services[name]
-                return out and out.obj
-            except self.services.NotFound:
-                return None
-        def get_string_from_agents(name):
-            try:
-                out = self.agents[name]
-                return out and out.obj
-            except self.agents.NotFound:
-                return None
 
         if type(other) in types.StringTypes:
-            result = get_string_from_services(other) or \
-                     get_string_from_agents(other)
+            result = self._retrieve_string_from_services(other) #or \
+                     #self._retrieve_string_from_agents(other)
             if result is None:
                 report('no such service/agent', other)
                 return None

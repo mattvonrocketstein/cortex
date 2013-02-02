@@ -3,6 +3,7 @@
 import os
 import copy
 import urllib
+import webbrowser
 
 from nevow import appserver
 from twisted.web import static, server
@@ -33,6 +34,12 @@ from .pchoose import PortChooser
 class WebRoot(Agent, PortChooser):
     """  abstraction for / """
 
+    def open_page_in_browser(self, url):
+        report('opening: ',url)
+        webbrowser.open_new_tab(url)
+
+    def open_wui(self):
+        return self.open_page_in_browser(self.url)
 
     def iterate(self):
         """ WebRoot is a trivial Agent with no  true concurrency
@@ -69,14 +76,17 @@ class WebRoot(Agent, PortChooser):
         self.putChild(endpoint, stream)
         return stream
 
+    @property
+    def url(self):
+        return 'http://{0}:{1}'.format(self.universe.host,
+                                       self.universe.port_for(self))
+
+
     def make_redirect(self, _from, b):
         """ """
         rsrc = Redirect(b)
         self.putChild(_from, rsrc)
-        url = 'http://{0}:{1}/{2}'.\
-              format(self.universe.host,
-                     self.universe.port_for(self),
-                     _from)
+        url = '{0}/{1}'.format(self.url, _from)
         return rsrc, url
 
     def setup(self):
@@ -146,6 +156,12 @@ class Web(FecundService):
         else:
             return getattr(self.filter_by_type(WebRoot)[0], name)
 
-    @constraint(boot_first='postoffice')
+    @constraint(boot_first='postoffice terminal'.split())
     def start(self):
         super(Web, self).start()
+        terminal = (self.universe|'terminal')
+        # keeping *args just so terminal can use
+        # comma-style calling:  ", open_wui"
+        namespace = dict(open_wui = lambda *args: self.open_wui())
+        terminal.contribute_to_api(**namespace)
+        report('type open_wui() to see the web user interface.')
