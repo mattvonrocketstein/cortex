@@ -43,8 +43,36 @@ class Agent(LogicMixin, CommsMixin, AgentLite):
     name          = 'default-name'
 
     @classmethod
+    def using(self, template=None, flavor=None, extras={}):
+        """
+           usage:
+              Agent.using(template=SomeMixin,flavor=SomeAutonomyFlavor)
+        """
+        target = Agent
+        if isinstance(template, dict):
+            template.update(extras)
+            template = type('DynamicMixin',(Mixin,), template)
+        elif extras:
+            template = type('DynamicMixin', (template,), extras)
+        if flavor:
+            target = target.use_concurrency_scheme(flavor)
+        if template:
+            target = target.template_from(template)
+        return target
+
+    @classmethod
+    def use_concurrency_scheme(kls, other):
+        """ uses the concurrency scheme ``other``
+            mutate this agent-subclass in place to prefer Autonomy
+            methods described in the autonomy subclass ``other``
+        """
+        kls_name = '{0}+{1}'.format(other.__class__.__name__,
+                                    kls.__name__)
+        return type(kls_name, tuple([other, kls ]) , {})
+
+    @classmethod
     def from_function(kls, fxn, flavor=None):
-        # TODO: verify function args use "self"?
+        """ heuristic for building agents from functions """
         sig = Signature(fxn)
         sig_args = set(sig._parameters.keys())
         if set(['universe'])==sig_args:
@@ -84,48 +112,6 @@ class Agent(LogicMixin, CommsMixin, AgentLite):
             else: self.fault('ambiguous topology')
         else:
             return None
-
-    @classmethod
-    def using(self, template=None, flavor=None, extras={}):
-        """
-           usage:
-              Agent.using(template=SomeMixin,flavor=SomeAutonomyFlavor)
-        """
-        target = Agent
-        if isinstance(template, dict):
-            template.update(extras)
-            template = type('DynamicMixin',(Mixin,), template)
-        elif extras:
-            template = type('DynamicMixin', (template,), extras)
-        if flavor:
-            target = target.use_concurrency_scheme(flavor)
-        if template:
-            target = target.template_from(template)
-        return target
-
-    @classmethod
-    def use_concurrency_scheme(kls, other):
-        """ uses the concurrency scheme ``other``
-            mutate this agent-subclass in place to prefer Autonomy
-            methods described in the autonomy subclass ``other``
-        """
-        kls_name = '{0}+{1}'.format(other.__class__.__name__,
-                                    kls.__name__)
-        return type(kls_name, tuple([other, kls ]) , {})
-
-
-    @classmethod
-    def template_from(this_kls, cls_template):
-        """ return a new class that has all the behaviour specified in ``cls_template``
-            as well as at least the minimum requirements of being an abstract Agent.
-
-            ``cls_template`` is a dictionary-like item that has named behaviours
-        """
-        kls_name = '{outer}({inner})'.format(outer=this_kls.__name__,
-                                             inner=cls_template.__name__)
-        bases = (cls_template, this_kls)
-        dct = {}
-        return type(kls_name, bases, dct)
 
     def __repr__(self):
         return "<{name}>".format(name=self.name)

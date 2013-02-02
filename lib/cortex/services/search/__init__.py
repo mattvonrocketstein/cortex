@@ -6,7 +6,7 @@
       TODO: make 'bus' less special, parametrizing it somehow
       TODO: make google search service, optionally using domain names
       TODO: make wikipedia search service
-      TODO: stop using UUID, key on search term and disallow multiple running simultaneously
+      TODO: stop using uniq(), key on search term and disallow multiple running simultaneously
       TODO: result caching?
       TODO: demote this from a service.  (then it will be guaranteed to boot after all services)
       TODO: start's first constraint is overwritten actually, but is implied by second anyway
@@ -15,8 +15,9 @@
 import os
 import json
 from channel import Channel
+from goulash.util import uniq
 
-from cortex.core.util import report, uuid
+from cortex.core.util import report
 from cortex.services import Service
 from cortex.mixins.flavors import Threaded
 from cortex.util.decorators import constraint
@@ -92,12 +93,12 @@ class Search(Service, AgentManager):
         self.mem.save()
 
     def google(self, query):
-        u = uuid()
+        u = uniq()
         self(GGLer, name='Phase1:internet:' + u, search=query, _id=u,)
         return dict(callback="get('{0}')".format(u))
 
     def ack(self, search, wd=os.getcwd()):
-        u = uuid()
+        u = uniq()
         self(ACKer, name='Phase1:VeryLocal:'+u,_id=u, wd=wd, search=search)
         return dict(callback='get("{0}")'.format(u))
 

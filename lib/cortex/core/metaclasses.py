@@ -3,13 +3,11 @@
     Support for algebra amongst class objects, subclass enumeration.
 
 """
-import new
-import copy
-import uuid
+import new, copy
 from collections import defaultdict
 
+from goulash.util import uniq
 from cortex.core.util import report
-from cortex.tests import uniq
 
 def metaclass_hook(func):
     func.metaclass_hook = True
@@ -27,7 +25,7 @@ class META(type):
          *
          *
     """
-    def __lshift__(kls,my_mixin):
+    def __lshift__(kls, my_mixin):
         """ algebra for left-mixin
 
              The following are equivalent:
@@ -60,7 +58,7 @@ class META(type):
         if hasattr(kls, '_subclass_hooks'):
             name, dct = kls._subclass_hooks(name=name, **dct)
         name = name or "DynamicSubclassOf{K}_{U}".format(K=kls.__name__,
-                                         U=str(uuid.uuid1()).split('-')[-2])
+                                         U=uniq())
         # WOAH, this behaves differently than type()
         return new.classobj(name, (kls,), dct)
 
@@ -94,6 +92,19 @@ class META1(META):
             this method records data about hierarchy structure
         """
         mcls.subclass_registry[bases].append(class_obj)
+
+    #@classmethod
+    def template_from(this_kls, cls_template):
+        """ return a new class that has all the behaviour specified in ``cls_template``
+            as well as at least the minimum requirements of being an abstract Agent.
+
+            ``cls_template`` is a dictionary-like item that has named behaviours
+        """
+        kls_name = '{outer}({inner})'.format(outer=this_kls.__name__,
+                                             inner=cls_template.__name__)
+        bases = (cls_template, this_kls)
+        dct = {}
+        return type(kls_name, bases, dct)
 
 """
 class ClassTracking(type):

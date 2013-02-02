@@ -8,13 +8,15 @@ import pickle
 import time
 import StringIO, pprint
 
+from goulash.mixin import Mixin
+
 from cortex.core.util import report, console
 from cortex.mixins._os import OSMixin
 from cortex.mixins._os import PIDMixin
 from cortex.mixins.local_queue import LocalQueue
 from cortex.mixins.autonomy import *
 from cortex.mixins.persistence import *
-from cortex.mixins.mixin import Mixin
+
 
 class FaultTolerant(Mixin):
     """ faults are a replacement for exceptions """

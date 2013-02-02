@@ -3,8 +3,8 @@
 
 import inspect
 
-from cortex.core.util import report, uniq
-
+from goulash.util import uniq
+from cortex.core.util import report
 from cortex.core.ground import HierarchicalWrapper, HierarchicalData
 from cortex.core.manager import Manager
 

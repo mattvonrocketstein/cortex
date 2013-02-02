@@ -1,7 +1,7 @@
 """ cortex.core.util
 """
 import inspect
-import time, uuid
+
 from pprint import pprint
 from StringIO import StringIO
 from twisted.python.reflect import namedAny
@@ -33,9 +33,6 @@ def rpprint(obj,pad=' '*4):
     report.console.draw_line('',display=False)
     print console.color('\n'.join(['\n']+map(lambda x: pad + x, s.read().split('\n'))))
 report.pprint = rpprint
-
-def uniq():
-    return str(uuid.uuid1()).split('-')[0]+str(time.time())[:-3]
 
 def whoami():
     """ gives information about the caller """
@@ -132,10 +129,6 @@ def service_is_stopped(name):
     """
     from cortex.core import api
     return lambda:  (api.universe|name).stopped
-
-def uuid():
-    import uuid
-    return str(uuid.uuid1())
 
 def pedigree(agent, names='iterate pause play setup start stop'):
     """ given an agent and some method names,

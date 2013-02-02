@@ -5,10 +5,11 @@
       TODO: move to goulash
 """
 
-import uuid
 import inspect
 import datetime
 from types import StringTypes
+
+from goulash.util import uniq
 
 from contextlib import contextmanager
 from cortex.core.hds import HierarchicalData
@@ -360,7 +361,7 @@ class Manager(object):
 
     @classmethod
     def choose_dynamic_name(kls):
-        name = "Dynamic{k}Name{U}".format(U=str(uuid.uuid1()).split('-')[0],
+        name = "Dynamic{k}Name{U}".format(U=uniq(),
                                          k=kls.__name__)
     @contextmanager
     def running(self, kls, **kargs):
