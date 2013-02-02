@@ -15,7 +15,6 @@ from contextlib import contextmanager
 from cortex.core.hds import HierarchicalData
 from cortex.core.util import report, report_if_verbose
 
-
 class Manager(object):
     """ Managers are inspired by django's managers.  Think of
         this class as a collection of patterns in tracking,
