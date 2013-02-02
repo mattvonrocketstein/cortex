@@ -4,7 +4,8 @@ import time
 
 from pep362 import Signature
 
-from goulash.metaclasses import META1
+from goulash.metaclasses import supports_class_algebra
+
 from cortex.core.common import AgentError
 from cortex.core.data import NOOP, DEFAULT_HOST
 from cortex.mixins.topology import TopologyMixin
@@ -14,6 +15,7 @@ from cortex.mixins import (Mixin, AutonomyMixin, FaultTolerant, MobileCodeMixin)
 
 from spock import Doctrine
 
+@supports_class_algebra
 class AgentLite(TopologyMixin, MobileCodeMixin,
                 AutonomyMixin, FaultTolerant):
     """
@@ -31,20 +33,10 @@ class AgentLite(TopologyMixin, MobileCodeMixin,
         elif extras:
             template = type('DynamicMixin', (template,), extras)
         if flavor:
-            target = target.use_concurrency_scheme(flavor)
+            target = target << flavor
         if template:
             target = target.template_from(template)
         return target
-
-    @classmethod
-    def use_concurrency_scheme(kls, other):
-        """ uses the concurrency scheme ``other``
-            mutate this agent-subclass in place to prefer Autonomy
-            methods described in the autonomy subclass ``other``
-        """
-        kls_name = '{0}+{1}'.format(other.__class__.__name__,
-                                    kls.__name__)
-        return type(kls_name, tuple([other, kls ]) , {})
 
     @classmethod
     def from_function(kls, fxn, flavor=None):
@@ -78,10 +70,8 @@ class Agent(LogicMixin, CommsMixin, AgentLite):
         CONVENTION: __init__ always passes unconsumed kargs to _post_init()
 
         TODO: move SelfHostingTupleBus and FOL-KB into agents-proper
-        TODO: Make mixin classes work with __add__
-
+        TODO: Make mixin classes work with __add__ ?
     """
-    __metaclass__ = META1 # a metaclass that tracks all the subclasses for this class
     _post_init    = NOOP
     _instances    = []
     name          = 'default-name'

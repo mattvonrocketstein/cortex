@@ -5,7 +5,7 @@ import time
 from types import GeneratorType
 
 from cortex.core.util import report
-from cortex.mixins.mixin import Mixin
+from goulash.mixin import Mixin
 from cortex.mixins.persistence import is_persistent
 
 class AbstractAutonomy(Mixin):

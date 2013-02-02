@@ -32,7 +32,7 @@ def build_parser():
     return p
 
 
-
+from cortex.core.util import report, report_if_verbose
 class Interpreter(object):
     def __init__(self,fname):
         self.fname = fname
@@ -71,9 +71,11 @@ def entry():
         if os.path.exists(fname):
             print "cortex: assuming this is a file.."
             interpreter = Interpreter(fname)
+
             sandbox = interpreter.namespace()
             interpreter.ex(sandbox)
             instructions = sandbox.get('__instructions__', [])
+            agent_specs = sandbox.get('__agents__', [])
             if instructions and options.conf:
                 raise RuntimeError(
                     "cant use '__instructions__' and "
@@ -82,18 +84,19 @@ def entry():
                 sandbox['__universe__'].nodeconf_file = options.conf
             elif instructions and not options.conf:
                 sandbox['__universe__'].set_instructions(instructions)
-            else:
-                raise RuntimeError("unrecognized combination of "
-                                   "__instructions__ and --conf")
 
-            agent_specs = sandbox.get('__agents__', [])
             for agent_spec in agent_specs:
                 if isinstance(agent_spec, (list,tuple)):
                     args, kargs = agent_spec
                 else:
                     args, kargs = [agent_spec], {}
                 sandbox['__universe__'].agents.manage(*args, **kargs)
-            sandbox['__universe__'].play()
+
+            if '.play()' not in open(fname).read():
+                # FIXME: hack
+                report_if_verbose("This file did not start the universe.  allow me")
+                sandbox['__universe__'].play()
+            report_if_verbose("finished running this universe.")
             return
 
     # use the gtk-reactor?
@@ -101,8 +104,6 @@ def entry():
         print "using gtk reactor"
         from twisted.internet import gtk2reactor # for gtk-2.0
         gtk2reactor.install()
-
-
 
     ## Phase 2:
     ##  trigger the first cortex imports.
