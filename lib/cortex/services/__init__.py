@@ -30,7 +30,8 @@ class Service(Agent):
         self._boot_first = []
 
         if 'name' in kargs:
-            self._raise_error('Services specify their own names!')
+            self._raise_error('Services specify their own names!'
+                              '  You set: {0}'.format(kargs['name']))
         else:
             kargs.update( { 'name' : self.__class__.__name__ } )
 

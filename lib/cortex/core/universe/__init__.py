@@ -109,10 +109,10 @@ class __Universe__(Tracking,
             pprint.pprint(api, fhandle)
             opts   = dict(api=api_header, instruction=instruction,args=args,kargs=kargs)
             header = "ParseError: {E}:".format(E=error)
-            body   = ("instruction = {instruction}\n"
-                      "args        = {args}\n"
-                      "kargs       = {kargs}\n"
-                      "with api    = {api}\n")
+            body   = ("\tinstruction = {instruction}\n"
+                      "\targs        = {args}\n"
+                      "\tkargs       = {kargs}\n"
+                      "\twith api    = {api}\n")
             error  = (header + body).format(**opts)
             report(error)
             sys.exit()
@@ -123,21 +123,30 @@ class __Universe__(Tracking,
 
         # Interprets all the instructions in the nodeconf
         for node in self.Instructions:
+
            original = node
            instruction, args = node[0], node[1:]
+           print '******',instruction,args
            report_if_verbose("parsing node", node)
            if len(args) == 1:
                kargs = {}
-           else:
-               args = args[ : -1 ]
-               kargs = (args and args[-1]) or {}
+           elif len(args)==2:
+               args, kargs = args
+               if not isinstance(args, (list,tuple)):
+                   args = [args]
+               if not isinstance(kargs, dict):
+                   args += [kargs]
+                   kargs = {}
+               #kargs = (args and args[-1]) or {}
 
            handler = get_handler(instruction)
            if not handler:
                parse_error("No instruction handler!", instruction, args, kargs)
+           print '***',args,kargs
            handler(*args, **kargs)
 
-        # is this working?
+        # is this working? also this is not SST..
+        # additionally handled in managers and other places
         for name, kls, kls_kargs in self.agents._pending:
             kls_kargs.update( { 'universe' : self } )
 

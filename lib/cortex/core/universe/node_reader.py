@@ -20,6 +20,7 @@ class ConfigurationAspect(object):
     @property
     def Instructions(self):
         """ nodes: static definition """
+        # FIXME:
         blammo = getattr(self, '_use_nodeconf', self.read_nodeconf)
         return blammo() if callable(blammo) else blammo
 

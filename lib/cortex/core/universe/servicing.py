@@ -3,24 +3,6 @@
     This file contains the aspects of the universe
     which deal with finding and loading services.
 """
-'''
-PEAK-RULES==0.5a1.dev
-TODO: multimethods.
-
->>> @abstract()
-... def pprint(ob):
-...     """A pretty-printing generic function"""
->>> @when(pprint, (list,))
-... def pprint_list(ob):
-...     print "pretty-printing a list"
->>> @when(pprint, "isinstance(ob,list) and len(ob)>50")
-... def pprint_long_list(ob):
-...     print "pretty-printing a long list"
->>> pprint([1,2,3])
-pretty-printing a list
->>> pprint([42]*1000)
-pretty-printing a long list
-'''
 import os, sys
 import inspect
 from types import StringTypes, ModuleType
@@ -28,11 +10,14 @@ from types import StringTypes, ModuleType
 from cortex.core.util import namedAny
 from cortex.core.util import report
 from cortex.services import Service
+from cortex.agents import Agent
+
 from peak.rules import abstract, when, around, before, after
 
 is_string = lambda s: isinstance(s,StringTypes)
 is_dotpath = lambda s: is_string(s) and '.' in s
 is_fpath = lambda s: is_string(s) and os.path.sep in s
+
 def service_is_abstract(kls):
     opts = getattr(kls, 'Meta', None)
     return bool(getattr(opts, 'abstract', False))
@@ -40,8 +25,16 @@ def service_is_abstract(kls):
 class ServiceAspect(object):
 
     @abstract
-    def loadAgent(self, agent, **kargs):
-        pass
+    def loadAgent(self, agent, **kargs): pass
+    @abstract
+    def loadService(self, service, **kargs): pass
+
+
+    # TODO: bad names?  this is sort of a load() style command
+    @abstract
+    def start_service(self, obj, **kargs): pass
+    @abstract
+    def start_agent(self, obj, **kargs): pass
 
     @when(loadAgent, 'is_dotpath(agent)')
     def loadAgent(self, agent, **kargs):
@@ -53,7 +46,6 @@ class ServiceAspect(object):
             msg = msg.format(service_path, type(kls).__name__)
             raise ValueError(msg)
         return self.start_agent(kls, **kargs)
-
 
     def loadServices(self, services=[]):
         """ """
@@ -67,10 +59,6 @@ class ServiceAspect(object):
                 error   = "Failed to get module {mod} to load service.".format(mod=s)
                 context = dict(exception=e)
                 self.fault(error, context)
-
-    @abstract
-    def loadService(self, service, **kargs):
-        """ load a service """
 
     @when(loadService, "not is_string(service)")
     def loadService(self, service, **kargs):
@@ -103,15 +91,11 @@ class ServiceAspect(object):
         return self.start_service(kls, **kargs)
 
     @when(loadService,
-          ("is_string(service) and "
-           "not is_dotpath(service) and "
-           "not is_fpath(service) and "
-           "len(service.split())==1"))
+          ("is_string(service) and not is_dotpath(service) and "
+           "not is_fpath(service) and len(service.split())==1"))
     def loadService(self, service, **kargs):
-        #return self._load_service_from_word(service, **kargs)
-        """ inside this method, 'service' is something that
-            is just one word.. where/what could it be?
-        """
+        # inside this method, 'service' is something that
+        # is just one word.. where/what could it be?
         errors   = []
         mod_name = service
 
@@ -135,28 +119,16 @@ class ServiceAspect(object):
                     ret_vals.append(result) # THUNK
         return ret_vals
 
-    @abstract
-    def start_service(self, obj, **kargs):
-        """ TODO: bad name?  this is a load() style command,
-            i don't think it really starts look back at
-            manage implementation specifics
-        """
-        pass
-
     @when(start_service,'service_is_abstract(obj)')
     def start_service(self, obj, **kargs):
         #fixme: call a fault here=, cant shutdown the threads cleanly.
         #self.fault('refusing to start an abstract service:', obj)
         report('refusing to start an abstract service:', obj)
-        return
 
     @when(start_service,'not service_is_abstract(obj)')
     def start_service(self, obj, **kargs):
         kargs.update(__manager=self.services)
-        self.start_agent(obj, **kargs)
-
-    @abstract
-    def start_agent(self, obj, **kargs): pass
+        return self.start_agent(obj, **kargs)
 
 
     def start_agent(self, obj, **kargs):

@@ -1,6 +1,6 @@
 """ cortex.core.parsing
 """
-import simplejson
+import demjson
 from cortex.core.util import report
 
 class Nodeconf:
@@ -23,6 +23,7 @@ class Nodeconf:
         """ """
         return str( [x for x in self] )
 
+    # FIXME: use multimethods
     def as_string(self, one_line=False):
         """
         """
@@ -30,7 +31,7 @@ class Nodeconf:
             nodeconf_file = self.nodeconf_file
             return '\n'.join(open(nodeconf_file).readlines())
         elif self.list:
-            return '\n'.join([simplejson.dumps(x) for x in self.list])
+            return '\n'.join([demjson.encode(x) for x in self.list])
         else:
             assert self.raw, "need raw "
             return self.raw
@@ -39,7 +40,7 @@ class Nodeconf:
             if type(self.raw) in types.StringTypes:
                 return self.raw
             sep = (one_line and '') or '\n'
-            return sep.join([simplejson.dumps(element) for element in self.raw])
+            return sep.join([demjson.decode(element) for element in self.raw])
 
     def __iter__(self):
         """ dumb helper """
@@ -66,12 +67,14 @@ class Nodeconf:
 
             #report('got line', line)
             try:
-                nodedef = simplejson.loads(line)
-            except:
-                report("error decoding..", line)
+                nodedef = demjson.decode(line)
+            except Exception, e:
+                report("error decoding line: "+line)
+                report("original error: "+str(e))
+            #"{0}", line)
             else:
-                #report('encoded..', nodedef)
-                nodes.append(nodedef)
+                report('encoded..', nodedef)
+            nodes.append(nodedef)
         if ignore:
             filtered=[]
             for ignored_instruction in ignore:
