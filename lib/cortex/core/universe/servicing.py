@@ -6,7 +6,7 @@
 '''
 PEAK-RULES==0.5a1.dev
 TODO: multimethods.
->>> from peak.rules import abstract, when, around, before, after
+
 >>> @abstract()
 ... def pprint(ob):
 ...     """A pretty-printing generic function"""
@@ -23,13 +23,21 @@ pretty-printing a long list
 '''
 import os, sys
 import inspect
-import types
+from types import StringTypes, ModuleType
 
 from cortex.core.util import namedAny
 from cortex.core.util import report
 from cortex.services import Service
+from peak.rules import abstract, when, around, before, after
+
+is_string = lambda s: isinstance(s,StringTypes)
+is_dotpath = lambda s: is_string(s) and '.' in s
+is_fpath = lambda s: is_string(s) and os.path.sep in s
 
 class ServiceAspect(object):
+    def loadAgent(self, arg1):
+        pass
+
     def loadServices(self, services=[]):
         """ """
         for s in services:
@@ -43,13 +51,46 @@ class ServiceAspect(object):
                 context = dict(exception=e)
                 self.fault(error, context)
 
+    @abstract
     def loadService(self, service, **kargs):
-        """ """
-        if isinstance(service, types.StringTypes):
-            self._load_service_from_string(service, **kargs)
-        # Not a string? let's hope it's already a service-like thing
-        else:
-            return self.start_service(service, **kargs)
+        """ load a service """
+
+    @when(loadService, "not is_string(service)")
+    def loadService(self, service, **kargs):
+        """ Not a string? let's hope it's already a service-like thing """
+        return self.start_service(service, **kargs)
+
+    @when(loadService, "is_fpath(service)")
+    def loadService(self, service, **kargs):
+        curr     = os.getcwd()
+        fpath    = os.path.expanduser(service)
+        fpath    = os.path.abspath(os.path.dirname(fpath))
+        mod_name = os.path.splitext(os.path.split(service)[-1])[0]
+        os.chdir(fpath)
+        try:
+            result = self._load_service_from_word(mod_name)
+        finally:
+            os.chdir(curr)
+        return result
+
+    @when(loadService, "is_dotpath(service)")
+    def loadService(self, service, **kargs):
+        kls = namedAny(service)
+        if not issubclass(kls, Service):
+            msg = ("There is an error in your configuration file. "
+                   'The dotpath given by "{0}" resolves to a {1}, '
+                   "but it should be a Service.")
+            msg = msg.format(service_path, type(kls).__name__)
+            raise ValueError, msg
+        return self.start_service(kls, **kargs)
+
+    @when(loadService,
+          ("is_string(service) and "
+           "not is_dotpath(service) and "
+           "not is_fpath(service) and "
+           "len(service.split())==1"))
+    def loadService(self, service, **kargs):
+            return self._load_service_from_word(service, **kargs)
 
     def start_service(self, obj, ask=False, **kargs):
         """ TODO: bad name?  this is a load() style command,
@@ -70,39 +111,6 @@ class ServiceAspect(object):
                                         kls_kargs = kargs,
                                         name=obj.__name__.lower())
 
-    def _load_service_from_dotpath(self, service_path, **kargs):
-        """ """
-        kls = namedAny(service_path)
-        if not issubclass(kls, Service):
-            msg = ("There is an error in your configuration file. "
-                   'The dotpath given by "{0}" resolves to a {1}, '
-                   "but it should be a Service.")
-            msg = msg.format(service_path, type(kls).__name__)
-            raise ValueError, msg
-        return self.start_service(kls, **kargs)
-
-    def _load_service_from_string(self, service, **kargs):
-        """ """
-        if os.path.sep in service:
-            return self._load_service_from_fpath(service, **kargs)
-        elif "." in service: # handle dotpaths
-            return self._load_service_from_dotpath(service, **kargs)
-        else:
-            return self._load_service_from_word(service, **kargs)
-
-    def _load_service_from_fpath(self, service, **kargs):
-        """ """
-        curr     = os.getcwd()
-        fpath    = os.path.expanduser(service)
-        fpath    = os.path.abspath(os.path.dirname(fpath))
-        mod_name = os.path.splitext(os.path.split(service)[-1])[0]
-        os.chdir(fpath)
-        try:
-            result = self._load_service_from_word(mod_name)
-        finally:
-            os.chdir(curr)
-        return result
-
 
     def _load_service_from_word(self, service, **kargs):
         """ inside this method, 'service' is something that
@@ -115,10 +123,10 @@ class ServiceAspect(object):
             return ( {}, {} )
         mod = namedAny('cortex.services.{0}'.format(service))
         if not mod:
-            msg = "Service not found.. there may be an error in your configuration"
-            raise ValueError,msg
+            raise ValueError("Service not found.. there may be "
+                             "an error in your configuration")
 
-        if isinstance(mod, types.ModuleType):
+        if isinstance(mod, ModuleType):
             mod = dict([ [x, getattr(mod, x)] for x in dir(mod) ])
 
         ret_vals = []

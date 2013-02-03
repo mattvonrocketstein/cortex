@@ -164,6 +164,7 @@ def ping():         return chat('ping')
 # Shortcuts into the Universe
 load_service = universe.loadService
 load_services = universe.loadServices
+load_agent = universe.loadAgent
 #sleep        = universe.sleep
 
 # Managers and shortcuts into the managers
