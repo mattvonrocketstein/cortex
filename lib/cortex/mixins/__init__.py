@@ -8,6 +8,7 @@ import pickle
 import time
 import StringIO, pprint
 
+from spock import Doctrine
 from goulash.mixin import Mixin
 
 from cortex.core.util import report, console
@@ -16,6 +17,8 @@ from cortex.mixins._os import PIDMixin
 from cortex.mixins.local_queue import LocalQueue
 from cortex.mixins.autonomy import *
 from cortex.mixins.persistence import *
+from cortex.mixins.mixin import Mixin
+from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
 
 
 class FaultTolerant(Mixin):
@@ -51,11 +54,8 @@ class Controllable(Mixin):
         """ like "stop" only safe to call from anywhere """
         ABSTRACT
 
-from spock import Doctrine
-from cortex.mixins.mixin import Mixin
 class LogicMixin(Mixin, Doctrine): pass
 
-from cortex.core.data import LOOPBACK_HOST, GENERIC_LOCALHOST
 class MobileCodeMixin(object):
     @property
     def is_local(self):

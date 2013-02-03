@@ -14,8 +14,6 @@ def report_if_verbose(*args, **kargs):
     if VERBOSE:
         report(*args, **kargs)
 report.console = console
-from StringIO import StringIO
-from pprint import pprint
 def rpprint(obj,pad=' '*4):
     s = StringIO();
     pprint(obj,s);
@@ -24,7 +22,7 @@ def rpprint(obj,pad=' '*4):
     print console.color('\n'.join(['\n']+map(lambda x: pad + x, s.read().split('\n'))))
 report.pprint = rpprint
 
-from cortex.core.data import SERVICES_DOTPATH
+#from cortex.core.data import SERVICES_DOTPATH
 
 def rpprint(obj,pad=' '*4):
     s = StringIO();

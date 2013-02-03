@@ -4,7 +4,7 @@
 import simplejson
 from cyrusbus.bus import Bus
 
-from channel import Message
+#from channel import Message
 
 from cortex.core.util import report
 from cortex.core.ground import NotFound

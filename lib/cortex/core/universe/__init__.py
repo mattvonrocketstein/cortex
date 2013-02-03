@@ -126,7 +126,6 @@ class __Universe__(Tracking,
 
            original = node
            instruction, args = node[0], node[1:]
-           print '******',instruction,args
            report_if_verbose("parsing node", node)
            if len(args) == 1:
                kargs = {}
@@ -141,8 +140,8 @@ class __Universe__(Tracking,
 
            handler = get_handler(instruction)
            if not handler:
-               parse_error("No instruction handler!", instruction, args, kargs)
-           print '***',args,kargs
+               parse_error("No instruction handler!",
+                           instruction, args, kargs)
            handler(*args, **kargs)
 
         # is this working? also this is not SST..
@@ -198,7 +197,8 @@ class __Universe__(Tracking,
             report(str(e))
             raise e
 
-        ## stop any other agents
+        ## stop any other agents.
+        ## FIXME: consider replacing this with self.children()
         for agent in set(self.agents.values() + self.services.values()):
             try:
                 agent.stop()
@@ -223,8 +223,8 @@ class __Universe__(Tracking,
         [ self.kill_pid(p) for p in [x.pid for x in self._procs] ]
 
     def decide_name(self):
-        """ the universe should never be explicitly named, a universe
-            should derive it's own
+        """ the universe should never be explicitly named,
+             a universe should derive it's own
         """
         name_args = dict( alfa    = str(id(self)),
                           bravo   = getattr(self,'bravo', ''),

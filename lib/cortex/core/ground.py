@@ -2,9 +2,6 @@
 
       smart datastructures for storage
 """
-import sys
-import pickle
-import datetime
 
 from lindypy.TupleSpace import TSpace
 

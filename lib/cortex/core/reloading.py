@@ -1,5 +1,7 @@
+""" cortex.core.reloading
+    TODO: deprecate
 """
-"""
+
 import weakref, inspect
 
 class MetaInstanceTracker(type):
