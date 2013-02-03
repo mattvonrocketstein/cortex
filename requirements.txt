@@ -3,19 +3,43 @@ psutil
 
 # core requirements
 Twisted
+
+# peak lazy imports
 importing
+
+# syntax highlighting for the console and WUI
 Pygments
 IPython==0.10
 python-Levenshtein
+
+# todo: just use demjson everywhere
 simplejson
+
+# python implementation of a linda tuplespace
 lindypy==0.2
+
+# lightweight message bus framework
 cyrusbus==0.1.0
+
+# used for peer detection
 python-nmap
 
+# slick for multimethods style
+PEAK-RULES==0.5a1.dev
+
+#api service uses jsonrpc over twisted
 bzr+http://launchpad.net/txjsonrpc/0.3#egg=txjsonrpc
+
+# eh i think this is unused.
 svn+http://codespeak.net/svn/user/niemeyer/constraint/trunk/#egg=constraint
+
+# method-signature inspection pep
 pep362
+
+#backend agnostic sugar for message passing
 git+git://github.com/mattvonrocketstein/channels#egg=channel
+
+# WUI uses this for rendering templates
 jinja2==2.6
 
 #-e git+git://github.com/mattvonrocketstein/goulash.git#egg=goulash
@@ -30,8 +54,9 @@ jinja2==2.6
 # search-service
 git+git://github.com/mattvonrocketstein/xgoogle.git#egg=xgoogle
 
-# web service
+# graph lib for trees, DAGs, spanning-path and bin-search
 networkx
 pygraphviz
+
+# twisted web framework.. only used for web.eventhub
 nevow
-jinja2
