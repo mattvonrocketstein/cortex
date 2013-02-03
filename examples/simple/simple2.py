@@ -82,7 +82,9 @@ class OnReady(Agent):
         # from '/demo', and opens a webbrowser there.
         web = (self.universe|'web')
         _, short_url = web.make_redirect('demo', multiplot.url)
-        webbrowser.open_new_tab(short_url)
+        open_demo = lambda *args: (universe|'web').open_page_in_browser(short_url)
+        (universe|'terminal').contribute_to_api(open_demo=open_demo)
+        report('to open a the url for the demo type: ", open_demo"')
 
 # a list of unique agent-iteration intervals.
 # we'll end up creating one agent for each speed.

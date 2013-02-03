@@ -44,5 +44,5 @@ class ReactorAspect(object):
 
         def go():
             start()
-            finish()
+            #finish()
         self.callLater(delay, go)

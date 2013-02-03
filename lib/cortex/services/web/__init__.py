@@ -29,7 +29,7 @@ from cortex.services.web.resource.data_source import DataSource
 from cortex.services.web.util import draw_ugraph
 
 from .eventhub import EventHub
-from .pchoose import PortChooser
+from cortex.mixins.pchoose import PortChooser
 
 class WebRoot(Agent, PortChooser):
     """  abstraction for / """
@@ -164,4 +164,4 @@ class Web(FecundService):
         # comma-style calling:  ", open_wui"
         namespace = dict(open_wui = lambda *args: self.open_wui())
         terminal.contribute_to_api(**namespace)
-        report('type open_wui() to see the web user interface.')
+        report('to open the web user interface type: ",open_wui"')

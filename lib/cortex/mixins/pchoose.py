@@ -3,6 +3,8 @@
 from goulash.net import is_port_open
 from cortex.core.util import report, report_if_verbose
 from cortex.core.data import CORTEX_PORT_RANGE,LOOPBACK_HOST
+
+
 class PortChooser(object):
     @property
     def port(self):
