@@ -33,10 +33,27 @@ from peak.rules import abstract, when, around, before, after
 is_string = lambda s: isinstance(s,StringTypes)
 is_dotpath = lambda s: is_string(s) and '.' in s
 is_fpath = lambda s: is_string(s) and os.path.sep in s
+def service_is_abstract(kls):
+    opts = getattr(kls, 'Meta', None)
+    return bool(getattr(opts, 'abstract', False))
 
 class ServiceAspect(object):
-    def loadAgent(self, arg1):
+
+    @abstract
+    def loadAgent(self, agent, **kargs):
         pass
+
+    @when(loadAgent, 'is_dotpath(agent)')
+    def loadAgent(self, agent, **kargs):
+        kls = namedAny(agent)
+        if not issubclass(kls, Agent):
+            msg = ("There is an error in your configuration file. "
+                   'The dotpath given by "{0}" resolves to a {1}, '
+                   "but it should be a Agent.")
+            msg = msg.format(service_path, type(kls).__name__)
+            raise ValueError(msg)
+        return self.start_agent(kls, **kargs)
+
 
     def loadServices(self, services=[]):
         """ """
@@ -68,7 +85,8 @@ class ServiceAspect(object):
         mod_name = os.path.splitext(os.path.split(service)[-1])[0]
         os.chdir(fpath)
         try:
-            result = self._load_service_from_word(mod_name)
+            #result = self._load_service_from_word(mod_name)
+            result = self.loadService(mod_name)
         finally:
             os.chdir(curr)
         return result
@@ -90,29 +108,7 @@ class ServiceAspect(object):
            "not is_fpath(service) and "
            "len(service.split())==1"))
     def loadService(self, service, **kargs):
-            return self._load_service_from_word(service, **kargs)
-
-    def start_service(self, obj, ask=False, **kargs):
-        """ TODO: bad name?  this is a load() style command,
-            i don't think it really starts look back at
-            manage implementation specifics
-        """
-        def service_is_abstract(kls):
-            opts = getattr(kls, 'Meta', None)
-            return bool(getattr(opts, 'abstract', False))
-        if service_is_abstract(obj):
-            report('refusing to start an abstract service:', obj)
-            return
-            #fixme: call a fault here=, cant shutdown the threads cleanly.
-            #self.fault('refusing to start an abstract service:', obj)
-        else:
-            kargs.update(dict(universe=self))
-            return self.services.manage(kls = obj,
-                                        kls_kargs = kargs,
-                                        name=obj.__name__.lower())
-
-
-    def _load_service_from_word(self, service, **kargs):
+        #return self._load_service_from_word(service, **kargs)
         """ inside this method, 'service' is something that
             is just one word.. where/what could it be?
         """
@@ -135,6 +131,37 @@ class ServiceAspect(object):
             if inspect.isclass(val):
                 if all([ not val == Service, issubclass(val, Service),
                          not getattr(val, 'do_not_discover', False) ]):
-                    result = self.start_service(val, ask=False, **kargs)
+                    result = self.start_service(val, **kargs)
                     ret_vals.append(result) # THUNK
         return ret_vals
+
+    @abstract
+    def start_service(self, obj, **kargs):
+        """ TODO: bad name?  this is a load() style command,
+            i don't think it really starts look back at
+            manage implementation specifics
+        """
+        pass
+
+    @when(start_service,'service_is_abstract(obj)')
+    def start_service(self, obj, **kargs):
+        #fixme: call a fault here=, cant shutdown the threads cleanly.
+        #self.fault('refusing to start an abstract service:', obj)
+        report('refusing to start an abstract service:', obj)
+        return
+
+    @when(start_service,'not service_is_abstract(obj)')
+    def start_service(self, obj, **kargs):
+        kargs.update(__manager=self.services)
+        self.start_agent(obj, **kargs)
+
+    @abstract
+    def start_agent(self, obj, **kargs): pass
+
+
+    def start_agent(self, obj, **kargs):
+        kargs.update(dict(universe=self))
+        manager = kargs.pop('__manager', self.agents)
+        return manager.manage(kls = obj,
+                              kls_kargs = kargs,
+                              name=obj.__name__.lower())
